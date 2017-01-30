@@ -1,0 +1,816 @@
+# This Python file uses the following encoding: utf-8
+from ftplib import FTP
+from getmyad.config.social_ads import social_ads
+from getmyad.lib.helpers import progressBar
+from getmyad.lib.admaker_validator import validate_admaker
+from getmyad.lib.template_convertor import js2mako
+from getmyad.model import mq
+from pylons import config, app_globals
+import mako.template
+from uuid import uuid1
+import StringIO, codecs
+import datetime
+import logging
+import re
+from urlparse import urlparse
+import urllib2
+import json
+from binascii import crc32
+
+from slimit import minifier
+
+
+class Informer:
+    """ Рекламный информер (он же рекламный скрипт, рекламная выгрузка) """
+
+    def __init__(self):
+        self.guid = None
+        self.guid_int = 0
+        self.title = None
+        self.admaker = None
+        self.css = None
+        self.css_banner = None
+        self.user_login = None
+        self.non_relevant = None
+        self.domain = None
+        self.height = None
+        self.width = None
+        self.height_banner = None
+        self.width_banner = None
+        self.cost = None
+        self.range_short_term = None
+        self.range_long_term = None
+        self.range_context = None
+        self.range_search = None
+        self.range_retargeting = None
+        self.html_notification = False
+        self.plase_branch = True
+        self.retargeting_branch = True
+        self.auto_reload = 0
+        self.db = app_globals.db
+
+
+    def save(self):
+        """ Сохраняет информер, при необходимости создаёт """
+        update = {}
+        if self.guid:
+            self.guid_int = long(crc32(self.guid.encode('utf-8')) & 0xffffffff)
+        else:
+            self.guid = str(uuid1()).lower()
+            self.guid_int = long(crc32(self.guid.encode('utf-8')) & 0xffffffff)
+            if not self.user_login:
+                raise ValueError('User login must be specified when creating '
+                                 'informer!')
+            update['user'] = self.user_login
+        if self.user_login is not None:
+            record = self.db.users.find_one({'login': self.user_login})
+            self.range_short_term = float(record.get('range_short_term', (100 / 100.0)))
+            update['range_short_term'] = self.range_short_term
+            self.range_long_term = float(record.get('range_long_term', (0 / 100.0)))
+            update['range_long_term'] = self.range_long_term
+            self.range_context = float(record.get('range_context', (0 / 100.0)))
+            update['range_context'] = self.range_context
+            self.range_search = float(record.get('range_search', (100 / 100.0)))
+            update['range_search'] = self.range_search
+            self.range_retargeting = float(record.get('range_retargeting', (100 / 100.0)))
+            update['retargeting_capacity'] = self.range_retargeting
+        else:
+            self.range_short_term = (100 / 100.0) 
+            self.range_long_term = (0 / 100.0)
+            self.range_context = (0 / 100.0)
+            self.range_search = (100 / 100.0)
+            self.range_retargeting = (100 / 100.0)
+            update['user'] = self.user_login
+            update['range_short_term'] = self.range_short_term
+            update['range_long_term'] = self.range_long_term
+            update['range_context'] = self.range_context
+            update['range_search'] = self.range_search
+            update['retargeting_capacity'] = self.range_retargeting
+            
+        if self.title:
+            update['title'] = self.title
+        if self.admaker:
+            update['admaker'] = self.admaker
+        if self.css:
+            update['css'] = self.css
+        else:
+            update['css'] = self.admaker_options_to_css(self.admaker)
+        if self.css_banner:
+            update['css_banner'] = self.css_banner
+        else:
+            update['css_banner'] = self.admaker_options_to_css_banner(self.admaker)
+        if self.domain:
+            update['domain'] = self.domain
+        if self.height:
+            update['height'] = self.height
+        if self.width:
+            update['width'] = self.width
+        if self.height_banner:
+            update['height_banner'] = self.height_banner
+        if self.width_banner:
+            update['width_banner'] = self.width_banner
+        if isinstance(self.auto_reload, int):
+            update['auto_reload'] = self.auto_reload
+        elif (isinstance(self.auto_reload, str) and self.auto_reload.isdigit()):
+            update['auto_reload'] = int(self.auto_reload)
+        elif (isinstance(self.auto_reload, unicode) and self.auto_reload.isdigit()):
+            update['auto_reload'] = int(self.auto_reload)
+        else:
+            update['auto_reload'] = 0
+        update['html_notification'] = self.html_notification
+        update['plase_branch'] = self.plase_branch
+        update['retargeting_branch'] = self.retargeting_branch
+        if self.cost:
+            update['cost'] = self.cost
+        if isinstance(self.non_relevant, dict) and 'action' in self.non_relevant and 'userCode' in self.non_relevant:
+            update['nonRelevant'] = {'action': self.non_relevant['action'],
+                                     'userCode': self.non_relevant['userCode']}
+        update['lastModified'] = datetime.datetime.now()
+
+        self.db.informer.update({'guid': self.guid, 'guid_int': long(self.guid_int)},
+                                       {'$set': update},
+                                       upsert=True,
+                                       safe=True)
+        InformerFtpUploader(self.guid).upload()
+        mq.MQ().informer_update(self.guid)
+
+    def load(self, id):
+        raise NotImplementedError
+
+    def loadGuid (self, id):
+        """ Загружает информер из MongoDB """
+        if id is not None:
+            mongo_record = self.db.informer.find_one({'guid': id})
+            record = self.db.users.find_one({'login': mongo_record["user"]})
+            self.guid = mongo_record['guid']
+            self.guid_int = mongo_record['guid_int']
+            self.title = mongo_record['title']
+            self.user_login = mongo_record["user"]
+            self.admaker = mongo_record.get('admaker')
+            self.css = mongo_record.get('css')
+            self.css_banner = mongo_record.get('css_banner')
+            self.domain = mongo_record.get('domain')
+            self.cost = mongo_record.get('cost', None)
+            self.height = mongo_record.get('height')
+            self.width = mongo_record.get('width')
+            self.height_banner = mongo_record.get('height_banner')
+            self.width_banner = mongo_record.get('width_banner')
+            self.range_short_term = float(record.get('range_short_term', (100 / 100.0)))
+            self.range_long_term = float(record.get('range_long_term', (0 / 100.0)))
+            self.range_context = float(record.get('range_context', (0 / 100.0)))
+            self.range_search = float(record.get('range_search', (100 / 100.0)))
+            self.range_retargeting = float(record.get('range_retargeting', (100 / 100.0)))
+            self.html_notification = bool(mongo_record.get('html_notification', False))
+            self.plase_branch = bool(mongo_record.get('plase_branch', True))
+            self.retargeting_branch = bool(mongo_record.get('retargeting_branch', True))
+            if 'nonRelevant' in mongo_record:
+                self.non_relevant = {}
+                self.non_relevant['action'] = \
+                    mongo_record['nonRelevant'].get('action', 'social')
+                self.non_relevant['userCode'] = \
+                    mongo_record['nonRelevant'].get('userCode', '')
+
+    @staticmethod
+    def load_from_mongo_record(mongo_record):
+        """ Загружает информер из записи MongoDB """
+        informer = Informer()
+        informer.guid = mongo_record['guid']
+        informer.guid_int = mongo_record['guid_int']
+        informer.title = mongo_record['title']
+        informer.user_login = mongo_record["user"]
+        db = app_globals.db
+        record = db.users.find_one({'login': mongo_record["user"]})
+        informer.admaker = mongo_record.get('admaker')
+        informer.css = mongo_record.get('css')
+        informer.css_banner = mongo_record.get('css_banner')
+        informer.domain = mongo_record.get('domain')
+        informer.cost = mongo_record.get('cost', None)
+        informer.height = mongo_record.get('height')
+        informer.width = mongo_record.get('width')
+        informer.height_banner = mongo_record.get('height_banner')
+        informer.width_banner = mongo_record.get('width_banner')
+        informer.range_short_term = float(record.get('range_short_term', (100 / 100.0)))
+        informer.range_long_term = float(record.get('range_long_term', (0 / 100.0)))
+        informer.range_context = float(record.get('range_context', (0 / 100.0)))
+        informer.range_search = float(record.get('range_search', (100 / 100.0)))
+        informer.range_retargeting = float(record.get('range_retargeting', (100 / 100.0)))
+        informer.html_notification = bool(mongo_record.get('html_notification', False))
+        informer.plase_branch = bool(mongo_record.get('plase_branch', True))
+        informer.retargeting_branch = bool(mongo_record.get('retargeting_branch', True))
+        if 'nonRelevant' in mongo_record:
+            informer.non_relevant = {}
+            informer.non_relevant['action'] = \
+                mongo_record['nonRelevant'].get('action', 'social')
+            informer.non_relevant['userCode'] = \
+                mongo_record['nonRelevant'].get('userCode', '')
+        return informer
+
+    def admaker_options_to_css(self, options):
+        """ Создаёт строку CSS из параметров Admaker """
+
+        def parseInt(value):
+            ''' Пытается выдрать int из строки.
+                
+                Например, для "128px" вернёт 128. '''
+            try:
+                return re.findall("\\d+", value)[0]
+            except IndexError:
+                return 0
+        options = validate_admaker(options)
+        template_name = '/advertise_style_template.mako.html'
+        src = app_globals.mako_lookup.get_template(template_name)\
+                .source.replace('<%text>', '').replace('</%text>', '')
+        template = mako.template.Template(
+            text=js2mako(src), 
+            format_exceptions=True)
+        return template.render_unicode(parseInt=parseInt, **options)
+
+    def admaker_options_to_css_banner(self, options):
+        """ Создаёт строку CSS Banner из параметров Admaker """
+
+        def parseInt(value):
+            ''' Пытается выдрать int из строки.
+                
+                Например, для "128px" вернёт 128. '''
+            try:
+                return re.findall("\\d+", value)[0]
+            except IndexError:
+                return 0
+
+        options = validate_admaker(options)
+        template_name = '/advertise_style_template_banner.mako.html'
+        src = app_globals.mako_lookup.get_template(template_name)\
+                .source.replace('<%text>', '').replace('</%text>', '')
+        template = mako.template.Template(
+            text=js2mako(src), 
+            format_exceptions=True)
+        return template.render_unicode(parseInt=parseInt, **options)
+#        return minify_css( template.render_unicode(parseInt=h.parseInt, **opt) )
+
+class InformerFtpUploader:
+    """ Заливает необходимое для работы информера файлы на сервер раздачи
+        статики:
+
+        1. Javascript-загрузчик информера.
+        2. Статическую заглушку с социальной рекламой на случай отказа GetMyAd.
+    """
+
+    def __init__(self, informer_id):
+        self.informer_id = informer_id
+        self.db = app_globals.db
+
+    def upload(self):
+        """ Заливает через FTP загрузчик и заглушку информера """
+        self.upload_loader()
+        self.upload_reserve()
+
+    def upload_loader(self):
+        ' Заливает загрузчик информера '
+        if config.get('informer_loader_ftp'):
+            try:
+                ftp = FTP(host=config.get('informer_loader_ftp'),
+                          user=config.get('informer_loader_ftp_user'),
+                          passwd=config.get('informer_loader_ftp_password'))
+                ftp.cwd(config.get('informer_loader_ftp_path'))
+                loader = StringIO.StringIO()
+                loader.write(self._generate_informer_loader_ssl())
+                loader.seek(0)
+                # TODO: Приведение к UPPER-CASE нужно будет убрать, когда
+                #       на сервере будет реализована case-insensitive раздача
+                #       статических файлов (задача #58).
+                ftp.storlines('STOR %s.js' % self.informer_id.lower(), loader)
+                ftp.storlines('STOR %s.js' % self.informer_id.upper(), loader)
+                ftp.quit()
+                loader.close()
+            except Exception, ex:
+                logging.error(ex)
+        else:
+            logging.warning('informer_loader_ftp settings not set! '
+                            'Check .ini file.')
+
+    def upload_reserve(self):
+        ' Заливает заглушку для информера '
+        if config.get('reserve_ftp'):
+            try:
+                ftp = FTP(config.get('reserve_ftp'))
+                ftp.login(config.get('reserve_ftp_user'),
+                          config.get('reserve_ftp_password'))
+                ftp.cwd(config.get('reserve_ftp_path'))
+                data = StringIO.StringIO()
+                data.write(self._generate_social_ads().encode('utf-8'))
+                data.seek(0)
+                ftp.storlines('STOR emergency-%s.html' % self.informer_id,
+                              data)
+                ftp.quit()
+                data.close()
+            except Exception, ex:
+                logging.error(ex)
+        else:
+            logging.warning('reserve_ftp settings not set! Check .ini file.')
+
+    def uploadAll(self):
+        """ Загружает на FTP скрипты для всех информеров """
+        advertises = self.db.informer.find({}, {'guid': 1})
+        prog = progressBar(0, advertises.count())
+        i = 0
+        for adv in advertises:
+            i += 1
+            prog.updateAmount(i)
+            print "Saving informer %s... \t\t\t %s" % (adv['guid'], prog)
+            InformerFtpUploader(adv['guid']).upload()
+
+    def _generate_informer_loader_ssl(self):
+        ''' Возвращает код javascript-загрузчика информера '''
+        adv = self.db.informer.find_one({'guid': self.informer_id})
+        if not adv:
+            return False
+        try:
+            guid = adv['guid']
+            width = int(re.match('[0-9]+',
+                        adv['admaker']['Main']['width']).group(0))
+            height = int(re.match('[0-9]+',
+                         adv['admaker']['Main']['height']).group(0))
+        except:
+            raise Exception("Incorrect size dimensions for informer %s" %
+                             self.informer_id)
+        try:
+            border = int(re.match('[0-9]+',
+                         adv['admaker']['Main']['borderWidth']).group(0))
+        except:
+            border = 1
+        partner = adv.get('domain', 'other').replace('.', '-').replace('/', '')
+
+        width += border * 2
+        height += border * 2
+        script = (r"""
+            !function(a){var b=/iPhone/i,c=/iPod/i,d=/iPad/i,e=/(?=.*\bAndroid\b)(?=.*\bMobile\b)/i,f=/Android/i,g=/(?=.*\bAndroid\b)(?=.*\bSD4930UR\b)/i,h=/(?=.*\bAndroid\b)(?=.*\b(?:KFOT|KFTT|KFJWI|KFJWA|KFSOWI|KFTHWI|KFTHWA|KFAPWI|KFAPWA|KFARWI|KFASWI|KFSAWI|KFSAWA)\b)/i,i=/IEMobile/i,j=/(?=.*\bWindows\b)(?=.*\bARM\b)/i,k=/BlackBerry/i,l=/BB10/i,m=/Opera Mini/i,n=/(CriOS|Chrome)(?=.*\bMobile\b)/i,o=/(?=.*\bFirefox\b)(?=.*\bMobile\b)/i,p=new RegExp("(?:Nexus 7|BNTV250|Kindle Fire|Silk|GT-P1000)","i"),q=function(a,b){return a.test(b)},r=function(a){var r=a||navigator.userAgent,s=r.split("[FBAN");return"undefined"!=typeof s[1]&&(r=s[0]),this.apple={phone:q(b,r),ipod:q(c,r),tablet:!q(b,r)&&q(d,r),device:q(b,r)||q(c,r)||q(d,r)},this.amazon={phone:q(g,r),tablet:!q(g,r)&&q(h,r),device:q(g,r)||q(h,r)},this.android={phone:q(g,r)||q(e,r),tablet:!q(g,r)&&!q(e,r)&&(q(h,r)||q(f,r)),device:q(g,r)||q(h,r)||q(e,r)||q(f,r)},this.windows={phone:q(i,r),tablet:q(j,r),device:q(i,r)||q(j,r)},this.other={blackberry:q(k,r),blackberry10:q(l,r),opera:q(m,r),firefox:q(o,r),chrome:q(n,r),device:q(k,r)||q(l,r)||q(m,r)||q(o,r)||q(n,r)},this.seven_inch=q(p,r),this.any=this.apple.device||this.android.device||this.windows.device||this.other.device||this.seven_inch,this.phone=this.apple.phone||this.android.phone||this.windows.phone,this.tablet=this.apple.tablet||this.android.tablet||this.windows.tablet,"undefined"==typeof window?this:void 0},s=function(){var a=new r;return a.Class=r,a};"undefined"!=typeof module&&module.exports&&"undefined"==typeof window?module.exports=r:"undefined"!=typeof module&&module.exports&&"undefined"!=typeof window?module.exports=s():"function"==typeof define&&define.amd?define("isMobile",[],a.isMobile=s()):a.isMobile=s()}(this); 
+            function yottosBlock(width,height,guid,skip){
+                this.guid = guid;
+                this.skip = skip;
+                this.rand = Math.floor(Math.random() * 1000000);
+                this.iframe_id = 'yottos' + this.rand;
+                try {
+                    this.el = document.createElement('<iframe name='+ this.iframe_id +'>');
+                } catch (ex) {
+                    this.el = document.createElement("iframe");
+                    this.el.name = this.iframe_id;
+                }
+                this.elf = document.createElement("form");
+                this.el.id = this.iframe_id;
+                this.elf.id = "f" + this.iframe_id;
+                this.elf.name = "f" + this.iframe_id;
+                this.elf.target = this.iframe_id;
+                this.elf.method = "POST";
+                this.el.style.width = width;
+                this.el.marginHeight = '0px';
+                this.el.marginWidth = '0px';
+                this.el.style.height = height;
+                this.elf.style.width = '0px';
+                this.elf.style.height = '0px';
+                this.elf.style.border = '0px';
+                this.el.style.border = '0px';
+                this.el.scrolling='no';
+                this.el.frameBorder='0';
+                this.el.allowtransparency='true';
+                this.elf.action = '';
+                this.handler = false;
+                this.log_handler = false;
+                this.isView = false;
+                this.isRender = false;
+                this.isLoger = false;
+                this.yt_temp_adv_name = this.guid.replace(/-/g, '');
+                this.name_el = window[yt_temp_adv_name].shift();
+                this.scrollCounter = 0;
+                this.loggerCount = 0;
+                this.logger_src = "";
+                this.garanted = "False";
+
+                this.XMLHttpFactories = [
+                function () {
+                    return new XMLHttpRequest();
+                },
+                function () {
+                    return new ActiveXObject("Msxml2.XMLHTTP");
+                },
+                function () {
+                    return new ActiveXObject("Msxml3.XMLHTTP");
+                },
+                function () {
+                    return new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                ];
+                this.createXMLHTTPObject = function()
+                {
+                    var xmlhttp = false;
+                    for (var i=0;i<this.XMLHttpFactories.length;i++)
+                    {
+                        try
+                        {
+                            xmlhttp = this.XMLHttpFactories[i]();
+                        }
+                        catch (e)
+                        {
+                            continue;
+                        }
+                        break;
+                    }
+                    return xmlhttp;
+                };
+                this.sendRequest = function(calback)
+                {
+                    postData = typeof postData == 'string' ? postData : '';
+                    this.logger_query();
+                    this.loggerCount++;
+                    var req = this.createXMLHTTPObject();
+                    if (!req)
+                    {
+                        return;
+                    }
+                    req.open('POST',this.logger_src,true);
+                    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    req.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+                    req.onreadystatechange = function () {
+                        if (req.readyState != 4){
+                            return;
+                        }
+                        if (req.status != 200 && req.status != 304){
+                            return;
+                        }
+                        if (req.status == 200)
+                        {
+                            calback(req);
+                        }
+                    };
+                    if (req.readyState == 4){
+                        return;
+                    }
+                    req.send(postData);
+                };
+                this.render = function(){
+                    console.log("Render ",this.name_el);
+                    if (document.getElementById(this.name_el) != null){
+                        this.runLogger();
+                        this.runAdv();
+                    }
+                    else{
+                        var skip = this.skip;
+                        console.log("Onload ",this.name_el);
+                        window.onload = function(){window['__yottosBlosks'][skip].render()};
+                    }
+                };
+                this.runLogger = function(){
+                        console.log("runLoggerPlay ",this.name_el);
+                        this.runLoggerPlay();
+                };
+                this.runLoggerPlay = function(){
+                    if(this.loggerCount == 0)
+                    {
+                        console.log("Log",this.name_el,this.loggerCount);
+                        this.sendRequest();
+                        var skip = this.skip;
+                        window['__yottosBlosks'][skip].runLoggerPlay();
+                    }
+                    else
+                    {
+                        console.log("Log",this.name_el,this.loggerCount);
+                        var div_el = document.getElementById(this.name_el);
+                        this.garanted = this.isElementInViewport(div_el, 1, 1);
+                        if(this.garanted)
+                        {
+                            if (!this.isLoger)
+                            {
+                                console.log("Log Garant",this.name_el,this.loggerCount);
+                                this.sendRequest();
+                                this.isLoger = true;
+                            }
+                            else
+                            {
+                                if (window.removeEventListener) {
+                                    removeEventListener('scroll', this.log_handler, false); 
+                                    removeEventListener('resize', this.log_handler, false); 
+                                } else if (window.detachEvent)  {
+                                    detachEvent('onscroll', this.log_handler);
+                                    detachEvent('onresize', this.log_handler);
+                                }
+                            }
+                        }
+                        if (!this.log_handler)
+                        {
+                            var skip = this.skip;
+                            this.log_handler = function(){window['__yottosBlosks'][skip].runLoggerPlay()};
+                            if (window.addEventListener) {
+                                addEventListener('scroll', this.log_handler, false); 
+                                addEventListener('resize', this.log_handler, false); 
+                            } else if (window.attachEvent)  {
+                                attachEvent('onscroll', this.log_handler);
+                                attachEvent('onresize', this.log_handler);
+                            }
+                        }
+                    }
+                };
+                this.runAdv = function(){
+                    this.iframe_query();
+                    var div_el = document.getElementById(this.name_el);
+                    div_el.appendChild(this.elf);
+                    div_el.appendChild(this.el);
+                    this.blockPlay();
+                };
+                this.blockPlay = function()
+                {
+                    var div_el = document.getElementById(this.name_el);
+                    this.isView = this.isElementInViewport(div_el, this.scrollCounter, 10 );
+                    this.scrollCounter++;
+                    if (this.isView)
+                    {
+                        if (!this.isRender)
+                        {
+                            document.forms[this.elf.id].submit();
+                            console.log("render",this.name_el);
+                            this.formRemove(this.el, this.elf);
+                            this.isRender = true;
+                        }
+                        else
+                        {
+                            if (window.removeEventListener) {
+                                removeEventListener('scroll', this.handler, false); 
+                                removeEventListener('resize', this.handler, false); 
+                            } else if (window.detachEvent)  {
+                                detachEvent('onscroll', this.handler);
+                                detachEvent('onresize', this.handler);
+                            }
+                        }
+                    }
+                    if (!this.handler)
+                    {
+                        var skip = this.skip;
+                        this.handler = function(){window['__yottosBlosks'][skip].blockPlay()};
+                        if (window.addEventListener) {
+                            addEventListener('scroll', this.handler, false); 
+                            addEventListener('resize', this.handler, false); 
+                        } else if (window.attachEvent)  {
+                            attachEvent('onscroll', this.handler);
+                            attachEvent('onresize', this.handler);
+                        }
+                    }
+                };
+                this.iframe_query = function(){
+                    this.elf.action = "https://rg.yottos.com/block?scr=" + this.guid + "&location=" + encodeURIComponent(window.location.href) + "&w=" + this.windowWidth() + "&h=" + this.windowHeight() + "&device=" + this.getDevise();
+                },
+                this.logger_query = function(){
+                    this.logger_src = "https://rg.yottos.com/garanted?scr=" + this.guid + "&location=" + encodeURIComponent(window.location.href) + "&w=" + this.windowWidth() + "&h=" + this.windowHeight() + "&device=" + this.getDevise() + "&garanted=" + this.garanted + "&rand=" + Math.floor(Math.random() * 1000000);
+                },
+                this.getDevise = function(){
+                    var device = "pc";
+                    if (isMobile.any)
+                    {
+                        device = 'oh';
+                        if (isMobile.apple.device)
+                        {
+                            if(isMobile.apple.phone)
+                            {
+                                device = 'ap';
+                            }
+                            else
+                            {
+                                device = 'at';
+                            }
+                        }
+                        if (isMobile.android.device)
+                        {
+                            if(isMobile.android.phone)
+                            {
+                                device = 'np';
+                            }
+                            else
+                            {
+                                device = 'nt';
+                            }
+                        }
+                        if (isMobile.windows.device)
+                        {
+                            if(isMobile.windows.phone)
+                            {
+                                device = 'wp';
+                            }
+                            else
+                            {
+                                device = 'wt';
+                            }
+                        }
+                    }
+                    return device;
+                };
+                this.windowWidth = function(){
+                    var windowWidth = 0;
+                    if (window.self.innerWidth)
+                        windowWidth = window.self.innerWidth;
+                    else if (window.document.documentElement && window.document.documentElement.clientWidth)
+                        windowWidth = window.document.documentElement.clientWidth;
+                    else if (window.document.body)
+                        windowWidth = window.document.body.clientWidth;
+                    return windowWidth;
+                };
+                this.windowHeight = function(){
+                    var windowHeight = 0;
+                    if (window.self.innerHeight)
+                        windowHeight = window.self.innerHeight;
+                    else if (window.document.documentElement && window.document.documentElement.clientHeight)
+                        windowHeight = window.document.documentElement.clientHeight;
+                    else if (window.document.body)
+                        windowHeight = window.document.body.clientHeight;
+                    return windowHeight;
+                };
+                this.formRemove = function(iframe, elf)
+                {
+                    if (iframe.attachEvent)
+                    {
+                        iframe.attachEvent("onload", function(){
+                            ;elf.parentNode.removeChild(elf);
+                        });
+                    }
+                    else
+                    {
+                        iframe.onload = function(){
+                            ;elf.parentNode.removeChild(elf);
+                        };
+                    }
+                };
+                this.isElementInViewport =  function(el,scrollCounter, c) {
+                      var top = el.offsetTop ; 
+                      var left = el.offsetLeft ; 
+                      var width = el.offsetWidth ; 
+                      var height = el.offsetHeight ; 
+                      var pageYOffset;
+                      var pageXOffset;
+                      var YOffset = 0;
+                      var XOffset = 0;
+                      var innerWidth = this.windowWidth();
+                      var innerHeight = this.windowHeight();
+                      if(typeof window.pageYOffset!= 'undefined'){
+                            pageYOffset = window.pageYOffset;
+                            pageXOffset = window.pageXOffset;
+                      }
+                      else
+                      {
+                            pageYOffset = document.documentElement.scrollTop;
+                            pageXOffset = document.documentElement.scrollLeft;
+                      } 
+                      while ( el.offsetParent )  { 
+                        el = el.offsetParent ; 
+                        top += el.offsetTop ; 
+                        left += el.offsetLeft ; 
+                      }
+                      if (scrollCounter > 1)
+                        {
+                           YOffset = (pageYOffset/scrollCounter) * c;
+                           XOffset = (pageXOffset/scrollCounter) * c; 
+                        }
+                      return  ( 
+                        top <  ( pageYOffset + innerHeight + YOffset )  && 
+                        left <  ( pageXOffset+ innerWidth + XOffset )  && 
+                        ( top + height ) > pageYOffset && 
+                        ( left + width ) > pageXOffset
+                       );
+                    };
+                };
+                window['__yottosBlosks'] = window['__yottosBlosks'] || [];
+            var i = window['__yottosBlosks'].push( new yottosBlock('%(width)spx','%(height)spx','%(guid)s', window['__yottosBlosks'].length));
+            window['__yottosBlosks'][i-1].render();
+        """) % {'partner':partner, 'guid':guid,'obj':guid.replace('-',''), 'width':width, 'height':height}
+        
+        #return """//<![CDATA[\n""" +  minifier.minify(script.encode('utf-8') , mangle=False) + """\n//]]>"""
+        #return """//<![CDATA[\n""" + script.encode('utf-8') + """\n//]]>"""
+        return script.encode('utf-8')
+
+
+
+    def _generate_social_ads(self):
+        ''' Возвращает HTML-код заглушки с социальной рекламой,
+            которая будет показана при падении сервиса
+        '''
+        inf = self.db.informer.find_one({'guid': self.informer_id})
+        if not inf:
+            return
+
+        try:
+            items_count = int(inf['admaker']['Main']['itemsNumber'])
+        except:
+            items_count = 0
+
+        offers = ''
+        for i in xrange(0, items_count):
+            adv = social_ads[i % len(social_ads)]
+
+            offers += ('''<div class="advBlock"><a class="advHeader" href="%(url)s" target="_blank">''' +
+                       '''%(title)s</a><a class="advDescription" href="%(url)s" target="_blank">''' +
+                       '''%(description)s</a><a class="advCost" href="%(url)s" target="_blank"></a>''' +
+                       '''<a href="%(url)s" target="_blank"><img class="advImage" src="%(img)s" alt="%(title)s"/></a></div>'''
+                       ) % {'url': adv['url'], 'title': adv['title'], 'description': adv['description'], 'img': adv['image']}
+        return '''
+<html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="robots" content="nofollow" /><style type="text/css">html, body { padding: 0; margin: 0; border: 0; }</style><!--[if lte IE 6]><script type="text/javascript" src="//cdn.yottos.com/getmyad/supersleight-min.js"></script><![endif]-->
+%(css)s
+</head>
+<body>
+<div id='mainContainer'><div id="ads" style="position: absolute; left:0; top: 0">
+%(offers)s
+</div><div id='adInfo'><a href="https://yottos.com" target="_blank"></a></div>
+</body>
+</html>''' % {'css': inf.get('css'), 'offers': offers}
+
+
+
+
+
+def minify_css(css):
+    # remove comments - this will break a lot of hacks :-P
+    css = re.sub( r'\s*/\*\s*\*/', "$$HACK1$$", css ) # preserve IE<6 comment hack
+    css = re.sub( r'/\*[\s\S]*?\*/', "", css )
+    css = css.replace( "$$HACK1$$", '/**/' ) # preserve IE<6 comment hack
+    
+    # url() doesn't need quotes
+    css = re.sub( r'url\((["\'])([^)]*)\1\)', r'url(\2)', css )
+    
+    # spaces may be safely collapsed as generated content will collapse them anyway
+    css = re.sub( r'\s+', ' ', css )
+    
+    # shorten collapsable colors: #aabbcc to #abc
+    css = re.sub( r'#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3(\s|;)', r'#\1\2\3\4', css )
+    
+    # fragment values can loose zeros
+    css = re.sub( r':\s*0(\.\d+([cm]m|e[mx]|in|p[ctx]))\s*;', r':\1;', css )
+    
+    result = []
+    for rule in re.findall( r'([^{]+){([^}]*)}', css ):
+    
+        # we don't need spaces around operators
+        selectors = [re.sub( r'(?<=[\[\(>+=])\s+|\s+(?=[=~^$*|>+\]\)])', r'', selector.strip() ) for selector in rule[0].split( ',' )]
+    
+        # order is important, but we still want to discard repetitions
+        properties = {}
+        porder = []
+        for prop in re.findall( '(.*?):(.*?)(;|$)', rule[1] ):
+            key = prop[0].strip().lower()
+            if key not in porder: porder.append( key )
+            properties[ key ] = prop[1].strip()
+    
+        # output rule if it contains any declarations
+        if properties:
+            result.append( "%s{%s}" % ( ','.join( selectors ), ''.join(['%s:%s;' % (key, properties[key]) for key in porder])[:-1] ))
+    return "\n".join(result)
+
+
+
+class InformerPattern:
+    """ Рекламный информер (он же рекламный скрипт, рекламная выгрузка) """
+
+    def __init__(self):
+        self.guid = None
+        self.admaker = None
+        self.db = app_globals.db
+
+
+    def save(self):
+        """ Сохраняет информер, при необходимости создаёт """
+        update = {}
+        if self.guid:
+            pass
+        else:
+            self.guid = str(uuid1()).lower()
+            
+        if self.admaker:
+            update['admaker'] = self.admaker
+
+        self.db.informer.patterns.update({'guid': self.guid},
+                                       {'$set': update},
+                                       upsert=True,
+                                       safe=True)
+
+    def load(self, id):
+        raise NotImplementedError
+
+    def loadGuid (self, id):
+        """ Загружает информер из MongoDB """
+        mongo_record = self.db.informer.patterns.find_one({'guid': id})
+        self.guid = mongo_record['guid']
+        self.guid_int = mongo_record['guid_int']
+        self.title = mongo_record['title']
+        self.user_login = mongo_record["user"]
+        self.admaker = mongo_record.get('admaker')
+        self.height = mongo_record.get('height')
+        self.width = mongo_record.get('width')
+        self.height_banner = mongo_record.get('height_banner')
+        self.width_banner = mongo_record.get('width_banner')
+
+    @staticmethod
+    def load_from_mongo_record(mongo_record):
+        """ Загружает информер из записи MongoDB """
+        informer = InformerPattern()
+        informer.guid = mongo_record['guid']
+        informer.title = mongo_record['title']
+        db = app_globals.db
+        informer.admaker = mongo_record.get('admaker')
+        informer.height = mongo_record.get('height')
+        informer.width = mongo_record.get('width')
+        informer.height_banner = mongo_record.get('height_banner')
+        informer.width_banner = mongo_record.get('width_banner')
+        return informer

@@ -1,0 +1,212 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+<style>
+    .message {
+        margin: 20px 20px 20px 20px;
+        width: 100%;
+        background-color: #fee;
+        height: 50px;
+        border: 1px dotted orange;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    a {
+        color: #333;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #ccc;
+        text-decoration: none
+    }
+
+    #mask {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 9000;
+        background-color: #000;
+        display: none;
+        font-family: Georgia;
+    }
+
+    #boxes .window {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 440px;
+        height: 200px;
+        display: none;
+        z-index: 9999;
+        padding: 20px;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    #boxes #dialog {
+        width: 375px;
+        height: 203px;
+        padding: 10px;
+        background-color: #ffffff;
+    }
+
+    #boxes #dialog2 {
+        width: 375px;
+        height: 150px;
+        padding: 10px;
+        background-color: #ffffff;
+    }
+
+    .close {
+        float: right;
+        margin-top: 10px;
+    }
+</style>
+<script type="text/javascript" src="/lib/jquery/jquery-1.4.2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('a[name=modal]').click(function (e) {
+            e.preventDefault();
+            var id = $(this).attr('href');
+            var maskHeight = $(document).height();
+            var maskWidth = $(window).width();
+            $('#mask').css({'width': maskWidth, 'height': maskHeight});
+            $('#mask').fadeIn(1000);
+            $('#mask').fadeTo("slow", 0.8);
+            var winH = $(window).height();
+            var winW = $(window).width();
+            $(id).css('top', winH / 2 - $(id).height() / 2);
+            $(id).css('left', winW / 2 - $(id).width() / 2);
+            $(id).fadeIn(2000);
+        });
+        $('.window .close').click(function (e) {
+            e.preventDefault();
+            $('#mask, .window').hide();
+        });
+        $('#mask').click(function () {
+            $(this).hide();
+            $('.window').hide();
+        });
+    });
+</script>
+
+</%def>
+
+
+<a href="${h.url_for(controller='banner', action='list_banner')}">к списку банеров</a>
+
+%if c.message:
+<div class="message">
+    <p>${c.message}</p>
+</div>
+%endif
+
+<div id="boxes">
+    <div id="dialog" class="window">
+        ${h.form(h.url_for(controller='banner', action='updateBanner', id=c.banner['guid']), multipart=True)}
+        <table>
+            <tr>
+                <td>Рекламная компания</td>
+                <td>
+                    <select name="camp_list" id="camp_list">
+                        % for camp in c.campaigns:
+                        <option value="${camp['id']}" ${
+                        'selected="selected"' if (camp["id"] == c.campaign["campaignId"]) else
+                        ''}>${camp['title']}</option>
+                        % endfor
+                        <select>
+                </td>
+            </tr>
+            <tr>
+                <td>Название баннера</td>
+                <td>${h.text('name',c.banner["title"])}</td>
+            </tr>
+            <tr>
+                <td>Цена за 1000 показов</td>
+                <td>${h.text('imp_cost',c.banner["imp_cost"])}</td>
+            </tr>
+            <tr>
+                <td>Бюджет</td>
+                <td>${'%.4f' % c.banner["budget"]}</td>
+            </tr>
+            <tr>
+                <td>Пополнить на</td>
+                <td>${h.text('budget',0)}</td>
+            </tr>
+            <tr>
+                <td>URL</td>
+                <td>${h.text('url',c.banner["url"])}</td>
+            </tr>
+        </table>
+        ${h.submit('submit', 'Сохранить'.decode('utf-8'))}
+        ${h.end_form()}
+        <span>
+        <input type="button" value="Закрыть" class="close">
+    </div>
+    <div id="mask"></div>
+</div>
+
+<div id="boxes">
+    <div id="dialog2" class="window">
+        ${h.form(h.url_for(controller='banner', action='updateBannerBudget', id=c.banner['guid']), multipart=True)}
+        <table>
+            <tr>
+                <td>Название баннера</td>
+                <td>${c.banner["title"]}</td>
+            </tr>
+            <tr>
+                <td>Баннер получатель средств</td>
+                <td>
+                    <select name="bann_list" id="bann_list">
+                        % for bann in c.banners:
+                        <option value="${bann['id']}" ${
+                        'selected="selected"' if (bann["id"] == c.banner['guid']) else ''}>${bann['title']}</option>
+                        % endfor
+                        <select>
+                </td>
+            </tr>
+            <tr>
+                <td>Бюджет</td>
+                <td>${'%.4f' % c.banner["budget"]}</td>
+            </tr>
+            <tr>
+                <td>Перевести</td>
+                <td>${h.text('budget',0)}</td>
+            </tr>
+        </table>
+        ${h.submit('submit', 'Перераспределить'.decode('utf-8'))}
+        ${h.end_form()}
+        <span>
+        <input type="button" value="Закрыть" class="close">
+    </div>
+    <div id="mask"></div>
+</div>
+<h2>Банера ${c.banner['title']}</h2>
+<p>Компания: ${c.campaign['title']} - ${'запушена' if (c.banner.get('status', 'not_found') == 'working') else
+    'остановлена'}</p>
+<p>Размер: ${c.banner['width']} на ${c.banner['height']}</p>
+<p>Цена за 1000 показов: ${c.banner['imp_cost']}</p>
+<p>Бюджет: ${'%.4f' % c.banner['budget']}</p>
+<p>Ссылка на сайт: ${c.banner['url']}</p>
+% if c.banner.get('html',None) is not None:
+<p>${c.banner.get('html',None)}"</p>
+<p>
+    % endif
+    % if c.banner.get('image',None) is not None:
+<p><img src="${c.banner.get('image',None)}"/></p>
+<p>
+    % endif
+    % if c.banner.get('swf',None) is not None:
+    <object width="${c.banner['width']}" height="${c.banner['height']}">
+        <embed width="${c.banner['width']}" height="${c.banner['height']}" src="${c.banner.get('swf',None)}"/>
+    </object>
+</p>
+% endif
+<p><a href="${h.url_for(controller='banner', action='banner_stat', id=c.banner['guid'])}">Статистика по баннеру</a></p>
+<a href="#dialog" name="modal">Отредактировать баннер</a></p>
+<a href="#dialog2" name="modal" ${'style="display:none;"' if c.reallocate else ''}>Перераспределить средства</a></p>
+<p><a href="${h.url_for(controller='banner', action='delete_banner', id=c.banner['guid'])}">Удалить баннер</a></p>

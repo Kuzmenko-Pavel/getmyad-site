@@ -1,0 +1,303 @@
+# -*- coding: utf-8 -*-
+<%!
+from random import randint
+id = randint(0,99999)            # Случайное число, которое будет добавляться к id формы.
+# Это нужно для случая, когда этот шаблон будет динамически загружаться во вкладки.
+# Таким образом мы обеспечиваем уникальность id формы на странице
+from getmyad.model import Permission, Account
+%>
+
+<style type="text/css">
+    tr.header {
+        cursor: pointer;
+        text-align: left;
+        font-size: 18px;
+        color: #2f55d0;
+        text-decoration: underline;
+    }
+
+    #dialogSetPassword label, #dialogSetPassword input {
+        display: block;
+    }
+
+    #dialogSetPassword input {
+        margin-bottom: 10px;
+    }
+
+    #dialogSetPassword fieldset {
+        padding: 0;
+        border: 0;
+        margin-top: 15px;
+    }
+
+    .errorMessage {
+        color: red;
+    }
+
+    span.psw-error-message, span.fields-error-message {
+        color: red;
+    }
+
+    .spanAccountSumm {
+        /* Сумма на счету */
+        font-weight: bold;
+        font-size: larger;
+    }
+</style>
+
+% if c.permission.has(Permission.EDIT_USERS_ACCOUNT):
+<div id="accordion">
+
+    <h3><a href="#">Детали пользователя</a></h3>
+
+    <div id="userDetails">
+        <h2>${c.login}</h2>
+        <button id="edit-psw-button" name="edit-psw-button" class="edit-psw-button">Изменить пароль</button>
+        % if c.account.account_type == Account.Administrator:
+        <p>
+            <button id="delete-account-button" name="delete-account-button" class="delete-account-button">Удалить
+                аккаунт
+            </button>
+        </p>
+        % endif
+        <form action="/manager/saveUserDetails" method="post" id="user-details-${id}" name="user-details-${id}">
+            <input type="hidden" name="token" id="token" value="${c.token}"/>
+            <input type="hidden" id="login" name="login" value="${c.login}"/>
+
+            <span id="fields-error-message" class="fields-error-message"></span>
+            <table>
+                <tr>
+                    <td>ФИО:</td>
+                    <td>${h.text('edit_name', value=c.edit_name)}</td>
+                </tr>
+                <tr>
+                    <td>Номер телефона:</td>
+                    <td>${h.text('edit_phone', value=c.edit_phone)}</td>
+                    </td>
+                <tr>
+                    <td>Эл. почта:</td>
+                    <td>${h.text('edit_email', value=c.edit_email)}</td>
+                </tr>
+                <tr>
+                    <td>Skype:</td>
+                    <td>${h.text('edit_skype', value=c.edit_skype)}</td>
+                </tr>
+
+            </table>
+
+            <span id="error-message"></span>
+
+            <p/>
+            <button class="submit-button">Сохранить</button>
+        </form>
+
+        <div id="dialogSetPassword" title="Установка нового пароля" style="display: none;">
+            Установить новый пароль пользователю <b><span id="dialogSetPassword_user"> %username% </span> </b>
+
+            <form>
+                <input type="hidden" name="token" id="token" value="${c.token}">
+                <fieldset>
+                    <label for="dialogSetPassword_psw1">Новый пароль:</label>
+                    <input type="text" name="dialogSetPassword_psw1" id="dialogSetPassword_psw1"
+                           class="text ui-widget-content ui-corner-all"/>
+                    <label for="dialogSetPassword_psw2">Повторите пароль:</label>
+                    <input type="text" name="dialogSetPassword_psw2" id="dialogSetPassword_psw2"
+                           class="text ui-widget-content ui-corner-all"/>
+                    <button id="generate-psw-button" name="generate-psw-button" class="generate-psw-button">
+                        Сгенерировать
+                    </button>
+                </fieldset>
+                <span id="psw-error-message" class="psw-error-message"></span>
+            </form>
+        </div>
+        <div id="dialogDeleteAccount" title="Удаление аккаунта" style="display: none;">
+            Удалить аккаунт пользователя <b><span id="dialogDeleteAccount_user"> %username% </span> </b>
+
+            <form>
+                <input type="hidden" name="token" id="token" value="${c.token}">
+                <span id="delete-error-message" class="delete-error-message"></span>
+            </form>
+        </div>
+    </div>
+
+</div>  <!-- end #tabs  or accordion-->
+<!--===================================================================== -->
+<script type="text/javascript">
+    function closeUserDetails() {
+        if (userDetailsTabs) {
+            $("#tabs").tabs('remove', $("#tabs").tabs('length') - 1);
+        }
+        userDetailsTabs = false;
+    }
+    ;
+    $('tr.hide').each(function () {
+        $(this).find('span').text(function (_, value) {
+            return value == '→' ? '↓' : '→'
+        });
+        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        });
+    });
+    $('tr.header').click(function () {
+        $(this).find('span').text(function (_, value) {
+            return value == '→' ? '↓' : '→'
+        });
+        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        });
+    });
+    // $("#tabs").tabs();
+    var div_to_open = ${c.div_to_open};
+    $("#accordion").accordion(
+            {
+                autoHeight: false
+            }
+    );
+    if (div_to_open == "edit_domain_categories") {
+        $("#accordion").accordion("activate", 1);
+    }
+
+    $("#dialogSetPassword").dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            'Сохранить': function () {
+                if ($("#dialogSetPassword_psw1").val().length < 6) {
+                    displayPswMessage('Длина пароля должна быть не меньше шести символов');
+                    return;
+                }
+                if ($("#dialogSetPassword_psw1").val() != $("#dialogSetPassword_psw2").val()) {
+                    displayPswMessage('Повторный пароль неверен!');
+                    return;
+                }
+                $.getJSON("/manager/setNewPassword", {
+                    psw: $("#dialogSetPassword_psw1").val(),
+                    login: $("#login").val(),
+                    token: $("#token").val()
+                }, function (json) {
+                    if (json.error) {
+                        if (json.error_type = "authorizedError")
+                            javascript:window.location.replace("/main/index")
+                        else
+                            displayPswMessage('Ошибка сохранения пароля!');
+                        return;
+                    }
+                    else {
+                        $("#dialogSetPassword").dialog('close');
+                    }
+
+                });
+            },
+            'Отменить': function () {
+                $(this).dialog('close');
+            }
+
+        }
+
+    });
+    $("#dialogDeleteAccount").dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            'Удалить': function () {
+                $.getJSON("/manager/deleteAccount", {
+                    login: $("#login").val(),
+                    token: $("#token").val()
+                }, function (json) {
+                    if (json.error) {
+                        if (json.error_type = "authorizedError")
+                            javascript:window.location.replace("/main/index")
+                        else
+                            displayDeleteMessage('Ошибка удаления!');
+                        return;
+                    }
+                    else {
+                        $("#dialogDeleteAccount").dialog('close');
+                        closeUserDetails();
+                    }
+
+                });
+            },
+            'Отменить': function () {
+                $(this).dialog('close');
+            }
+
+        }
+
+    });
+
+    $("#generate-psw-button").click(function () {
+        $.getJSON("/manager/generateNewPassword", function (json) {
+            if (json.error) {
+                displayPswMessage('Ошибка генерации пароля!');
+            } else {
+                $('#dialogSetPassword_psw1').val(json.new_password);
+                $('#dialogSetPassword_psw2').val(json.new_password);
+            }
+        })
+        return false;
+    });
+
+    $("#edit-psw-button").click(function () {
+        $('#dialogSetPassword_psw1').val('');
+        $('#dialogSetPassword_psw2').val('');
+        $('#psw-error-message').html('');
+        $('#dialogSetPassword_user').html($('#login').val());
+        $("#dialogSetPassword").dialog('open');
+    });
+    $("#delete-account-button").click(function () {
+        $('#delete-error-message').html('');
+        $('#dialogDeleteAccount_user').html($('#login').val());
+        $("#dialogDeleteAccount").dialog('open');
+    });
+
+    function displayMessage(message) {
+        $("#error-message").show().text(message).fadeOut(2500);
+    }
+    function displayPswMessage(message) {
+        $("#psw-error-message").show().text(message);
+    }
+    function displayDeleteMessage(message) {
+        $("#delete-error-message").show().text(message);
+    }
+
+    function displayFieldsMessage(message) {
+        $("#fields-error-message").show().text(message);
+    }
+    $('#user-details-${id} button.submit-button').click(function () {
+        $('#user-details-${id}').ajaxSubmit({
+            dataType: 'json',
+            beforeSubmit: function () {
+                $("#user-details-${id} button.submit-button").attr('disabled', true);
+            },
+            success: function (result) {
+                if (result.error == false) {
+                    displayFieldsMessage('');
+                    displayMessage("Изменения успешно сохранены.");
+                }
+                else {
+                    if (result.error_type == "authorizedError")
+                        javascript:window.location.replace("/main/index");
+                    else if (result.msg) {
+                        displayFieldsMessage(result.msg);
+                        displayMessage("Ошибка сохранения!");
+                    }
+                    else
+                        displayMessage("Ошибка сохранения!");
+
+                }
+            },
+            error: function () {
+                displayMessage("Ошибка сохранения! Попробуйте сохранить ещё раз.");
+            },
+            complete: function () {
+                $("#user-details-${id} button.submit-button").attr('disabled', false);
+            }
+        });
+        return false;
+
+    });
+
+</script>
+% endif
+
+</body>
+</html>

@@ -1,0 +1,283 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+</%def>
+<div id="socImpClick">
+    <h2>Социальные показы и клики</h2>
+
+    <div style="margin:5px 5px 5px 5px">
+        <input type="text" id="socImpClickCalendar1" value=""/>
+    </div>
+    <table id="tableUsersSocialImpressions"></table>
+    <div id="tableUsersSocialImpressions_pager"></div>
+</div>
+<div id="geoImpClick">
+    <h2>Гео локация показов и клики</h2>
+
+    <div style="margin:5px 5px 5px 5px">
+        <input type="text" id="GeoImpClickCalendar1" value=""/>
+    </div>
+    <table id="tableGeoImpClick"></table>
+    <div id="tableGeoImpClick_pager"></div>
+</div>
+
+
+<script text="text/javascript">
+
+    $(document).ready(function () {
+
+        // Таблица с данными о количестве социальных показов
+        $("#tableUsersSocialImpressions").jqGrid({
+            url: '/manager/dataUserSocialImpressions?' + '&start_date=' + $('#socImpClickCalendar1').val() + '&',
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Сайт Партнёр', 'Социальные показы РП', 'Показы РП', 'Социальные клики', 'Уникальные Социальные клики', 'Клики', 'Уникальные клики', 'Социальный CTR', 'CTR', 'Разница'],
+            colModel: [{
+                name: 'domain',
+                index: 'domain',
+                align: 'center',
+                sortable: true
+            }, {
+                name: 'social_impressions',
+                index: 'social_impressions',
+                align: 'center',
+                formatter: 'integer',
+                width: 100,
+                sortable: true
+            }, {
+                name: 'impressions',
+                index: 'impressions',
+                align: 'center',
+                formatter: 'integer',
+                width: 100,
+                sortable: true
+            }, {
+                name: 'social_clicks',
+                index: 'social_clicks',
+                formatter: 'integer',
+                align: 'center',
+                width: 100,
+                sortable: true
+            }, {
+                name: 'social_clicksUnique',
+                index: 'social_clicksUnique',
+                formatter: 'integer',
+                align: 'center',
+                width: 100,
+                sortable: true
+            }, {
+                name: 'clicks',
+                index: 'clicks',
+                formatter: 'integer',
+                align: 'center',
+                width: 100,
+                sortable: true
+            }, {
+                name: 'clicksUnique',
+                index: 'clicksUnique',
+                formatter: 'integer',
+                align: 'center',
+                width: 100,
+                sortable: true
+            }, {
+                name: 'ctr_social_impressions',
+                index: 'ctr_social_impressions',
+                formatter: 'integer',
+                align: 'center',
+                width: 100,
+                sortable: true
+            }, {
+                name: 'ctr_impressions',
+                index: 'ctr_impressions',
+                formatter: 'integer',
+                align: 'center',
+                width: 100,
+                sortable: true
+            }, {
+                name: 'ctr_difference_impressions',
+                index: 'ctr_difference_impressions',
+                formatter: 'integer',
+                align: 'center',
+                width: 100,
+                sortable: true
+            }],
+            caption: "Статистика пользователей GetMyAd по количеству социальных показов",
+            height: 'auto',
+            rowNum: 10,
+            rowList: [10, 20, 30, 100],
+            sortname: 'domain',
+            sortorder: 'asc',
+            rownumbers: true,
+            rowNum: 20,
+            hiddengrid: true,
+            //autowidth: true,
+            pager: '#tableUsersSocialImpressions_pager'
+        });
+        // -----------------------------------------------
+        // Фильтры по дате для таблицы с данными о количестве социальных показов
+        // -----------------------------------------------
+        var datepickerOptions = {
+            duration: 0,
+            defaultDate: null,
+            onSelect: function () {
+                data_url = '/manager/dataUserSocialImpressions?' + '&start_date=' + $('#socImpClickCalendar1').val();
+                $('#tableUsersSocialImpressions').jqGrid().clearGridData();
+                $('#tableUsersSocialImpressions').setGridParam({url: data_url}).trigger("reloadGrid");
+            }
+
+        };
+        $("#socImpClickCalendar1").datepicker(datepickerOptions);
+
+        // Таблица с данными о геопоказах по дням
+        $("#tableGeoImpClick").jqGrid({
+            url: '/manager/GeoSummaryByDays?&start_date=' + $('#GeoImpClickCalendar1').val() + '&',
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Страна', 'Показы', 'Клики', 'Уникальные клики', 'Соц Показы', 'Соц Клики', ' Соц Уник клики'],
+            colModel: [{
+                name: 'country',
+                index: 'country',
+                align: 'center',
+                sorttype: 'text',
+                key: true,
+                sortable: true
+            }, {
+                name: 'geoimpressions',
+                index: 'geoimpressions',
+                align: 'center',
+                formatter: 'integer',
+                sorttype: 'integer',
+                hidden: true,
+                sortable: true
+            }, {
+                name: 'geoclicks',
+                index: 'geoclicks',
+                formatter: 'integer',
+                sorttype: 'integer',
+                align: 'center',
+                hidden: true,
+                sortable: true
+            }, {
+                name: 'geoclicksunique',
+                index: 'geoclicksunique',
+                formatter: 'integer',
+                sorttype: 'integer',
+                align: 'center',
+                hidden: true,
+                sortable: true
+            }, {
+                name: 'geosocialimpressions',
+                index: 'geosocialimpressions',
+                align: 'center',
+                formatter: 'integer',
+                sorttype: 'integer',
+                sortable: true
+            }, {
+                name: 'geosocialclicks',
+                index: 'geosocialclicks',
+                formatter: 'integer',
+                sorttype: 'integer',
+                align: 'center',
+                sortable: true
+            }, {
+                name: 'geosocialclicksunique',
+                index: 'geosocialclicksunique',
+                formatter: 'integer',
+                sorttype: 'integer',
+                align: 'center',
+                sortable: true
+            }],
+            caption: "Статистика геораспределения кликови показов по дням",
+            rownumbers: false,
+            rowNum: 900,
+            height: 300,
+            loadonce: true,
+            sortable: true,
+            hiddengrid: true,
+            //autowidth: true,
+            subGrid: true,
+            subGridRowExpanded: function (subgrid_id, row_id) {
+                var subgrid_table_id, pager_id;
+                subgrid_table_id = subgrid_id + "_t";
+                pager_id = "p_" + subgrid_table_id;
+                $("#" + subgrid_id).html("<table id='" + subgrid_table_id + "' class='scroll'></table><div id='" + pager_id + "' class='scroll'></div>");
+                jQuery("#" + subgrid_table_id).jqGrid({
+                    url: '/manager/GeoSummaryByDays?get=country&start_date=' + $('#GeoImpClickCalendar1').val() + '&country=' + row_id,
+                    datatype: "json",
+                    colNames: ['Город', 'Показы', 'Клики', 'Клики уник', 'Соц. Показы', 'Соц. Клики', 'Соц. Уник. Клики'],
+                    colModel: [
+                        {name: "city", index: "sity", width: 80, key: true},
+                        {
+                            name: "geoimpressions",
+                            index: "geoimpressions",
+                            width: 130,
+                            hidden: true,
+                            sorttype: 'integer'
+                        },
+                        {
+                            name: "geoclicks",
+                            index: "geoclicks",
+                            width: 70,
+                            align: "center",
+                            hidden: true,
+                            sorttype: 'integer'
+                        },
+                        {
+                            name: "geoclicksunique",
+                            index: "geoclicksunique",
+                            width: 70,
+                            align: "center",
+                            hidden: true,
+                            sorttype: 'integer'
+                        },
+                        {
+                            name: "geosocialimpressions",
+                            index: "geosocialimpressions",
+                            width: 70,
+                            align: "center",
+                            sorttype: 'integer'
+                        },
+                        {
+                            name: "geosocialclicks",
+                            index: "geosocialclicks",
+                            width: 70,
+                            align: "center",
+                            sorttype: 'integer'
+                        },
+                        {
+                            name: "geosocialclicksunique",
+                            index: "geosocialclicksunique",
+                            width: 70,
+                            align: "center",
+                            sortable: true,
+                            sorttype: 'integer'
+                        }
+                    ],
+                    rownumbers: false,
+                    loadonce: true,
+                    sortable: true,
+                    hiddengrid: true,
+                    //autowidth: true,
+                    rowNum: 900,
+                    height: '100%'
+                });
+            }
+        });
+        // -----------------------------------------------
+        // Фильтры по дате для таблицы о геопоказах по дням
+        // -----------------------------------------------
+        var datepickerOptions = {
+            duration: 0,
+            defaultDate: null,
+            onSelect: function () {
+                data_url = '/manager/GeoSummaryByDays?&start_date=' + $('#GeoImpClickCalendar1').val();
+                $('#tableGeoImpClick').jqGrid().clearGridData();
+                $('#tableGeoImpClick').setGridParam({url: data_url, datatype: 'json'}).trigger("reloadGrid");
+            }
+
+        };
+        $("#GeoImpClickCalendar1").datepicker(datepickerOptions);
+    })
+</script>

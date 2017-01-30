@@ -1,0 +1,28 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+<style>
+    .message {
+        margin: 20px 20px 20px 20px;
+        width: 100%;
+        background-color: #fee;
+        height: 50px;
+        border: 1px dotted orange;
+        text-align: center;
+        vertical-align: middle;
+    }
+</style>
+
+</%def>
+##%>    (для парсера)
+
+
+<a href="${h.url_for(controller='banner', action='list_banner')}">к списку банеров</a>
+
+%if c.message:
+<div class="message">
+    <p>${c.message}</p>
+</div>
+%endif

@@ -1,0 +1,496 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Создание выгрузки GetMyAd</title>
+<meta name="description"
+      content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+</%def>
+
+
+<style type="text/css">
+    #admakerOptions > h3 {
+        text-align: center;
+    }
+
+    .optionsGroup {
+        width: 190px;
+        float: left;
+        font-weight: bold;
+    }
+</style>
+<div id="admaker" style="margin:5px;">
+    <div style="width:650px;position:relative;display:inline-block;vertical-align: top;">
+        <input type="button" id="refreshButton" value="Обновить"/>
+        <input type="button" id="savePatternButton" value="Сохранить"/>
+        <select id="render_type" onchange="switch_css(this.value)">
+            <option value="0" selected="True">Обычный вид</option>
+            <option value="1">Ретаргетинг</option>
+            <option value="2">Рекомендованый</option>
+            <option value="3">Смешаный</option>
+        </select>
+
+        <div id="admakerOptions" style="width:650px;">
+
+
+            <h3><a href="#">Весь блок</a></h3>
+
+            <div id="mainOptions"></div>
+
+            <h3><a href="#">Верх блока</a></h3>
+
+            <div id="mainHeaderOptions"></div>
+
+            <h3><a href="#">Низ блока</a></h3>
+
+            <div id="mainFooterOptions"></div>
+
+            <h3><a href="#">Блок предложения</a></h3>
+
+            <div id="advertiseOptions"></div>
+
+            <h3><a href="#">Заголовок</a></h3>
+
+            <div id="headerOptions" style="height: 200px;"></div>
+
+            <h3><a href="#">Описание</a></h3>
+
+            <div id="descriptionOptions"></div>
+
+            <h3><a href="#">Цена</a></h3>
+
+            <div id="costOptions"></div>
+
+            <h3><a href="#">Кнопка</a></h3>
+
+            <div id="buttonOptions"></div>
+
+            <h3><a href="#">Изображение</a></h3>
+
+            <div id="imageOptions"></div>
+
+            <h3><a href="#">Заголовок ретаргетинга</a></h3>
+
+            <div id="headerRetOptions" style="height: 200px;"></div>
+
+            <h3><a href="#">Описание ретаргетинга</a></h3>
+
+            <div id="descriptionRetOptions"></div>
+
+            <h3><a href="#">Цена ретаргетинга</a></h3>
+
+            <div id="costRetOptions"></div>
+
+            <h3><a href="#">Кнопка ретаргетинга</a></h3>
+
+            <div id="buttonRetOptions"></div>
+
+            <h3><a href="#">Изображение ретаргетинга</a></h3>
+
+            <div id="imageRetOptions"></div>
+
+            <h3><a href="#">Заголовок ресомендованых</a></h3>
+
+            <div id="headerRecOptions" style="height: 200px;"></div>
+
+            <h3><a href="#">Описание рекомендованых</a></h3>
+
+            <div id="descriptionRecOptions"></div>
+
+            <h3><a href="#">Цена рекомендованых</a></h3>
+
+            <div id="costRecOptions"></div>
+
+            <h3><a href="#">Кнопка рекомендованых</a></h3>
+
+            <div id="buttonRecOptions"></div>
+
+            <h3><a href="#">Изображение рекомендованых</a></h3>
+
+            <div id="imageRecOptions"></div>
+
+            <h3><a href="#">Навигация</a></h3>
+
+            <div id="navOptions"></div>
+
+        </div>
+        <!-- end admakerOptions -->
+    </div>
+    <div id="admakerPreview" style="position:relative;display:inline-block"></div>
+</div>    <!-- end admaker -->
+
+
+<!-- Шаблон выгрузки -->
+<%include file="advertise_template.mako.html" />    <!-- /%> -->
+
+
+<script type="text/javascript">
+    var CurrentAdvertiseId = '${c.adv_id}';
+    var html_notification = false;
+    var plase_branch = true;
+    var retargeting_branch = true;
+    var non_relevant = "";
+    var auto_reload = 0;
+    var blinking = 0;
+    var shake = 0;
+    var rating_division = 1000;
+    var blinking_reload = false;
+    var shake_reload = false;
+    var shake_mouse = false;
+    %
+    if c.admaker:
+    var Options = ${c.admaker};
+    % else:
+    var Options = {};
+    %
+    endif
+    var initialOptions = {
+        Main: {
+            backgroundColor: "ffffff",
+            backgroundColorStatus: true,
+            borderColor: "303030",
+            borderWidth: "1",
+            height: "170px",
+            width: "750px",
+            itemsNumber: "6",
+            left: "0",
+            top: "0",
+            border_top_left_radius: "5",
+            border_top_right_radius: "5",
+            border_bottom_right_radius: "5",
+            border_bottom_left_radius: "5"
+        },
+        MainHeader: {
+            left: "0",
+            top: "0",
+            height: "0px",
+            width: "0px",
+            html: ""
+        },
+        MainFooter: {
+            left: "0",
+            top: "0",
+            height: "0px",
+            width: "0px",
+            html: ""
+        },
+        Advertise: {
+            backgroundColor: "ffffff",
+            backgroundColorStatus: true,
+            backgroundColorRet: "ffffff",
+            backgroundColorRetStatus: true,
+            backgroundColorRec: "ffffff",
+            backgroundColorRecStatus: true,
+            borderColor: "303030",
+            borderWidth: "1",
+            borderColorRet: "303030",
+            borderWidthRet: "1",
+            borderColorRec: "303030",
+            borderWidthRec: "1",
+            height: "170px",
+            width: "150px",
+            left: "0",
+            top: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0"
+        },
+        Header: {
+            borderColor: "666666",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            top: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0"
+        },
+        Description: {
+            borderColor: "ff6666",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            top: "30",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            align: "center"
+        },
+        Cost: {
+            borderColor: "9f9feb",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            hide: true,
+            top: "100"
+        },
+        Image: {
+            borderColor: "303030",
+            borderWidth: "1",
+            height: "50px",
+            width: "50px",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            top: "120"
+        },
+        RetHeader: {
+            borderColor: "666666",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            top: "0"
+        },
+        RetDescription: {
+            borderColor: "ff6666",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            top: "30",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            align: "center"
+        },
+        RetCost: {
+            borderColor: "9f9feb",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            hide: true,
+            top: "100"
+        },
+        RetImage: {
+            borderColor: "303030",
+            borderWidth: "1",
+            height: "50px",
+            width: "50px",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            top: "120"
+        },
+        RecHeader: {
+            borderColor: "666666",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            top: "0"
+        },
+        RecDescription: {
+            borderColor: "ff6666",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            top: "30",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            align: "center"
+        },
+        RecCost: {
+            borderColor: "9f9feb",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            hide: true,
+            top: "100"
+        },
+        Button: {
+            backgroundColor: "ffffff",
+            backgroundColor2: "ffffff",
+            borderColor: "9f9feb",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            top: "100",
+            hide: true,
+            content: "Купить"
+        },
+        RecButton: {
+            backgroundColor: "ffffff",
+            backgroundColor2: "ffffff",
+            borderColor: "9f9feb",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            top: "100",
+            hide: true,
+            content: "Купить"
+        },
+        RetButton: {
+            backgroundColor: "ffffff",
+            backgroundColor2: "ffffff",
+            borderColor: "9f9feb",
+            borderWidth: "1",
+            fontColor: "000000",
+            fontSize: "12",
+            fontBold: false,
+            fontUnderline: false,
+            font_variant: false,
+            line_height: 1.2,
+            letter_spacing: 0,
+            height: "auto",
+            width: "auto",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            top: "100",
+            hide: true,
+            content: "Купить"
+        },
+        RecImage: {
+            borderColor: "303030",
+            borderWidth: "1",
+            height: "50px",
+            width: "50px",
+            left: "0",
+            border_top_left_radius: "0",
+            border_top_right_radius: "0",
+            border_bottom_right_radius: "0",
+            border_bottom_left_radius: "0",
+            top: "120"
+        },
+        Nav: {
+            corner: 'right-top',
+            color: "000000",
+            backgroundColor: 'ffffff',
+            borderColor: "303030"
+        },
+        Logo: {
+            corner: 'bottom-left',
+            file: 'colorLogo.png'
+        }
+    }
+    initialOptions = $.extend({}, initialOptions, Options);
+</script>
+
+
+<script type="text/javascript" src="/js/admaker.js"></script>
+

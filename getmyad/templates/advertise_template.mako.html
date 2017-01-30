@@ -1,0 +1,44 @@
+#########################################################        Шаблон выгрузки AdMaker        #########################################################
+<textarea id="templateTest" style="display:none;" rows=0 cols=0>
+	test
+</textarea>
+
+<textarea id="styleTemplate" style="display:none;" rows=0 cols=0>
+<%include file="advertise_style_template.mako.html" />
+</textarea>
+
+
+<%text>
+<textarea id="contentTemplate" style="display:none;" rows=0 cols=0>
+   	<div id="mainContainer" class="reset">
+        <div id='mainHeader' class="reset">${header}</div>
+        <div id="ads" class="reset" style="position: absolute; left:0; top: 0">
+            {for item in items}
+            <div class="block${item} block advBlock reset">
+                <div class="head${item} head advHeader reset">Теперь доступно и вашему вниманию!</div>
+                <div class="desc${item} desc advDescription reset">Выравнивает, подкручивает волосы, делает их
+                    блестящими и объемными!
+                </div>
+                <div class="cost${item} cost advCost reset">1 234,00 грн.</div>
+                <div data-image-id="${item}" class="imgc${item} imgc advImageConS reset">
+                    <div class="control_next reset">>></div>
+                    <div class="control_prev reset"><<</div>
+                    <ul class="reset">
+                        <li class="reset"><img class="img${item} img advImageS reset"
+                                               src="https://cdnt.yottos.com/getmyad/logos/anonymous.gif" alt=""/></li>
+                        <li class="reset"><img class="img${item} img advImageS reset"
+                                               src="https://cdnt.yottos.com/getmyad/logos/anonymous1.gif" alt=""/></li>
+                        <li class="reset"><img class="img${item} img advImageS reset"
+                                               src="https://cdnt.yottos.com/getmyad/logos/anonymous.gif" alt=""/></li>
+                        <li class="reset"><img class="img${item} img advImageS reset"
+                                               src="https://cdnt.yottos.com/getmyad/logos/anonymous1.gif" alt=""/></li>
+                    </ul>
+                </div>
+                <div class="button${item} button advButton reset"><span class="reset">Купить</span></div>
+            </div>
+            {/for}
+        </div>
+        <div id='mainFooter' class="reset">${footer}</div>
+    </div>	
+</textarea>
+</%text>

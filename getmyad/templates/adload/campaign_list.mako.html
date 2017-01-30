@@ -1,0 +1,155 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+</%def>
+##%>    (для парсера)
+
+<style type="text/css">
+    table.data-table tr td {
+        border-bottom: 1px dotted gray;
+    }
+
+    .odd {
+        background-color: #ccc;
+    }
+
+    a:link, a:visited {
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<h2>Активные рекламные кампании:</h2>
+
+<table id="data-table">
+    <tr>
+        <th id="idCol1" width="150px">Название </br> компании</th>
+        <th id="idCol2" width="100px">Менеджер</th>
+        <th id="idCol3" width="100px">Название </br> рекламодателя</th>
+        <th id="idCol4" width="50px">Разрешена к </br> показу в GetMyAd</th>
+        <th id="idCol5" width="100px">Запушена</th>
+        <th id="idCol6" width="100px">Обнавлена</th>
+        <th id="idCol7" width="100px">Кол-во </br> РП</th>
+        <th id="idCol8" width="100px">Социальная</th>
+        <th id="idCol9" width="100px">Ретаргетинг</th>
+        <th id="idCol10" width="50px">Уникальность</th>
+        <th id="idCol11" width="50px">РП в блоке</th>
+        <th id="idCol12" width="50px">Кол-во </br> загружаемых РП</th>
+    </tr>
+    <tbody>
+    % for camp in c.campaigns:
+    <tr>
+        <td><a style="width=150px;" href="${h.url_for(controller='adload', action='campaign_overview', id=camp['id'])}">${camp['title']}</a>
+        </td>
+        <td><span style="color: #252525; width=100px;">${camp.get('manager', '')} </span></td>
+        <td><span style="color: #252525; width=100px;">${camp.get('user_name', '')} </span></td>
+        <td><span style="color: #252525; width=50px;">${'getmyad' if camp.get('getmyad', False) else ''}</span></td>
+        <td><span ${c.camp_setings[camp['id']]['status'] if c.camp_setings.get(camp['id'], {}).get('status', False) else
+            'style=" width=100px; color: #F10606"> Незапушена'}</span></td>
+        <td style="color: #252525"> ${ c.camp_setings.get(camp['id'], {}).get('last_update', '') }</td>
+        <td style="color: #252525"> ${ c.camp_setings.get(camp['id'], {}).get('offers_count', 0) }</td>
+        <td><span ${'style="width=100px; color: #CACACE"> Социальная' if c.camp_setings.get(camp['id'],
+            {}).get('social', False) else 'style=" width=100px; color: #05AA26">Несоциальная'}</span></td>
+        <td><span ${'style="width=100px; color: #F10606"> Ретаргетинг' if c.camp_setings.get(camp['id'],
+            {}).get('retargeting', False) else ''}</span></td>
+        <td><span style="color: #252525; text-align: center;"> ${ int(c.camp_setings.get(camp['id'], {}).get('UnicImpressionLot', 0)) }</span>
+        </td>
+        <td><span style="color: #252525; text-align: center;"> ${ int(c.camp_setings.get(camp['id'], {}).get('offer_by_campaign_unique', 0)) }</span>
+        </td>
+        <td><span style="color: #252525; text-align: center;"> ${ int(c.camp_setings.get(camp['id'], {}).get('load_count', 0)) }</span>
+        </td>
+    </tr>
+    % endfor
+    </tbody>
+</table>
+<script>
+    options = {
+        datatype: "local",
+        viewrecords: true,
+        rownumbers: true,
+        rowNum: 1000,
+        loadonce: true,
+        height: 'auto',
+        colModel: [
+            {
+                name: 'idCol1',
+                index: 'idCol1',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol2',
+                index: 'idCol2',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol3',
+                index: 'idCol3',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol4',
+                index: 'idCol4',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol5',
+                index: 'idCol5',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol6',
+                index: 'idCol6',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol7',
+                index: 'idCol7',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol8',
+                index: 'idCol8',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol9',
+                index: 'idCol9',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol10',
+                index: 'idCol10',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol11',
+                index: 'idCol11',
+                align: 'center',
+                sortable: true
+            }
+            , {
+                name: 'idCol12',
+                index: 'idCol12',
+                align: 'center',
+                sortable: true
+            }
+        ]
+    };
+
+    tableToGrid('#data-table', options);
+</script>

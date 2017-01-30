@@ -1,0 +1,47 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+<style>
+    .message {
+        margin: 20px 20px 20px 20px;
+        width: 100%;
+        background-color: #fee;
+        height: 50px;
+        border: 1px dotted orange;
+        text-align: center;
+        vertical-align: middle;
+    }
+</style>
+
+</%def>
+
+
+<a href="${h.url_for(controller='banner', action='list_campaign')}">&larr; к списку кампаний</a>
+
+% if c.message:
+<div class="message">
+    <p>${c.message}</p>
+</div>
+% endif
+
+
+<h2>Обзор кампании ${c.campaign['title']}</h2>
+
+
+% if c.getmyad_details['status'] == 'not_found':
+<p>В данный момент кампания остановлена в GetMyAd</p>
+<p><a href="${h.url_for(controller='banner', action='campaign_start', id=c.campaign['id'])}">Запустить сейчас!</a></p>
+<p><a href="${h.url_for(controller='banner', action='campaign_delete', id=c.campaign['id'])}">Удалить компанию</a></p>
+
+% elif c.getmyad_details['status'] == 'working':
+<p>Кампания запущена в GetMyAd и работает в данный момент.</p>
+<p>Время последнего обнавления: ${c.getmyad_details['lastUpdate']}</p>
+<p>Кампания содержит ${c.getmyad_details['offersCount']} рекламных предложений.</p>
+<p><a href="${h.url_for(controller='banner', action='campaign_update', id=c.getmyad_details['id'])}">Обновить
+    кампанию</a></p>
+<p><a href="${h.url_for(controller='banner', action='campaign_stop', id=c.getmyad_details['id'])}">Остановить
+    сейчас!</a></p>
+<p><a href="${h.url_for(controller='banner', action='campaign_settings', id=c.getmyad_details['id'])}">Настройки</a></p>
+% endif

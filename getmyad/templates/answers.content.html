@@ -1,0 +1,293 @@
+<style type="text/css">
+    #faq .contents {
+        /*		display: none;
+                background-color: #f9f9ff;*/
+        width: 300px;
+        float: left;
+        padding: 5px 45px 5px 5px;
+        border: 0px solid blue;
+        border-right: 1px solid #e0e0f0;
+        margin-right: 20px;
+        height: 500px;
+    }
+
+    #faq .contents ul {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    #faq .contents a, #faq .contents a:visited, #faq .contents a:link, #faq .contents a:hover {
+        color: blue;
+    }
+
+    #faq div.content {
+        float: left;
+        width: 450px;
+        height: 500px;
+        border: 0px solid green;
+    }
+
+    #faq {
+        width: 850px;
+        border: 0 solid red;
+        margin-left: 00px;
+    }
+
+    #faq .active, #faq .active > a {
+        font-weight: bold;
+        color: #fe7300 !important;
+    }
+
+    #faq div.scrollable {
+        position: relative;
+        overflow: hidden;
+    }
+
+    #faq div.scrollable div.items {
+        position: absolute;
+        height: 500px;
+        /*	    height:20000em;*/
+    }
+
+    #faq div.item {
+        border: 0px solid gray;
+        height: 500px;
+        overflow: auto;
+    }
+
+    #faq div.item > ul {
+        padding: 0;
+        margin: 0;
+    }
+
+    #faq h3 {
+        margin-bottom: 3px;
+    }
+
+    #nextContents, a#nextContents:link, a#nextContents:visited, a#nextContents:active {
+        display: block;
+        /*margin-top: 30px;*/
+        font-weight: bold;
+        font-size: large;
+        text-decoration: none;
+        text-align: right;
+    }
+
+    a#nextContents:hover {
+        text-decoration: underline;
+    }
+
+    #faqAnswer1, a#faqAnswer1:link, a#faqAnswer1:visited, a#faqAnswer1:active {
+        /*display: block;
+        margin-top: 30px;*/
+        font-weight: bold;
+        font-size: medium;
+        text-decoration: none;
+        text-align: right;
+    }
+
+    a#faqAnswer1:hover {
+        text-decoration: underline;
+    }
+
+    #contentsItems {
+        height: 350px;
+    }
+
+</style>
+
+<div id="faq">
+
+    <div class="contents">
+
+        <div id="contentsItems">
+            <div id="contents1">
+                <h2>Часто задаваемые вопросы: </h2>
+                <ol>
+                    <li class="active"><a href="#Ne_mogu_zayti_v_svoy_akkauntyu_V_chem_prichina" onclick="show(this,0)">Не
+                        могу зайти в свой аккаунт. В чем причина?</a></li>
+                    <li><a href="#Kak_sozdat_informer" onclick="show(this,1)">Как создать информер?</a></li>
+                    <li>
+                        <a href="#Sozdal_informerb_vstavil_v_kod_saytab_a_reklamiruemye_tovary_ne_otobrajayutsyab_tolko_nadpis_Reklama_ot_Yottos_i_knopka_navigaciiyu"
+                           onclick="show(this,2)">Создал информер, вставил в код сайта, а рекламируемые товары не
+                            отображаются, только надпись «Реклама от Yottos» и кнопка навигации.</a></li>
+                    <li>
+                        <a href="#U_menya_uje_est_akkaunt_Yottos_GetMyAd_i_ya_hochu_podklyuchit_k_etomu_akkauntu_esche_odin_saytyu_Eto_vozmojno"
+                           onclick="show(this,3)">У меня уже есть аккаунт Yottos GetMyAd, и я хочу подключить к этому
+                            аккаунту еще один сайт. Это возможно?</a></li>
+                    <li><a href="#Mogu_ya_ustanovit_odin_kod_vygruzki_na_neskolkih_saytah" onclick="show(this,4)">Могу я
+                        установить один код выгрузки на нескольких сайтах?</a></li>
+                    <li><a href="#Gde_luchshe_vsego_ustanovit_informer_na_sayte" onclick="show(this,5)">Где лучше всего
+                        установить информер на сайте?</a></li>
+                    <li><a href="#Kak_redaktirovat_informer" onclick="show(this,6)">Как редактировать информер?</a></li>
+                    <li><a href="#Kak_chasto_obnovlyaetsya_statistika" onclick="show(this,7)">Как часто обновляется
+                        статистика?</a></li>
+                    <li><a href="#Kak_ya_mogu_vyvesti_dengi_so_svoego_akkaunta" onclick="show(this,8)">Как я могу
+                        вывести деньги со своего аккаунта?</a></li>
+                </ol>
+            </div>
+        </div>
+        <!-- contentsItems -->
+        <a href="increase" id="nextContents">Рост доходности &rarr;</a>
+        <a href="faq" id="nextContents">Узнайте больше о GetMyAd! &rarr;</a>
+
+    </div>
+    <div class="scrollable vertical content" id="content1">
+        <div class="items">
+            <div class="item">
+                <h3>1. Не могу зайти в свой аккаунт. В чем причина?</h3>
+                <b>Ответ: </b>
+                Логин и пароль необходимо вводить очень аккуратно – без пробелов до или после символов, т.к. система
+                воспринимает пробелы как знаки.
+            </div>
+            <div class="item">
+                <h3>2. Как создать информер?</h3>
+                <b>Ответ: </b>
+                Создание информера выполняется в пять действий:
+                <ol>
+                    <li>После того как Вы вошли в свой аккаунт, кликните на ссылку «Создать новый информер».</li>
+                    <li>В открывшемся окне выберите необходимый размер информера. Мы выбрали для Вас 8 самых популярных
+                        размеров информеров, а дополнительные размеры Вы можете найти в выпадающих списках «еще».
+                        Кликните на «Далее >».
+                    </li>
+                    <li>Далее необходимо выбрать цветовую гамму информера – мы выбрали для Вас 4 наиболее популярные
+                        цветовые палитры – ясность, красное и черное, дым, нежность – используйте их или создайте
+                        собственную палитру, меняя цвета границы, фона, заголовка, описания, цены, навигации и логотипа.
+                        После кликните на «Далее >».
+                    </li>
+                    <li>Выберите сайт, на котором будет работать информер (в случае, если к одному аккаунту подключено
+                        несколько сайтов) и выберите название информера. С нашей точки зрения наиболее удобным названием
+                        информера является его размер и дата создания, однако Вы можете сами выбирать названия
+                        информера.
+                    </li>
+                    <li>Кликните на кнопку «Сохранить изменения» - система автоматически выдаст Вам код информера в
+                        окошке под кнопкой «Сохранить изменения». Кликните левой кнопкой мыши на код информера – код
+                        выделится синим фоном, а после этого кликните правой кнопкой мыши и выберите «Копировать». Таким
+                        образом, Вы скопируете код информера (строку скрипт). Вам осталось только найти в HTML- коде
+                        сайта место и вставить скопированный код рекламного информера!
+                    </li>
+                </ol>
+            </div>
+            <div class="item">
+                <h3>3. Создал информер, вставил в код сайта, а рекламируемые товары не отображаются, только надпись
+                    «Реклама от Yottos» и кнопка навигации.</h3>
+                <b>Ответ: </b>
+                После составления информера робот Yottos должен обработать информацию и подгрузить рекламу – на эти
+                действия необходимо порядка 30 минут.
+            </div>
+            <div class="item">
+                <h3>4. У меня уже есть аккаунт Yottos GetMyAd, и я хочу подключить к этому аккаунту еще один сайт. Это
+                    возможно?</h3>
+                <b>Ответ: </b>
+                Для подключения дополнительных сайтов к аккаунту необходимо во вкладке «Мои информеры» кликнуть на
+                ссылку «Зарегистрировать сайт». В открывшемся окне введите URL нового сайта и нажмите на кнопку
+                «Отправить заявку». Модератор в течение трех суток обработает Вашу заявку. Как только модератор одобрит
+                новый сайт во вкладке «Мои информеры» в таблице «Список существующих информеров» Вы увидите название
+                нового сайта.
+            </div>
+            <div class="item">
+                <h3>5. Могу я установить один код выгрузки на нескольких сайтах?</h3>
+                <b>Ответ: </b>
+                : Нет, каждому рекламному месту необходимо создавать новую выгрузку. Система подгрузит рекламу в
+                информер только на тот сайт, который был указан при составлении информера.
+            </div>
+            <div class="item">
+                <h3>6. Где лучше всего установить информер на сайте?</h3>
+                <b>Ответ: </b>
+                Для достижения максимального результата необходимо установить минимум два различных информера на сайте,
+                а наибольший результат от информеров достигается в случае одновременного установления трех различных
+                выгрузок на сайте.
+                Если у Вас новостной сайт, установите один горизонтальный информер под текстом новости над
+                комментариями, другой информер - вертикальный – справа от названия статьи, а третий информер установите
+                на главной странице сайта.
+                Если у Вас сайт поиска машин, музыки, фильмов, установите один информер под строкой поиска, другой
+                информер – горизонтальный – под информацией о конкретной машине, песне, фильме, а третий информер
+                установите на главной странице сайта.
+            </div>
+            <div class="item">
+                <h3>7. Как редактировать информер? </h3>
+                <b>Ответ: </b>
+                Во вкладке «Мои информеры» в таблице «Список существующих информеров» кликните на «плюс» справа от
+                названия сайта, на котором расположен информер. В выпавшем списке найдите необходимый для редактирования
+                информер и кликните «Править».
+                После редактирования информера не забудьте сохранить изменения!
+                Код измененного информера не надо заново копировать и вставлять на сайт – изменения автоматически
+                подгрузятся в течение часа.
+
+            </div>
+            <div class="item">
+                <h3>8. Как часто обновляется статистика?</h3>
+                <b>Ответ: </b>
+                Статистика обновляется один раз в час
+            </div>
+            <div class="item">
+                <h3>9. Как я могу вывести деньги со своего аккаунта?</h3>
+                <b>Ответ: </b>
+                Как только в Вашем аккаунте появится достаточно средств для вывода, во вкладке «Счет» появится надпись
+                «Вы можете оформить заявку на вывод средств». Кликните на ссылку «вывод средств» - в появившемся окошке
+                введите необходимые данные для вывода средств и кликните на кнопку «Отправить заявку». В течение двух
+                рабочих дней на Ваш счет поступят денежные средства
+            </div>
+        </div>
+
+
+    </div>
+
+    <br style="clear: both;"/>
+
+
+    <script type="text/javascript">
+
+        var currentContents = 1;
+        var title;
+        var titleN;
+        function nextContents() {
+
+            $("#content" + currentContents).hide();
+            $("#contents" + currentContents).hide();//.find("h2").html();
+            //alert(currentContents);
+            currentContents++;
+            if (currentContents > 3)
+                currentContents = 1;
+            titleN = currentContents + 1;
+            if (titleN > 3)
+                titleN = 1;
+            title = $("#contents" + titleN).find("h2").html();
+            $("#nextContents").html(title + ' &rarr;');
+
+            //else
+            //currentContents = 1;
+            $("#contents" + currentContents).fadeIn();
+            $("#content" + currentContents).fadeIn();
+        }
+
+
+        function show(sender, id) {
+            $("#content" + currentContents).scrollable().seekTo(id);
+        }
+        $(function () {
+            var scrollableOptions = {
+                vertical: true,
+                size: 1,
+                speed: 200,
+                clickable: false,
+                onSeek: function () {
+                    $("#contents" + currentContents + " li").removeClass('active');
+                    $("#contents" + currentContents + " li:eq(" + this.getIndex() + ")").addClass("active");
+                }
+            };
+
+            $("#content1").scrollable(scrollableOptions).mousewheel();
+            $("#content1").focus();
+            var href = location.hash;
+            var urls = $('#contents1 li > a');
+            for (var i = 0; i < urls.length; i++) {
+                if (urls[i].hash == href) {
+                    show(urls[i], i);
+                }
+            }
+        });
+
+    </script>
+ 	

@@ -1,0 +1,122 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<html>
+<%def name="head()">
+<title>Yottos GetMyAd Баннерные компании</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+<script>
+    $(document).ready(function () {
+        $('a[name=modal]').click(function (e) {
+            e.preventDefault();
+            var id = $(this).attr('href');
+            var maskHeight = $(document).height();
+            var maskWidth = $(window).width();
+            $('#mask').css({'width': maskWidth, 'height': maskHeight});
+            $('#mask').fadeIn(1000);
+            $('#mask').fadeTo("slow", 0.8);
+            var winH = $(window).height();
+            var winW = $(window).width();
+            $(id).css('top', winH / 2 - $(id).height() / 2);
+            $(id).css('left', winW / 2 - $(id).width() / 2);
+            $(id).fadeIn(2000);
+        });
+        $('.window .close').click(function (e) {
+            e.preventDefault();
+            $('#mask, .window').hide();
+        });
+        $('#mask').click(function () {
+            $(this).hide();
+            $('.window').hide();
+        });
+    });
+</script>
+</%def>
+
+<style type="text/css">
+    table.data-table tr td {
+        border-bottom: 1px dotted gray;
+    }
+
+    .odd {
+        background-color: #ccc;
+    }
+
+    a:link, a:visited {
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    a {
+        color: #333;
+        text-decoration: none;
+        font-size: 16px;
+    }
+
+    a:hover {
+        color: #ccc;
+        text-decoration: none
+    }
+
+    #mask {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 9000;
+        background-color: #000;
+        display: none;
+        font-family: Georgia;
+    }
+
+    #boxes .window {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 440px;
+        height: 200px;
+        display: none;
+        z-index: 9999;
+        padding: 20px;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    #boxes #dialog {
+        width: 375px;
+        height: 140px;
+        padding: 10px;
+        background-color: #ffffff;
+    }
+
+    .close {
+        float: right;
+        margin-top: 20px;
+    }
+</style>
+<a href="#dialog" name="modal">Создать новую компанию</a>
+<div id="boxes">
+    <div id="dialog" class="window">
+        <form name="createCampaignForm" id="createCampaignForm" action="createCampaign" method="post">
+            <p>Введите название рекламной компании и нажмите кнопку создать</p>
+            <input type="text" name="name">
+            <input type="submit" value="Создать">
+        </form>
+        <span>
+        <input type="button" value="Закрыть окно" class="close">
+    </div>
+    <div id="mask"></div>
+</div>
+<h2>Банерные рекламные кампании:</h2>
+
+<table class="data-table">
+    % for camp in c.campaigns:
+    <tr>
+        <td><a href="${h.url_for(controller='banner', action='campaign_overview', id=camp['id'])}">${camp['title']}</a>
+        </td>
+        <td style="color: #252525">${'Запушена' if (camp.get('status', 'not_found') == 'working') else 'Остановлена'}
+        </td>
+    </tr>
+    % endfor
+</table>

@@ -1,0 +1,187 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Статистика GetMyAd</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+</%def>
+
+<h2>Текущие цены за уникального посетителя</h2>
+<div id="toolbarCategories"></div>
+<table id="tableCategories"></table>
+
+
+<div id="dialogEdit" style="display: none;" title="">
+    <form>
+        <fieldset>
+            <input type="hidden" id="dialogEdit_guid" name="dialogEdit_guid"/>
+            <table>
+                <tr>
+                    <td><label for="dialogEdit_title">Категория:</label></td>
+                    <td><input type="text" name="dialogEdit_title" id="dialogEdit_title"
+                               class="text ui-widget-content ui-corner-all"/></td>
+                </tr>
+                <tr>
+                    <td><label for="dialogEdit_clickCost">Цена за клик:</label></td>
+                    <td><input type="text" name="dialogEdit_clickCost" id="dialogEdit_clickCost"
+                               class="text ui-widget-content ui-corner-all"/></td>
+                </tr>
+            </table>
+        </fieldset>
+    </form>
+</div>
+
+<div id="dialogDel" style="display: none;">
+    <form>
+        <input type="hidden" id="dialogDel_guid" name="dialogDel_guid"/>
+        Вы действительно желаете удалить категорию <b><span id="dialogDel_title">%title%</span></b> ?
+    </form>
+</div>
+
+
+<script text="text/javascript">
+
+    var categories = ${c.categories};
+    $(document).ready(function () {
+
+
+        $("#dialogDel").dialog({
+            autoOpen: false,
+            modal: true,
+            buttons: {
+                'Удалить': function () {
+                    $.getJSON("/adload/delCategory", {
+                        guid: $("#dialogDel_guid").val()
+                    }, function (result) {
+                        if (result.error) {
+                            if (result.error_type == "authorizedError")
+                                window.location.replace("/main/index");
+                        }
+                        else
+                            $.getJSON("/adload/categories", function (json) {
+                                categories = json;
+                                $('#dialogDel').dialog('close');
+                                $("#tableCategories").trigger("reloadGrid");
+                            });
+                    })
+                },
+                'Отмена': function () {
+                    $('#dialogDel').dialog('close');
+                }
+            }
+        });
+        // Диалог редактирования категории
+        $("#dialogEdit").dialog({
+            autoOpen: false,
+            modal: true,
+            // title: ' 540:B8@>20=85 :0B53>@88',
+            buttons: {
+                'Сохранить': function () {
+                    if (!checkFloat($("#dialogEdit_clickCost"))) {
+                        alert('Неправильный формат цены!');
+                        return;
+                    }
+                    $.getJSON("/adload/saveCategory", {
+                        clickCost: $("#dialogEdit_clickCost").val(),
+                        title: $("#dialogEdit_title").val(),
+                        guid: $("#dialogEdit_guid").val()
+                    }, function (result) {
+                        if (result.error) {
+                            if (result.error_type == "authorizedError") {
+                                window.location.replace("/main/index");
+                            }
+                        }
+                        else
+                            $.getJSON("/adload/categories", function (json) {
+                                categories = json;
+                                $('#dialogEdit').dialog('close');
+                                $("#tableCategories").trigger("reloadGrid");
+                            });
+                    })
+                },
+                'Отмена': function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+
+        function checkFloat(o) {
+            return o && /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/.test(o.val());
+        }
+
+        // Таблица цен за уникального посетителя
+        $("#tableCategories").jqGrid({
+            datatype: function (postdata) {
+                this.addJSONData(categories);
+            },
+            mtype: 'GET',
+            colNames: ['Категория', 'Цена за клик', ''],
+            colModel: [
+                {name: 'title', index: 'title', width: 180, align: 'center'},
+                {name: 'clickCost', index: 'clickCost', width: 90, align: 'center'},
+                {name: 'guid', index: 'guid', width: 1, hidden: true}],
+            viewrecords: true,
+            caption: "Цены за клик по категориям",
+            gridview: true,
+            rownumbers: true,
+            height: 420,
+            rownumWidth: 40,
+            rowNum: 200,
+            pager: "#pagerClickCost",
+            forceFit: true,
+            toolbar: [true, 'top'],
+            footerrow: true,
+            userDataOnFooter: true,
+            beforeSelectRow: function (rowid, e) {
+                if (rowid)
+                    editButton.attr('disabled', false);
+                delButton.attr('disabled', false);
+                return true;
+            },
+            onSelectRow: function () {
+                editButton.attr('disabled', false);
+                delButton.attr('disabled', false);
+
+                return true;
+            }
+        });
+
+        var editButton = $("<input type='button' value='Редактировать' style='height:20px;'/>");
+        var newButton = $("<input type='button' value='Добавить' style='height:20px;'/>");
+        var delButton = $("<input type='button' value='Удалить' style='height:20px;'/>");
+
+        editButton.attr('disabled', true).click(function () {
+            var id = $("#tableCategories").jqGrid('getGridParam', 'selrow');
+            if (!id) return;
+            var row = $("#tableCategories").jqGrid('getRowData', id);
+            $("#dialogEdit_guid").val(row.guid);
+            $("#dialogEdit_title").val(row.title);
+            $('#dialogEdit_clickCost').val(row.clickCost);
+            $('#dialogEdit').dialog({title: "Редактирование категории"});
+            $("#dialogEdit").dialog('open');
+        });
+
+        delButton.attr('disabled', true).click(function () {
+            var id = $("#tableCategories").jqGrid('getGridParam', 'selrow');
+            if (!id) return;
+            var row = $("#tableCategories").jqGrid('getRowData', id);
+            $("#dialogDel_guid").val(row.guid);
+            $("#dialogDel_title").html(row.title);
+            $("#dialogDel").dialog('open');
+        });
+
+        newButton.attr('disabled', false).click(function () {
+            $("#dialogEdit_title").val("");
+            $('#dialogEdit_clickCost').val("");
+            $('#dialogEdit_guid').val("");
+            $('#dialogEdit').dialog({title: "Создание категории"});
+            $("#dialogEdit").dialog('open');
+        });
+
+
+        $("#t_tableCategories").append(editButton);
+        $("#t_tableCategories").append(newButton);
+        $("#t_tableCategories").append(delButton);
+
+    })
+</script>
+

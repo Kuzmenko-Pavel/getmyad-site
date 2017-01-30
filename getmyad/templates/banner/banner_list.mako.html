@@ -1,0 +1,185 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<html>
+<%def name="head()">
+<title>Yottos GetMyAd Баннерные компании</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+<script>
+    $(document).ready(function () {
+        $('a[name=modal]').click(function (e) {
+            e.preventDefault();
+            var id = $(this).attr('href');
+            var maskHeight = $(document).height();
+            var maskWidth = $(window).width();
+            $('#mask').css({'width': maskWidth, 'height': maskHeight});
+            $('#mask').fadeIn(1000);
+            $('#mask').fadeTo("slow", 0.8);
+            var winH = $(window).height();
+            var winW = $(window).width();
+            $(id).css('top', winH / 2 - $(id).height() / 2);
+            $(id).css('left', winW / 2 - $(id).width() / 2);
+            $(id).fadeIn(2000);
+        });
+        $('.window .close').click(function (e) {
+            e.preventDefault();
+            $('#mask, .window').hide();
+        });
+        $('#mask').click(function () {
+            $(this).hide();
+            $('.window').hide();
+        });
+    });
+</script>
+</%def>
+##%>    4parser
+
+<style type="text/css">
+    table.data-table tr td {
+        border-bottom: 1px dotted gray;
+    }
+
+    .odd {
+        background-color: #ccc;
+    }
+
+    a:link, a:visited {
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    a {
+        color: #333;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #ccc;
+        text-decoration: none
+    }
+
+    #mask {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 9000;
+        background-color: #000;
+        display: none;
+        font-family: Georgia;
+    }
+
+    #boxes .window {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 440px;
+        height: 200px;
+        display: none;
+        z-index: 9999;
+        padding: 20px;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    #boxes #dialog {
+        width: 600px;
+        height: 600px;
+        padding: 10px;
+        background-color: #ffffff;
+    }
+
+    .close {
+        float: right;
+        margin-top: 55px;
+    }
+</style>
+<a href="#dialog" name="modal">Создать новый баннер</a>
+<div id="boxes">
+    <div id="dialog" class="window">
+        ${h.form(h.url_for(controller='banner', action='createBanner'), multipart=True)}
+        <table>
+            <tr>
+                <td>Рекламная компания</td>
+                <td>
+                    <select name="camp_list" id="camp_list">
+                        % for camp in c.campaigns:
+                        <option value="${camp['id']}">${camp['title']}</option>
+                        % endfor
+                        <select>
+                </td>
+            </tr>
+            <tr>
+                <td>Размер создаваемого банера</td>
+                <td>
+                    <select name="banner_size" id="banner_size">
+                        <option selected>120x180</option>
+                        <option value="120x600">120x600</option>
+                        <option value="160x400">160x400</option>
+                        <option value="200х70">200х70</option>
+                        <option value="200x300">200x300</option>
+                        <option value="240x350">240x350</option>
+                        <option value="240x400">240x400</option>
+                        <option value="300х60">300х60</option>
+                        <option value="300x300">300x300</option>
+                        <option value="468x60">468x60</option>
+                        <option value="500x90">500x90</option>
+                        <option value="550x130">550x130</option>
+                        <option value="600x90">600x90</option>
+                        <option value="728x90">728x90</option>
+                        <select>
+                </td>
+            </tr>
+            <tr>
+                <td>Название баннера</td>
+                <td>${h.text('name','')}</td>
+            </tr>
+            <tr>
+                <td>Цена за 1000 показов</td>
+                <td>${h.text('imp_cost',0)}</td>
+            </tr>
+            <tr>
+                <td>Бюджет</td>
+                <td>${h.text('budget',0)}</td>
+            </tr>
+            <tr>
+                <td>URL</td>
+                <td>${h.text('url','')}</td>
+            </tr>
+            <tr>
+                <td>Flash - баннер</td>
+                <td>${h.checkbox('flash')}</td>
+            </tr>
+            <tr>
+                <td>Файл баннера</td>
+                <td>${h.file('myfile')}</td>
+            </tr>
+            <tr>
+                <td>Html - баннер</td>
+                <td>${h.checkbox('html')}</td>
+            </tr>
+            <tr>
+                <td>Html code</td>
+                <td>${h.textarea(name='html-code', rows="10", cols="60")}</td>
+            </tr>
+        </table>
+        ${h.submit('submit', 'Создать'.decode('utf-8'))}
+        ${h.end_form()}
+        <span>
+        <input type="button" value="Закрыть" class="close">
+    </div>
+    <div id="mask"></div>
+</div>
+<h2>Банерные рекламные предложения:</h2>
+
+<table class="data-table">
+    % for item in c.banner:
+    <tr>
+        <td><a href="${h.url_for(controller='banner', action='banner_overview', id=item['guid'])}">${item['title']}</a>
+        </td>
+        <td>${item['height']}x${item['width']}</td>
+        <td>${'Запушен' if (item.get('status', 'not_found') == 'working') else 'Остановлен'}</td>
+    </tr>
+    % endfor
+</table>

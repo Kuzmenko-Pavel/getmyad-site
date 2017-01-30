@@ -1,0 +1,14 @@
+Здравствуйте, ${user_name}!
+Спасибо за интерес к участию в партнёрской программе Yottos GetMyAd.
+
+Мы обязательно рассмотрим Вашу заявку в течение трех дней и дадим ответ о 
+возможности участия сайта ${site_url} в рекламной сети Yottos GetMyAd. 
+(http://getmyad.yottos.com/info/terms_and_conditions). 
+
+С уважением, 
+Отдел Развития Рекламной Сети Yottos GetMyAd. 
+partner@yottos.com 
+тел.: +38 (050) 406 20 20.
+
+
+P.S. Не отвечайте на это письмо! E-mail для связи: partner@yottos.com.

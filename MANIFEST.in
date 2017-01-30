@@ -1,0 +1,3 @@
+include getmyad/config/deployment.ini_tmpl
+recursive-include getmyad/public *
+recursive-include getmyad/templates *

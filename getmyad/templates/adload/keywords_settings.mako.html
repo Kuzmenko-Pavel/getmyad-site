@@ -1,0 +1,1226 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+</%def>
+
+<h2>Рекламные предложения</h2>
+<p>Для редактирования ключевых слов нажмите кнопку "Ред", по окончанию редактирования нажмите кнопку "Сох". При
+    остановке рекламной компании
+    ключевые слова проподают вместе с рекламным предложением из системы GetMyAd. "Ключевые слова", "Точные фразы",
+    "Минус слова" разделяються между
+    собой запятыми. Не копируйте из икселя слова, вместе со словами вы переносите кучу невидимых непечатаемых символов,
+    сними очень сложно бороться :)</p>
+<p>Ключевые слова со страницы:</p>
+<div id="conteiner-yottos-temp-frame">
+        <span>
+        </span>
+</div>
+<div id="cotextkey" style="border:3px solid green; margin-top: -15px; padding: 5px;font-size: 18px;">
+</div>
+<input id="cotextkeyurl" type="text" size="160"><input type="submit" value="Подобрать по URL"
+                                                       onclick="getContent($('#cotextkeyurl').val())">
+<table id="tableOfferKeywords">
+</table>
+
+
+<script text="text/javascript">
+    var offers_keywords_data = ${c.offers_keywords_data};
+    var offer_categoryes = ${h.JSON(c.offer_categoryes)};
+    $(document).ready(function () {
+
+
+        // Таблица рейтинга рекламных предложений
+        $("#tableOfferKeywords").jqGrid({
+            datatype: 'local',
+            data: offers_keywords_data,
+            colNames: ['Ред/Сох', 'ID', 'URL', 'Название', 'Категории', 'Ключевые слова', 'Фразовые соответствия', 'Точные фразы', 'Минус-слова'],
+            colModel: [
+                {name: 'act', index: 'act', width: 50, sortable: false},
+                {name: 'id', index: 'id', align: 'center', hidden: true},
+                {name: 'url', index: 'url', align: 'center', hidden: true},
+                {name: 'title', index: 'title', align: 'center', editable: false, width: 200},
+                {
+                    name: 'category',
+                    index: 'category',
+                    width: 90,
+                    editable: true,
+                    edittype: "select",
+                    editoptions: {value: offer_categoryes}
+                },
+                {
+                    name: 'keywords',
+                    index: 'keywords',
+                    align: 'center',
+                    editable: true,
+                    edittype: "textarea",
+                    editoptions: {rows: "10", cols: "50"}
+                },
+                {
+                    name: 'phrases',
+                    index: 'phrases',
+                    align: 'center',
+                    editable: true,
+                    edittype: "textarea",
+                    editoptions: {rows: "10", cols: "50"}
+                },
+                {
+                    name: 'exactly_phrases',
+                    index: 'exactly_phrases',
+                    align: 'center',
+                    editable: true,
+                    edittype: "textarea",
+                    editoptions: {rows: "10", cols: "50"}
+                },
+                {
+                    name: 'minus_words',
+                    index: 'minus_words',
+                    align: 'center',
+                    editable: true,
+                    edittype: "textarea",
+                    editoptions: {rows: "10", cols: "50"}
+                }],
+            gridComplete: function () {
+                var ids = jQuery("#tableOfferKeywords").jqGrid('getDataIDs');
+                for (var i = 0; i < ids.length; i++) {
+                    var cl = ids[i];
+                    var url = jQuery("#tableOfferKeywords").jqGrid('getRowData', cl)['url'];
+                    be = "<input style='height:22px;width:30px;' type='button' value='Ред' onclick=\"jQuery('#tableOfferKeywords').editRow('" + cl + "');\"  />";
+                    se = "<input style='height:22px;width:30px;' type='button' value='Сох' onclick=\"jQuery('#tableOfferKeywords').saveRow('" + cl + "');\"  />";
+                    co = "<button style='height:40px;width:60px;' type='button' onclick=\"getContent('" + url + "');\"  >Подобoр<br>слов</button>";
+                    jQuery("#tableOfferKeywords").jqGrid('setRowData', ids[i], {act: be + se + co});
+                }
+            },
+            caption: "Ключевые слова рекламных предложений",
+            editurl: "/adload/keywords_save/${c.campaignId}",
+            height: 'auto',
+            sortname: 'title',
+            sortorder: 'asc',
+            viewrecords: true,
+            rowNum: 900,
+            autowidth: true,
+            hiddengrid: false
+        });
+
+
+    })
+    function getContent(url) {
+        ;
+        function parentTag(node) {
+            return node.parentNode;
+        }
+        ;
+        function previousTag(node) {
+            ;
+            var node = node.previousSibling;
+            return (node && node.nodeType != 1) ? previousTag(node) : node;
+        }
+        ;
+        function nextTag(node) {
+            ;
+            var node = node.nextSibling;
+            return (node && node.nodeType != 1) ? nextTag(node) : node;
+        }
+
+        function firstChildTag(node) {
+            var node = node.firstChild;
+            return (node && node.nodeType != 1) ? nextTag(node) : node;
+        }
+
+        function lastChildTag(node) {
+            var node = node.lastChild;
+            return (node && node.nodeType != 1) ? previousTag(node) : node;
+        }
+        ;
+        function tagName(node) {
+            if (node) {
+                return node.tagName;
+            }
+            else {
+                return "";
+            }
+        }
+        ;
+        function stripTags(s) {
+            ;
+            var divs = document.createElement('div');
+            s = s.replace(/\/\*(?:(?!\*\/)[\s\S])*\*\/|[\r\n\t]+/g, '');
+            s = s.replace(/ {2,}/g, ' ');
+            s = s.replace(/ ([{:}]) /g, '$1');
+            s = s.replace(/([;,]) /g, '$1');
+            s = s.replace(/ !/g, '!');
+            ;
+            divs.innerHTML = s;
+            ;
+            var tags = ['script', 'img', 'embed', 'applet', 'map', 'form', 'input', 'textarea', 'option', 'link', 'style', 'noscript', 'object', 'a'];
+            ;
+            var c = tags.length;
+            while (c--) {
+                var tag = divs.getElementsByTagName(tags[c]);
+                var i = tag.length;
+                while (i--) {
+                    tag[i].parentNode.removeChild(tag[i]);
+                }
+            }
+            ;
+            var tags = ['li', 'td'];
+            ;
+            var c = tags.length;
+            while (c--) {
+                ;
+                var tag = divs.getElementsByTagName(tags[c]);
+                ;
+                var i = tag.length;
+                while (i--) {
+                    if (tagName(parentTag(tag[i])) == 'UL' && tagName(tag[i]) == 'LI' && tagName(firstChildTag(tag[i])) == 'A') {
+                        tag[i].parentNode.removeChild(tag[i]);
+                    }
+                    else if (tagName(parentTag(tag[i])) == 'TR' && tagName(tag[i]) == 'TD' && tagName(firstChildTag(tag[i])) == '') {
+                        tag[i].parentNode.removeChild(tag[i]);
+                    }
+                    else if (tagName(parentTag(tag[i])) == 'TR' && tagName(tag[i]) == 'TD' && tagName(firstChildTag(tag[i])) == 'A') {
+                        tag[i].parentNode.removeChild(tag[i]);
+                    }
+                    else {
+                        tag[i];
+                    }
+                }
+            }
+            return divs.innerHTML;
+        }
+
+        (function () {
+            ;
+            var oXMLHttpRequest = window.XMLHttpRequest;
+            ;
+            var bGecko = !!window.controllers;
+            ;
+            var bIE = !!window.document.namespaces;
+            ;
+            var bIE7 = bIE && window.navigator.userAgent.match(/MSIE 7.0/);
+
+            function fXMLHttpRequest() {
+                this._object = oXMLHttpRequest && !bIE7 ? new oXMLHttpRequest : new window.ActiveXObject("Microsoft.XMLHTTP");
+                this._listeners = [];
+            }
+
+            function cXMLHttpRequest() {
+                return new fXMLHttpRequest;
+            }
+
+            cXMLHttpRequest.prototype = fXMLHttpRequest.prototype;
+            if (bGecko && oXMLHttpRequest.wrapped) {
+                cXMLHttpRequest.wrapped = oXMLHttpRequest.wrapped;
+            }
+            ;
+            cXMLHttpRequest.UNSENT = 0;
+            ;
+            cXMLHttpRequest.OPENED = 1;
+            ;
+            cXMLHttpRequest.HEADERS_RECEIVED = 2;
+            ;
+            cXMLHttpRequest.LOADING = 3;
+            ;
+            cXMLHttpRequest.DONE = 4;
+            ;
+            cXMLHttpRequest.prototype.UNSENT = cXMLHttpRequest.UNSENT;
+            ;
+            cXMLHttpRequest.prototype.OPENED = cXMLHttpRequest.OPENED;
+            ;
+            cXMLHttpRequest.prototype.HEADERS_RECEIVED = cXMLHttpRequest.HEADERS_RECEIVED;
+            ;
+            cXMLHttpRequest.prototype.LOADING = cXMLHttpRequest.LOADING;
+            ;
+            cXMLHttpRequest.prototype.DONE = cXMLHttpRequest.DONE;
+            ;
+            cXMLHttpRequest.prototype.readyState = cXMLHttpRequest.UNSENT;
+            ;
+            cXMLHttpRequest.prototype.responseText = '';
+            ;
+            cXMLHttpRequest.prototype.responseXML = null;
+            ;
+            cXMLHttpRequest.prototype.status = 0;
+            ;
+            cXMLHttpRequest.prototype.statusText = '';
+            ;
+            cXMLHttpRequest.prototype.priority = "NORMAL";
+            ;
+            cXMLHttpRequest.prototype.onreadystatechange = null;
+            ;
+            cXMLHttpRequest.onreadystatechange = null;
+            ;
+            cXMLHttpRequest.onopen = null;
+            ;
+            cXMLHttpRequest.onsend = null;
+            ;
+            cXMLHttpRequest.onabort = null;
+            cXMLHttpRequest.prototype.open = function (sMethod, sUrl, bAsync, sUser, sPassword) {
+                var sLowerCaseMethod = sMethod.toLowerCase();
+                if (sLowerCaseMethod == "connect" || sLowerCaseMethod == "trace" || sLowerCaseMethod == "track") {
+                    throw new Error(18);
+                }
+                delete this._headers;
+                if (arguments.length < 3) {
+                    bAsync = true;
+                }
+                this._async = bAsync;
+                var oRequest = this;
+                var nState = this.readyState;
+                var fOnUnload = null;
+                if (bIE && bAsync) {
+                    fOnUnload = function () {
+                        if (nState != cXMLHttpRequest.DONE) {
+                            fCleanTransport(oRequest);
+                            // Safe to abort here since onreadystatechange handler removed
+                            oRequest.abort();
+                        }
+                    };
+                    window.attachEvent("onunload", fOnUnload);
+                }
+                if (cXMLHttpRequest.onopen) {
+                    cXMLHttpRequest.onopen.apply(this, arguments);
+                }
+                if (arguments.length > 4) {
+                    this._object.open(sMethod, sUrl, bAsync, sUser, sPassword);
+                } else if (arguments.length > 3) {
+                    this._object.open(sMethod, sUrl, bAsync, sUser);
+                } else {
+                    this._object.open(sMethod, sUrl, bAsync);
+                }
+                this.readyState = cXMLHttpRequest.OPENED;
+                fReadyStateChange(this);
+                this._object.onreadystatechange = function () {
+                    if (bGecko && !bAsync) {
+                        return;
+                    }
+                    oRequest.readyState = oRequest._object.readyState;
+                    fSynchronizeValues(oRequest);
+                    if (oRequest._aborted) {
+                        oRequest.readyState = cXMLHttpRequest.UNSENT;
+                        return;
+                    }
+                    if (oRequest.readyState == cXMLHttpRequest.DONE) {
+                        delete oRequest._data;
+                        fCleanTransport(oRequest);
+                        if (bIE && bAsync) {
+                            window.detachEvent("onunload", fOnUnload);
+                        }
+                        if (nState != oRequest.readyState) {
+                            fReadyStateChange(oRequest);
+                        }
+                        nState = oRequest.readyState;
+                    }
+                };
+            };
+            cXMLHttpRequest.prototype.send = function (vData) {
+                if (cXMLHttpRequest.onsend) {
+                    cXMLHttpRequest.onsend.apply(this, arguments);
+                }
+                if (!arguments.length) {
+                    vData = null;
+                }
+                if (vData && vData.nodeType) {
+                    vData = window.XMLSerializer ? new window.XMLSerializer().serializeToString(vData) : vData.xml;
+                    if (!this._headers["Content-Type"]) {
+                        this._object.setRequestHeader("Content-Type", "application/xml");
+                    }
+                }
+                this._data = vData;
+                fXMLHttpRequest_send(this);
+            };
+            cXMLHttpRequest.prototype.abort = function () {
+                if (cXMLHttpRequest.onabort) {
+                    cXMLHttpRequest.onabort.apply(this, arguments);
+                }
+                if (this.readyState > cXMLHttpRequest.UNSENT) {
+                    this._aborted = true;
+                }
+                this._object.abort();
+                fCleanTransport(this);
+                this.readyState = cXMLHttpRequest.UNSENT;
+                delete this._data;
+            };
+            cXMLHttpRequest.prototype.getAllResponseHeaders = function () {
+                return this._object.getAllResponseHeaders();
+            };
+            cXMLHttpRequest.prototype.getResponseHeader = function (sName) {
+                return this._object.getResponseHeader(sName);
+            };
+            cXMLHttpRequest.prototype.setRequestHeader = function (sName, sValue) {
+                if (!this._headers) {
+                    this._headers = {};
+                }
+                this._headers[sName] = sValue;
+                return this._object.setRequestHeader(sName, sValue);
+            };
+            cXMLHttpRequest.prototype.addEventListener = function (sName, fHandler, bUseCapture) {
+                for (var nIndex = 0, oListener; oListener = this._listeners[nIndex]; nIndex++) {
+                    if (oListener[0] == sName && oListener[1] == fHandler && oListener[2] == bUseCapture) {
+                        return;
+                    }
+                }
+                this._listeners.push([sName, fHandler, bUseCapture]);
+            };
+            cXMLHttpRequest.prototype.removeEventListener = function (sName, fHandler, bUseCapture) {
+                for (var nIndex = 0, oListener; oListener = this._listeners[nIndex]; nIndex++) {
+                    if (oListener[0] == sName && oListener[1] == fHandler && oListener[2] == bUseCapture) {
+                        break;
+                    }
+                }
+                if (oListener) {
+                    this._listeners.splice(nIndex, 1);
+                }
+            };
+            cXMLHttpRequest.prototype.dispatchEvent = function (oEvent) {
+                var oEventPseudo = {
+                    'type': oEvent.type,
+                    'target': this,
+                    'currentTarget': this,
+                    'eventPhase': 2,
+                    'bubbles': oEvent.bubbles,
+                    'cancelable': oEvent.cancelable,
+                    'timeStamp': oEvent.timeStamp,
+                    'stopPropagation': function () {
+                    },
+                    'preventDefault': function () {
+                    },
+                    'initEvent': function () {
+                    }
+                };
+                if (oEventPseudo.type == "readystatechange" && this.onreadystatechange) {
+                    (this.onreadystatechange.handleEvent || this.onreadystatechange).apply(this, [oEventPseudo]);
+                }
+                for (var nIndex = 0, oListener; oListener = this._listeners[nIndex]; nIndex++) {
+                    if (oListener[0] == oEventPseudo.type && !oListener[2]) {
+                        (oListener[1].handleEvent || oListener[1]).apply(this, [oEventPseudo]);
+                    }
+                }
+            };
+            cXMLHttpRequest.prototype.toString = function () {
+                return '[' + "object" + ' ' + "XMLHttpRequest" + ']';
+            };
+            cXMLHttpRequest.toString = function () {
+                return '[' + "XMLHttpRequest" + ']';
+            };
+            function fXMLHttpRequest_send(oRequest) {
+                oRequest._object.send(oRequest._data);
+                if (bGecko && !oRequest._async) {
+                    oRequest.readyState = cXMLHttpRequest.OPENED;
+                    fSynchronizeValues(oRequest);
+                    while (oRequest.readyState < cXMLHttpRequest.DONE) {
+                        oRequest.readyState++;
+                        fReadyStateChange(oRequest);
+                        if (oRequest._aborted) {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            function fReadyStateChange(oRequest) {
+                if (cXMLHttpRequest.onreadystatechange) {
+                    cXMLHttpRequest.onreadystatechange.apply(oRequest);
+                }
+                oRequest.dispatchEvent({
+                    'type': "readystatechange",
+                    'bubbles': false,
+                    'cancelable': false,
+                    'timeStamp': new Date + 0
+                });
+            }
+
+            function fGetDocument(oRequest) {
+                var oDocument = oRequest.responseXML;
+                var sResponse = oRequest.responseText;
+                if (bIE && sResponse && oDocument && !oDocument.documentElement && oRequest.getResponseHeader("Content-Type").match(/[^\/]+\/[^\+]+\+xml/)) {
+                    oDocument = new window.ActiveXObject("Microsoft.XMLDOM");
+                    oDocument.async = false;
+                    oDocument.validateOnParse = false;
+                    oDocument.loadXML(sResponse);
+                }
+                if (oDocument) {
+                    if ((bIE && oDocument.parseError !== 0) || !oDocument.documentElement || (oDocument.documentElement && oDocument.documentElement.tagName == "parsererror")) {
+                        return null;
+                    }
+                }
+                return oDocument;
+            }
+
+            function fSynchronizeValues(oRequest) {
+                try {
+                    oRequest.responseText = oRequest._object.responseText;
+                } catch (e) {
+                }
+                try {
+                    oRequest.responseXML = fGetDocument(oRequest._object);
+                } catch (e) {
+                }
+                try {
+                    oRequest.status = oRequest._object.status;
+                } catch (e) {
+                }
+                try {
+                    oRequest.statusText = oRequest._object.statusText;
+                } catch (e) {
+                }
+            }
+
+            function fCleanTransport(oRequest) {
+                oRequest._object.onreadystatechange = new window.Function;
+            }
+
+            if (!window.Function.prototype.apply) {
+                window.Function.prototype.apply = function (oRequest, oArguments) {
+                    if (!oArguments) {
+                        oArguments = [];
+                    }
+                    oRequest.__func = this;
+                    oRequest.__func(oArguments[0], oArguments[1], oArguments[2], oArguments[3], oArguments[4]);
+                    delete oRequest.__func;
+                };
+            }
+            window.XMLHttpRequest = cXMLHttpRequest;
+        })();
+        ;
+        function yottos_Snowball(lng) {
+            function Among(s, substring_i, result, method) {
+                this.s_size = s.length;
+                this.s = this.toCharArray(s);
+                this.substring_i = substring_i;
+                this.result = result;
+                this.method = method;
+            }
+
+            Among.prototype.toCharArray = function (s) {
+                var sLength = s.length, charArr = new Array(sLength);
+                for (var i = 0; i < sLength; i++)
+                    charArr[i] = s.charCodeAt(i);
+                return charArr;
+            }
+            function SnowballProgram() {
+                var current;
+                return {
+                    b: 0,
+                    k: 0,
+                    l: 0,
+                    c: 0,
+                    lb: 0,
+                    s_c: function (word) {
+                        current = word;
+                        this.c = 0;
+                        this.l = word.length;
+                        this.lb = 0;
+                        this.b = this.c;
+                        this.k = this.l;
+                    },
+                    g_c: function () {
+                        var result = current;
+                        current = null;
+                        return result;
+                    },
+                    i_g: function (s, min, max) {
+                        if (this.c < this.l) {
+                            var ch = current.charCodeAt(this.c);
+                            if (ch <= max && ch >= min) {
+                                ch -= min;
+                                if (s[ch >> 3] & (0X1 << (ch & 0X7))) {
+                                    this.c++;
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    },
+                    i_g_b: function (s, min, max) {
+                        if (this.c > this.lb) {
+                            var ch = current.charCodeAt(this.c - 1);
+                            if (ch <= max && ch >= min) {
+                                ch -= min;
+                                if (s[ch >> 3] & (0X1 << (ch & 0X7))) {
+                                    this.c--;
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    },
+                    o_g: function (s, min, max) {
+                        if (this.c < this.l) {
+                            var ch = current.charCodeAt(this.c);
+                            if (ch > max || ch < min) {
+                                this.c++;
+                                return true;
+                            }
+                            ch -= min;
+                            if (!(s[ch >> 3] & (0X1 << (ch & 0X7)))) {
+                                this.c++;
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    o_g_b: function (s, min, max) {
+                        if (this.c > this.lb) {
+                            var ch = current.charCodeAt(this.c - 1);
+                            if (ch > max || ch < min) {
+                                this.c--;
+                                return true;
+                            }
+                            ch -= min;
+                            if (!(s[ch >> 3] & (0X1 << (ch & 0X7)))) {
+                                this.c--;
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    e_s: function (s_size, s) {
+                        if (this.l - this.c < s_size)
+                            return false;
+                        for (var i = 0; i < s_size; i++)
+                            if (current.charCodeAt(this.c + i) != s.charCodeAt(i))
+                                return false;
+                        this.c += s_size;
+                        return true;
+                    },
+                    e_s_b: function (s_size, s) {
+                        if (this.c - this.lb < s_size)
+                            return false;
+                        for (var i = 0; i < s_size; i++)
+                            if (current.charCodeAt(this.c - s_size + i) != s
+                                            .charCodeAt(i))
+                                return false;
+                        this.c -= s_size;
+                        return true;
+                    },
+                    f_a: function (v, v_size) {
+                        var i = 0, j = v_size, c = this.c, l = this.l, common_i = 0, common_j = 0, first_key_inspected = false;
+                        while (true) {
+                            var k = i + ((j - i) >> 1), diff = 0, common = common_i < common_j
+                                    ? common_i
+                                    : common_j, w = v[k];
+                            for (var i2 = common; i2 < w.s_size; i2++) {
+                                if (c + common == l) {
+                                    diff = -1;
+                                    break;
+                                }
+                                diff = current.charCodeAt(c + common) - w.s[i2];
+                                if (diff)
+                                    break;
+                                common++;
+                            }
+                            if (diff < 0) {
+                                j = k;
+                                common_j = common;
+                            } else {
+                                i = k;
+                                common_i = common;
+                            }
+                            if (j - i <= 1) {
+                                if (i > 0 || j == i || first_key_inspected)
+                                    break;
+                                first_key_inspected = true;
+                            }
+                        }
+                        while (true) {
+                            var w = v[i];
+                            if (common_i >= w.s_size) {
+                                this.c = c + w.s_size;
+                                if (!w.method)
+                                    return w.result;
+                                var res = w.method();
+                                this.c = c + w.s_size;
+                                if (res)
+                                    return w.result;
+                            }
+                            i = w.substring_i;
+                            if (i < 0)
+                                return 0;
+                        }
+                    },
+                    f_a_b: function (v, v_size) {
+                        var i = 0, j = v_size, c = this.c, lb = this.lb, common_i = 0, common_j = 0, first_key_inspected = false;
+                        while (true) {
+                            var k = i + ((j - i) >> 1), diff = 0, common = common_i < common_j
+                                    ? common_i
+                                    : common_j, w = v[k];
+                            for (var i2 = w.s_size - 1 - common; i2 >= 0; i2--) {
+                                if (c - common == lb) {
+                                    diff = -1;
+                                    break;
+                                }
+                                diff = current.charCodeAt(c - 1 - common) - w.s[i2];
+                                if (diff)
+                                    break;
+                                common++;
+                            }
+                            if (diff < 0) {
+                                j = k;
+                                common_j = common;
+                            } else {
+                                i = k;
+                                common_i = common;
+                            }
+                            if (j - i <= 1) {
+                                if (i > 0 || j == i || first_key_inspected)
+                                    break;
+                                first_key_inspected = true;
+                            }
+                        }
+                        while (true) {
+                            var w = v[i];
+                            if (common_i >= w.s_size) {
+                                this.c = c - w.s_size;
+                                if (!w.method)
+                                    return w.result;
+                                var res = w.method();
+                                this.c = c - w.s_size;
+                                if (res)
+                                    return w.result;
+                            }
+                            i = w.substring_i;
+                            if (i < 0)
+                                return 0;
+                        }
+                    },
+                    r_s: function (c_bra, c_ket, s) {
+                        var adjustment = s.length - (c_ket - c_bra), left = current
+                                .substring(0, c_bra), right = current.substring(c_ket);
+                        current = left + s + right;
+                        this.l += adjustment;
+                        if (this.c >= c_ket)
+                            this.c += adjustment;
+                        else if (this.c > c_bra)
+                            this.c = c_bra;
+                        return adjustment;
+                    },
+                    s_ch: function () {
+                        if (this.b < 0 || this.b > this.k || this.k > this.l
+                                || this.l > current.length)
+                            throw ("faulty slice operation");
+                    },
+                    s_f: function (s) {
+                        this.s_ch();
+                        this.r_s(this.b, this.k, s);
+                    },
+                    s_d: function () {
+                        this.s_f("");
+                    },
+                    i_: function (c_bra, c_ket, s) {
+                        var adjustment = this.r_s(c_bra, c_ket, s);
+                        if (c_bra <= this.b)
+                            this.b += adjustment;
+                        if (c_bra <= this.k)
+                            this.k += adjustment;
+                    },
+                    s_t: function () {
+                        this.s_ch();
+                        return current.substring(this.b, this.k);
+                    },
+                    e_v_b: function (s) {
+                        return this.e_s_b(s.length, s);
+                    }
+                };
+            }
+
+            var stemFactory = {
+                RussianStemmer: function () {
+                    var a_0 = [new Among("\u0432", -1, 1),
+                        new Among("\u0438\u0432", 0, 2),
+                        new Among("\u044B\u0432", 0, 2),
+                        new Among("\u0432\u0448\u0438", -1, 1),
+                        new Among("\u0438\u0432\u0448\u0438", 3, 2),
+                        new Among("\u044B\u0432\u0448\u0438", 3, 2),
+                        new Among("\u0432\u0448\u0438\u0441\u044C", -1, 1),
+                        new Among("\u0438\u0432\u0448\u0438\u0441\u044C", 6, 2),
+                        new Among("\u044B\u0432\u0448\u0438\u0441\u044C", 6, 2)], a_1 = [
+                        new Among("\u0435\u0435", -1, 1),
+                        new Among("\u0438\u0435", -1, 1),
+                        new Among("\u043E\u0435", -1, 1),
+                        new Among("\u044B\u0435", -1, 1),
+                        new Among("\u0438\u043C\u0438", -1, 1),
+                        new Among("\u044B\u043C\u0438", -1, 1),
+                        new Among("\u0435\u0439", -1, 1),
+                        new Among("\u0438\u0439", -1, 1),
+                        new Among("\u043E\u0439", -1, 1),
+                        new Among("\u044B\u0439", -1, 1),
+                        new Among("\u0435\u043C", -1, 1),
+                        new Among("\u0438\u043C", -1, 1),
+                        new Among("\u043E\u043C", -1, 1),
+                        new Among("\u044B\u043C", -1, 1),
+                        new Among("\u0435\u0433\u043E", -1, 1),
+                        new Among("\u043E\u0433\u043E", -1, 1),
+                        new Among("\u0435\u043C\u0443", -1, 1),
+                        new Among("\u043E\u043C\u0443", -1, 1),
+                        new Among("\u0438\u0445", -1, 1),
+                        new Among("\u044B\u0445", -1, 1),
+                        new Among("\u0435\u044E", -1, 1),
+                        new Among("\u043E\u044E", -1, 1),
+                        new Among("\u0443\u044E", -1, 1),
+                        new Among("\u044E\u044E", -1, 1),
+                        new Among("\u0430\u044F", -1, 1),
+                        new Among("\u044F\u044F", -1, 1)], a_2 = [
+                        new Among("\u0435\u043C", -1, 1),
+                        new Among("\u043D\u043D", -1, 1),
+                        new Among("\u0432\u0448", -1, 1),
+                        new Among("\u0438\u0432\u0448", 2, 2),
+                        new Among("\u044B\u0432\u0448", 2, 2),
+                        new Among("\u0449", -1, 1),
+                        new Among("\u044E\u0449", 5, 1),
+                        new Among("\u0443\u044E\u0449", 6, 2)], a_3 = [
+                        new Among("\u0441\u044C", -1, 1),
+                        new Among("\u0441\u044F", -1, 1)], a_4 = [
+                        new Among("\u043B\u0430", -1, 1),
+                        new Among("\u0438\u043B\u0430", 0, 2),
+                        new Among("\u044B\u043B\u0430", 0, 2),
+                        new Among("\u043D\u0430", -1, 1),
+                        new Among("\u0435\u043D\u0430", 3, 2),
+                        new Among("\u0435\u0442\u0435", -1, 1),
+                        new Among("\u0438\u0442\u0435", -1, 2),
+                        new Among("\u0439\u0442\u0435", -1, 1),
+                        new Among("\u0435\u0439\u0442\u0435", 7, 2),
+                        new Among("\u0443\u0439\u0442\u0435", 7, 2),
+                        new Among("\u043B\u0438", -1, 1),
+                        new Among("\u0438\u043B\u0438", 10, 2),
+                        new Among("\u044B\u043B\u0438", 10, 2),
+                        new Among("\u0439", -1, 1),
+                        new Among("\u0435\u0439", 13, 2),
+                        new Among("\u0443\u0439", 13, 2),
+                        new Among("\u043B", -1, 1),
+                        new Among("\u0438\u043B", 16, 2),
+                        new Among("\u044B\u043B", 16, 2),
+                        new Among("\u0435\u043C", -1, 1),
+                        new Among("\u0438\u043C", -1, 2),
+                        new Among("\u044B\u043C", -1, 2),
+                        new Among("\u043D", -1, 1),
+                        new Among("\u0435\u043D", 22, 2),
+                        new Among("\u043B\u043E", -1, 1),
+                        new Among("\u0438\u043B\u043E", 24, 2),
+                        new Among("\u044B\u043B\u043E", 24, 2),
+                        new Among("\u043D\u043E", -1, 1),
+                        new Among("\u0435\u043D\u043E", 27, 2),
+                        new Among("\u043D\u043D\u043E", 27, 1),
+                        new Among("\u0435\u0442", -1, 1),
+                        new Among("\u0443\u0435\u0442", 30, 2),
+                        new Among("\u0438\u0442", -1, 2),
+                        new Among("\u044B\u0442", -1, 2),
+                        new Among("\u044E\u0442", -1, 1),
+                        new Among("\u0443\u044E\u0442", 34, 2),
+                        new Among("\u044F\u0442", -1, 2),
+                        new Among("\u043D\u044B", -1, 1),
+                        new Among("\u0435\u043D\u044B", 37, 2),
+                        new Among("\u0442\u044C", -1, 1),
+                        new Among("\u0438\u0442\u044C", 39, 2),
+                        new Among("\u044B\u0442\u044C", 39, 2),
+                        new Among("\u0435\u0448\u044C", -1, 1),
+                        new Among("\u0438\u0448\u044C", -1, 2),
+                        new Among("\u044E", -1, 2),
+                        new Among("\u0443\u044E", 44, 2)], a_5 = [
+                        new Among("\u0430", -1, 1),
+                        new Among("\u0435\u0432", -1, 1),
+                        new Among("\u043E\u0432", -1, 1),
+                        new Among("\u0435", -1, 1),
+                        new Among("\u0438\u0435", 3, 1),
+                        new Among("\u044C\u0435", 3, 1),
+                        new Among("\u0438", -1, 1),
+                        new Among("\u0435\u0438", 6, 1),
+                        new Among("\u0438\u0438", 6, 1),
+                        new Among("\u0430\u043C\u0438", 6, 1),
+                        new Among("\u044F\u043C\u0438", 6, 1),
+                        new Among("\u0438\u044F\u043C\u0438", 10, 1),
+                        new Among("\u0439", -1, 1),
+                        new Among("\u0435\u0439", 12, 1),
+                        new Among("\u0438\u0435\u0439", 13, 1),
+                        new Among("\u0438\u0439", 12, 1),
+                        new Among("\u043E\u0439", 12, 1),
+                        new Among("\u0430\u043C", -1, 1),
+                        new Among("\u0435\u043C", -1, 1),
+                        new Among("\u0438\u0435\u043C", 18, 1),
+                        new Among("\u043E\u043C", -1, 1),
+                        new Among("\u044F\u043C", -1, 1),
+                        new Among("\u0438\u044F\u043C", 21, 1),
+                        new Among("\u043E", -1, 1), new Among("\u0443", -1, 1),
+                        new Among("\u0430\u0445", -1, 1),
+                        new Among("\u044F\u0445", -1, 1),
+                        new Among("\u0438\u044F\u0445", 26, 1),
+                        new Among("\u044B", -1, 1), new Among("\u044C", -1, 1),
+                        new Among("\u044E", -1, 1),
+                        new Among("\u0438\u044E", 30, 1),
+                        new Among("\u044C\u044E", 30, 1),
+                        new Among("\u044F", -1, 1),
+                        new Among("\u0438\u044F", 33, 1),
+                        new Among("\u044C\u044F", 33, 1)], a_6 = [
+                        new Among("\u043E\u0441\u0442", -1, 1),
+                        new Among("\u043E\u0441\u0442\u044C", -1, 1)], a_7 = [
+                        new Among("\u0435\u0439\u0448\u0435", -1, 1),
+                        new Among("\u043D", -1, 2),
+                        new Among("\u0435\u0439\u0448", -1, 1),
+                        new Among("\u044C", -1, 3)], g_v = [33, 65, 8, 232], I_p2, I_pV, sbp = new SnowballProgram();
+                    this.setCurrent = function (word) {
+                        sbp.s_c(word);
+                    };
+                    this.getCurrent = function () {
+                        return sbp.g_c();
+                    };
+                    function habr3() {
+                        while (!sbp.i_g(g_v, 1072, 1103)) {
+                            if (sbp.c >= sbp.l)
+                                return false;
+                            sbp.c++;
+                        }
+                        return true;
+                    }
+
+                    function habr4() {
+                        while (!sbp.o_g(g_v, 1072, 1103)) {
+                            if (sbp.c >= sbp.l)
+                                return false;
+                            sbp.c++;
+                        }
+                        return true;
+                    }
+
+                    function r_mark_regions() {
+                        I_pV = sbp.l;
+                        I_p2 = I_pV;
+                        if (habr3()) {
+                            I_pV = sbp.c;
+                            if (habr4())
+                                if (habr3())
+                                    if (habr4())
+                                        I_p2 = sbp.c;
+                        }
+                    }
+
+                    function r_R2() {
+                        return I_p2 <= sbp.c;
+                    }
+
+                    function habr2(a, n) {
+                        var a_v, v_1;
+                        sbp.k = sbp.c;
+                        a_v = sbp.f_a_b(a, n);
+                        if (a_v) {
+                            sbp.b = sbp.c;
+                            switch (a_v) {
+                                case 1 :
+                                    v_1 = sbp.l - sbp.c;
+                                    if (!sbp.e_s_b(1, "\u0430")) {
+                                        sbp.c = sbp.l - v_1;
+                                        if (!sbp.e_s_b(1, "\u044F"))
+                                            return false;
+                                    }
+                                case 2 :
+                                    sbp.s_d();
+                                    break;
+                            }
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    function r_perfective_gerund() {
+                        return habr2(a_0, 9);
+                    }
+
+                    function habr1(a, n) {
+                        var a_v;
+                        sbp.k = sbp.c;
+                        a_v = sbp.f_a_b(a, n);
+                        if (a_v) {
+                            sbp.b = sbp.c;
+                            if (a_v == 1)
+                                sbp.s_d();
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    function r_adjective() {
+                        return habr1(a_1, 26);
+                    }
+
+                    function r_adjectival() {
+                        var a_v;
+                        if (r_adjective()) {
+                            habr2(a_2, 8);
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    function r_reflexive() {
+                        return habr1(a_3, 2);
+                    }
+
+                    function r_verb() {
+                        return habr2(a_4, 46);
+                    }
+
+                    function r_noun() {
+                        habr1(a_5, 36);
+                    }
+
+                    function r_derivational() {
+                        var a_v;
+                        sbp.k = sbp.c;
+                        a_v = sbp.f_a_b(a_6, 2);
+                        if (a_v) {
+                            sbp.b = sbp.c;
+                            if (r_R2() && a_v == 1)
+                                sbp.s_d();
+                        }
+                    }
+
+                    function r_tidy_up() {
+                        var a_v;
+                        sbp.k = sbp.c;
+                        a_v = sbp.f_a_b(a_7, 4);
+                        if (a_v) {
+                            sbp.b = sbp.c;
+                            switch (a_v) {
+                                case 1 :
+                                    sbp.s_d();
+                                    sbp.k = sbp.c;
+                                    if (!sbp.e_s_b(1, "\u043D"))
+                                        break;
+                                    sbp.b = sbp.c;
+                                case 2 :
+                                    if (!sbp.e_s_b(1, "\u043D"))
+                                        break;
+                                case 3 :
+                                    sbp.s_d();
+                                    break;
+                            }
+                        }
+                    }
+
+                    this.stem = function () {
+                        r_mark_regions();
+                        sbp.c = sbp.l;
+                        if (sbp.c < I_pV)
+                            return false;
+                        sbp.lb = I_pV;
+                        if (!r_perfective_gerund()) {
+                            sbp.c = sbp.l;
+                            if (!r_reflexive())
+                                sbp.c = sbp.l;
+                            if (!r_adjectival()) {
+                                sbp.c = sbp.l;
+                                if (!r_verb()) {
+                                    sbp.c = sbp.l;
+                                    r_noun();
+                                }
+                            }
+                        }
+                        sbp.c = sbp.l;
+                        sbp.k = sbp.c;
+                        if (sbp.e_s_b(1, "\u0438")) {
+                            sbp.b = sbp.c;
+                            sbp.s_d();
+                        } else
+                            sbp.c = sbp.l;
+                        r_derivational();
+                        sbp.c = sbp.l;
+                        r_tidy_up();
+                        return true;
+                    }
+                }
+            }
+            var stemName = lng.substring(0, 1).toUpperCase()
+                    + lng.substring(1).toLowerCase() + "Stemmer";
+            return new stemFactory[stemName]();
+        }
+        ;
+        var yottos_Stem = function (lng) {
+            var yottos_testStemmer = new yottos_Snowball(lng);
+            return function (word) {
+                yottos_testStemmer.setCurrent(word);
+                yottos_testStemmer.stem();
+                return yottos_testStemmer.getCurrent();
+            }
+        };
+        ;
+        function yottos_stremer(word) {
+            if (yottos_snowball_cache[word]) {
+                w = yottos_snowball_cache[word];
+            }
+            else {
+                w = new yottos_Stem('russian')(word);
+                yottos_snowball_cache[word] = w;
+            }
+            return w;
+        };
+        ;
+        function yottos_getHeadText() {
+            var iFrame = document.getElementById('yottos-temp-frame');
+            var ifdocument;
+            if (iFrame.contentDocument)
+                ifdocument = iFrame.contentDocument;
+            else if (iFrame.contentWindow)
+                ifdocument = iFrame.contentWindow.document;
+            var yottos_result = '';
+            yottos_result += (ifdocument.title.replace(/[^a-zA-Zа-яА-Я]/g, ' ').replace(/\s+$/g, '').replace(/^\s+/g, '').replace(/[\n\t\r\f\s]{2,}/g, ' ')) + ' ';
+            var yottos_metas = ifdocument.getElementsByTagName('meta');
+            if (yottos_metas) {
+                for (var x = 0, y = yottos_metas.length; x < y; x++) {
+                    if (yottos_metas[x].name.toLowerCase() == "description") {
+                        yottos_result += (yottos_metas[x].content.replace(/[^a-zA-Zа-яА-Я]/g, ' ').replace(/\s+$/g, '').replace(/^\s+/g, '').replace(/[\n\t\r\f\s]{2,}/g, ' ')) + ' ';
+                    }
+                }
+            }
+            var result = '';
+            result += (ifdocument.title.replace(/[^a-zA-Zа-яА-Я]/g, ' ').replace(/\s+$/g, '').replace(/^\s+/g, '').replace(/[\n\t\r\f\s]{2,}/g, ' '));
+            var metas = ifdocument.getElementsByTagName('meta');
+            if (metas) {
+                for (var x = 0, y = metas.length; x < y; x++) {
+                    if (metas[x].name.toLowerCase() == "description") {
+                        result += ' ';
+                        result += (metas[x].content.replace(/[^a-zA-Zа-яА-Я]/g, ' ').replace(/\s+$/g, '').replace(/^\s+/g, '').replace(/[\n\t\r\f\s]{2,}/g, ' ')) + ' ';
+                    }
+                    if (metas[x].name.toLowerCase() == "keywords") {
+                        result += ' ';
+                        result += (metas[x].content.replace(/[^a-zA-Zа-яА-Я]/g, ' ').replace(/\s+$/g, '').replace(/^\s+/g, '').replace(/[\n\t\r\f\s]{2,}/g, ' ')) + ' ';
+                    }
+                }
+            }
+            return result;
+        }
+        ;
+        function yottos_getBodyText() {
+            var iFrame = document.getElementById('yottos-temp-frame');
+            var ifdocument;
+            if (iFrame.contentDocument)
+                ifdocument = iFrame.contentDocument;
+            else if (iFrame.contentWindow)
+                ifdocument = iFrame.contentWindow.document;
+            var doc = ifdocument, body = doc.body, selection, range, bodyText;
+            if (body.createTextRange) {
+                return body.createTextRange().text.replace(/[^a-zA-Zа-яА-Я]/g, ' ').replace(/\s+$/g, '').replace(/^\s+/g, '').replace(/[\n\t\r\f\s]{2,}/g, ' ') + ' ';
+            } else if (window.getSelection) {
+                if (window.opera) {
+                    if (parseInt(window.opera.version()) == 10 || parseInt(window.opera.version()) == 11) {
+                        return window.document.body.textContent.toString().replace(/[^a-zA-Zа-яА-Я]/g, ' ').replace(/\s+$/g, '').replace(/^\s+/g, '').replace(/[\n\t\r\f\s]{2,}/g, ' ') + ' ';
+                    }
+                }
+                selection = window.getSelection();
+                range = doc.createRange();
+                range.selectNodeContents(body);
+                selection.addRange(range);
+                bodyText = selection.toString();
+                selection.removeAllRanges();
+                return bodyText.replace(/[^a-zA-Zа-яА-Я]/g, ' ').replace(/\s+$/g, '').replace(/^\s+/g, '').replace(/[\n\t\r\f\s]{2,}/g, ' ') + ' ';
+            }
+        }
+        ;
+        function yottos_getContext(url) {
+            url = '/adload/getHtml?url=' + url;
+            ;
+            var yottos_s = '';
+            ;
+            var site_stucture = '';
+
+            function fSynchronousGet() {
+                try {
+                    var oXMLHttpRequest = new XMLHttpRequest;
+                    oXMLHttpRequest.open("GET", url, false);
+                    oXMLHttpRequest.onreadystatechange = function () {
+                        if (this.readyState == XMLHttpRequest.DONE) {
+                            site_stucture = (oXMLHttpRequest.responseText);
+                        }
+                    }
+                    oXMLHttpRequest.send(null);
+                } catch (e) {
+                    alert('Через редирект невозможно получить ключевые слова');
+                }
+
+            }
+
+            fSynchronousGet();
+            removenode = document.getElementById('conteiner-yottos-temp-frame');
+            //removenode.parentNode.removeChild(removenode);
+            removenode.removeChild(removenode.children[0])
+            var iframe = document.createElement('iframe');
+            iframe.frameBorder = 0;
+            iframe.width = "0px";
+            iframe.height = "0px";
+            iframe.setAttribute("id", "yottos-temp-frame");
+            document.getElementById('conteiner-yottos-temp-frame').appendChild(iframe);
+            iframe.contentWindow.document.open('text/html', 'replace');
+            iframe.contentWindow.document.write(stripTags(site_stucture));
+            iframe.contentWindow.document.close();
+            yottos_s += yottos_getHeadText();
+            //yottos_s += yottos_getBodyText();
+            var yottos_splitted = yottos_s.toLowerCase().split(' ');
+            var yottos_collector = {};
+            var yottos_counter = {};
+            var yottos_ignore = ['бол', 'больш', 'будет', 'будут', 'как', 'пок', 'коментар', 'будт', 'был', 'быт', 'вдруг', 'вед', 'впроч', 'всегд', 'всег', 'всех',
+                'говор', 'главн', 'даж', 'друг', 'дальш', 'добав', 'есл', 'ест', 'жизн', 'зач', 'зде', 'иногд', 'кажет', 'кажд', 'как', 'когд', 'конечн', 'котор', 'куд',
+                'лучш', 'либ', 'межд', 'мен', 'долж', 'смысл', 'след', 'чита', 'люб', 'постара', 'помим', 'числ', 'соб', 'ждат', 'част', 'использ', 'велик', 'член', 'некотор',
+                'мног', 'может', 'можн', 'наконец', 'нег', 'нельз', 'нибуд', 'никогд', 'нич', 'один', 'опя', 'опубликова', 'перед', 'посл', 'пот', 'почт', 'разв', 'сво',
+                'себ', 'сегодн', 'сейчас', 'сказа', 'совс', 'так', 'теб', 'тепер', 'тогд', 'тог', 'тож', 'тольк', 'хорош', 'хот', 'чег', 'человек', 'пут', 'вполн', 'возможн',
+                'через', 'чтоб', 'чут', 'эт', 'позж', 'все', 'поэт', 'точн', 'этот', 'над', 'итог', 'недел', 'сведен', 'тем', 'город', 'гроз', 'зон', 'принят', 'балл', 'перв',
+                'вход', 'лент', 'оста', 'мир', 'образ', 'идет', 'выйт', 'нол', 'сил', 'наш', 'мнен', 'одн', 'ищ', 'выш', 'взял', 'откр', 'нов', 'удив', 'всем', 'важн', 'ожида',
+                'сам', 'ход', 'пущ', 'тег', 'выж', 'комментар', 'ваш', 'цен', 'коснут', 'слаб', 'ситуац', 'назов', 'уход', 'дол', 'основн', 'ряд', 'заверш', 'дополнен', 'влия',
+                'описа', 'меньш', 'двум', 'слаб', 'стал', 'новост', 'отраз', 'вопрос', 'выбор', 'сдела', 'смерт', 'последн', 'поворот', 'высок', 'опозор', 'текст',
+                'назов', 'основн', 'причин', 'групп', 'похож', 'with', 'that', 'this', 'about', 'above', 'after', 'again', 'against', 'because', 'been', 'before', 'being',
+                'below', 'between', 'both', 'cannot', 'could', 'does', 'down', 'than', 'that', 'important', 'partner', 'border', 'link', 'text', 'radius', 'none', 'document',
+                'height', 'color', 'title', 'normal', 'font', 'down', 'display', 'width', 'block', 'margin', 'yandex', 'item', 'type', 'left', 'padding', 'auto', 'inner',
+                'function', 'decorati', 'google', 'position', 'http', 'align', 'webkit', 'inherit', 'direct', 'hover', 'referrer', 'write', 'size', 'math', 'spacing',
+                'line', 'sizing', 'float', 'bottom', 'vert', 'charset', 'vertical', 'background', 'underline', 'visited', 'inline', 'unescape', 'value', 'style', 'visible',
+                'address', 'else', 'true', 'tail', 'iframe', 'adriver', 'white', 'space', 'collapse', 'content', 'list', 'window', 'absolute', 'script', 'random', 'transparent',
+                'repeat', 'scroll', 'container', 'piclayout', 'email', 'site', 'form', 'location', 'place', 'table', 'show', 'indent', 'visibility', 'clickable', 'last',
+                'agewarn', 'opts', 'toggler', 'errormsg', 'getcode', 'href', 'relative', 'overflow', 'clear', 'cursor', 'outline', 'index', 'full', 'baseline', 'hide',
+                'focus', 'catch', 'async', 'https', 'escape', 'round', 'target', 'blank', 'frameborder', 'scrolling', 'click', 'hidden', 'empty', 'cells', 'letter', 'static',
+                'layout', 'transform', 'word', 'right', 'weight', 'warn', 'active', 'used', 'context', 'undefined', 'counter', 'page', 'mail', 'body', 'domain', 'region',
+                'pointer', 'nowrap', 'family', 'first', 'data', 'online', 'push', 'metrika', 'callbacks', 'image', 'classname', 'protocol', 'init', 'icon', 'wrap', 'root',
+                'solid', 'facebook', 'options', 'defaults', 'offset', 'false', 'return', 'like', 'opera', 'frames', 'typeof', 'decoration'];
+            yottos_ignore = (function () {
+                var yottos_o = {};
+                var yottos_iCount = yottos_ignore.length;
+                for (var i = 0; i < yottos_iCount; i++) {
+                    yottos_o[yottos_ignore[i]] = true;
+                }
+                return yottos_o;
+            }());
+            for (i = 0; i < yottos_splitted.length; i++) {
+                var yottos_key = yottos_splitted[i].replace(/^\s*/, "").replace(/\s*$/, "");
+                if (yottos_key.length > 3) {
+                    var yottos_streem_key = yottos_stremer(yottos_key);
+                    if (!yottos_ignore[yottos_streem_key]) {
+                        yottos_collector[yottos_streem_key] = yottos_key;
+                        yottos_counter[yottos_streem_key] = yottos_counter[yottos_streem_key] || 0;
+                        yottos_counter[yottos_streem_key]++;
+                    }
+                }
+            }
+            var yottos_arr = [];
+            for (yottos_sWord in yottos_counter) {
+                if (yottos_counter[yottos_sWord] > 1) {
+                    yottos_arr.push({
+                        text: yottos_collector[yottos_sWord],
+                        streem: yottos_sWord,
+                        frequency: yottos_counter[yottos_sWord]
+                    });
+                }
+            }
+            var yottos_sort_arr = yottos_arr.sort(function (a, b) {
+                return (a.frequency > b.frequency) ? -1 : ((a.frequency < b.frequency) ? 1 : 0);
+            });
+            var yottos_out = [];
+            for (var i = 0; i < yottos_sort_arr.length; i++) {
+                yottos_out.push(yottos_sort_arr[i].text);
+            }
+            if (yottos_out.length < 1) {
+                alert('Неудалось автоматически получить ключевые слова, крикните по названию предложения скопируйте ссылку из открывшегося окна и получите слова вручную');
+            }
+
+            return (yottos_out.join(' '));
+        }
+        ;
+        yottos_snowball_cache = typeof yottos_snowball_cache !== 'undefined' ? yottos_snowball_cache : {};
+        $('#cotextkey').empty();
+        $('#cotextkey').append(yottos_getContext(url));
+    }
+</script>

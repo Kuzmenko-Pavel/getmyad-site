@@ -1,0 +1,167 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main2.mako.html" />
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+<style>
+    .message {
+        margin: 20px 20px 20px 20px;
+        width: 100%;
+        background-color: #fee;
+        height: 50px;
+        border: 1px dotted orange;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    a {
+        color: #333;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #ccc;
+        text-decoration: none
+    }
+
+    #mask {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 9000;
+        background-color: #000;
+        display: none;
+        font-family: Georgia;
+    }
+
+    #boxes .window {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: none;
+        z-index: 9999;
+        padding: 20px;
+    }
+
+    #boxes #dialog {
+        margin: 10px;
+    }
+
+    .close {
+    }
+</style>
+<script type="text/javascript" src="/lib/jquery/jquery-1.4.2.min.js"></script>
+<link type="text/css" href="/lib/css/theme/jquery-ui-1.8.1.custom.css" rel="stylesheet"/>
+<link type="text/css" href="/lib/grid/css/ui.jqgrid.css" rel="stylesheet"/>
+<link type="text/css" href="/css/main.css" rel="stylesheet"/>
+<script type="text/javascript" src="/lib/ui/jquery-ui-1.8.1.custom.min.js"></script>
+<script type="text/javascript" src="/lib/grid/js/i18n/grid.locale-ru.js"></script>
+<script type="text/javascript" src="/lib/grid/js/jquery.jqGrid.min.js"></script>
+<script type="text/javascript" src="/lib/plugins/jquery.form.js"></script>
+
+</%def>
+##%>    (для парсера)
+<div style="width:  500px; margin: 0 auto;">
+    <div style="margin:1px;">
+        <span style="font-size:20px">Название кампании: ${c.banner['title']}</span>
+        (Размер: ${c.banner['width']} на ${c.banner['height']})
+    </div>
+    <div style="margin:1px;">
+        <span style="font-size:12px">Ссылка на сайт: <a href="${c.banner['url']}" target="_blank">${c.banner['url']}</a></span>
+    </div>
+    <div style="margin:1px;">
+        <span style="font-size:16px;margin: 0 10px 0 0;">Цена за 1000 показов: ${c.banner['imp_cost']} грн</span>
+        <span style="font-size:16px;margin: 0 0 0 10px;">Остаток средств: ${'%.4f' % c.banner['budget']} грн</span>
+    </div>
+    <div style="margin:5px 1px 15px;">
+        <input type="button" value="Просмотреть вид баннер" name="modal" href="#dialog">
+    </div>
+</div>
+<div id="boxes">
+    <div id="dialog" class="window">
+        % if c.banner.get('image',None) is not None:
+        <a href="${c.banner['url']}" target="_blank"><img src="${c.banner.get('image','')}"/></a>
+        % endif
+        % if c.banner.get('html',None) is not None:
+        <a href="${c.banner['url']}" target="_blank"> ${c.banner.get('html','')} </a>
+        % endif
+        % if c.banner.get('swf',None) is not None:
+        <a href="${c.banner['url']}" target="_blank">
+            <object width="${c.banner['width']}" height="${c.banner['height']}">
+                <embed width="${c.banner['width']}" height="${c.banner['height']}" src="${c.banner.get('swf','')}"/>
+            </object>
+        </a>
+        % endif
+        <input type="button" value="Закрыть" class="close">
+    </div>
+    <div id="mask"></div>
+</div>
+<div style="width: 1020px; margin: 0 auto;">
+    <div style="float: left;">
+        <span style="text-align: right;display: none;width: 100%;">Данные актуальны на: ${c.date} </span>
+        <table id="stat"></table>
+    </div>
+    <div style="float: right;">
+        <span style="text-align: right;display: none;width: 100%;">&nbsp;</span>
+        <table id="pay"></table>
+    </div>
+</div>
+<script text="text/javascript">
+    $(document).ready(function () {
+        $("#stat").jqGrid({
+            url: "${h.url_for(controller='banner', action='stat', id=c.banner['guid'])}",
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Дата', 'Количество показов', 'Отчисления'],
+            colModel: [
+                {name: 'date', index: 'date', align: 'center', width: 200},
+                {name: 'imp', index: 'imp', align: 'center', width: 200},
+                {name: 'sum', index: 'sum', align: 'center', width: 200},
+            ],
+            caption: "Статистика показов баннера &nbsp;&nbsp; (данные актуальны на: ${c.date} )",
+            height: 'auto',
+            viewrecords: true,
+            rowNum: 900,
+            width: 600,
+            hiddengrid: false
+        });
+        $("#pay").jqGrid({
+            url: "${h.url_for(controller='banner', action='stat_pay', id=c.banner['guid'])}",
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Дата', 'Сумма пополнения'],
+            colModel: [
+                {name: 'date', index: 'date', align: 'center', width: 200},
+                {name: 'sum', index: 'sum', align: 'center', width: 200},
+            ],
+            caption: "Статистика пополнения бюджета кампании баннера",
+            height: 'auto',
+            viewrecords: true,
+            rowNum: 900,
+            width: 400,
+            hiddengrid: false
+        });
+        $('input[name=modal]').click(function (e) {
+            e.preventDefault();
+            var id = $(this).attr('href');
+            var maskHeight = $(document).height();
+            var maskWidth = $(window).width();
+            $('#mask').css({'width': maskWidth, 'height': maskHeight});
+            $('#mask').fadeIn(1000);
+            $('#mask').fadeTo("slow", 0.8);
+            var winH = $(window).height();
+            var winW = $(window).width();
+            $(id).css('top', winH / 2 - $(id).height() / 2);
+            $(id).css('left', winW / 2 - $(id).width() / 2);
+            $(id).fadeIn(2000);
+        });
+        $('.window .close').click(function (e) {
+            e.preventDefault();
+            $('#mask, .window').hide();
+        });
+        $('#mask').click(function () {
+            $(this).hide();
+            $('.window').hide();
+        });
+    })
+</script>

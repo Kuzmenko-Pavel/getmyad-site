@@ -1,0 +1,747 @@
+# -*- coding: utf-8 -*-
+<%!
+from random import randint
+id = randint(0,99999)            # Случайное число, которое будет добавляться к id формы.
+# Это нужно для случая, когда этот шаблон будет динамически загружаться во вкладки.
+# Таким образом мы обеспечиваем уникальность id формы на странице
+from getmyad.model import Permission, Account
+%>
+
+<style type="text/css">
+    tr.header {
+        cursor: pointer;
+        text-align: left;
+        font-size: 18px;
+        color: #2f55d0;
+        text-decoration: underline;
+    }
+
+    #dialogSetPassword label, #dialogSetPassword input {
+        display: block;
+    }
+
+    #dialogSetPassword input {
+        margin-bottom: 10px;
+    }
+
+    #dialogSetPassword fieldset {
+        padding: 0;
+        border: 0;
+        margin-top: 15px;
+    }
+
+    .errorMessage {
+        color: red;
+    }
+
+    span.psw-error-message, span.fields-error-message {
+        color: red;
+    }
+
+    .spanAccountSumm {
+        /* Сумма на счету */
+        font-weight: bold;
+        font-size: larger;
+    }
+</style>
+
+% if c.permission.has(Permission.EDIT_USERS_ACCOUNT):
+<div id="accordion">
+
+    <h3><a href="#">Детали пользователя</a></h3>
+
+    <div id="userDetails">
+        <h2>${c.login}</h2>
+        <button id="edit-psw-button" name="edit-psw-button" class="edit-psw-button">Изменить пароль</button>
+        % if c.account.account_type == Account.Administrator:
+        <p>
+            <button id="delete-account-button" name="delete-account-button" class="delete-account-button">Удалить
+                аккаунт
+            </button>
+        </p>
+        % endif
+        <form action="/manager/saveUserDetails" method="post" id="user-details-${id}" name="user-details-${id}">
+            <input type="hidden" name="token" id="token" value="${c.token}"/>
+            <input type="hidden" id="login" name="login" value="${c.login}"/>
+
+            <span id="fields-error-message" class="fields-error-message"></span>
+            <table>
+                <tr>
+                    <td>ФИО:</td>
+                    <td>${h.text('edit_name', value=c.edit_name)}</td>
+                </tr>
+                <tr>
+                    <td>Номер телефона:</td>
+                    <td>${h.text('edit_phone', value=c.edit_phone)}</td>
+                    </td>
+                <tr>
+                    <td>Эл. почта:</td>
+                    <td>${h.text('edit_email', value=c.edit_email)}</td>
+                </tr>
+                <tr>
+                    <td>Skype:</td>
+                    <td>${h.text('edit_skype', value=c.edit_skype)}</td>
+                </tr>
+                <tr class="header hide">
+                    <th colspan="2">
+                        Цены кликов и показов для Аккаунта <span>&rarr;</span>
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        Цена за рекламу по кликам
+                    </td>
+                </tr>
+                <tr>
+                    <td>Процент от цены рекламодателя:</td>
+                    <td>${h.text('click_percent', value=c.click_percent, type="number")} %</td>
+                </tr>
+                <tr>
+                    <td>но не менее</td>
+                    <td>${h.text('click_cost_min', value=c.click_cost_min, type="number")} грн</td>
+                </tr>
+                <tr>
+                    <td>и не более</td>
+                    <td>${h.text('click_cost_max', value=c.click_cost_max, type="number")} грн</td>
+                </tr>
+                <tr class="header hide">
+                    <th colspan="2">
+                        Настройки веток воркера <span>&rarr;</span>
+                    </th>
+                </tr>
+                <tr>
+                    <td>вес краткосрочной истории:</td>
+                    <td>${h.text('range_short_term', value=c.range_short_term, type="number")} %</td>
+                </tr>
+                <tr>
+                    <td>вес долгосрочной истории:</td>
+                    <td>${h.text('range_long_term', value=c.range_long_term, type="number")} %</td>
+                </tr>
+                <tr>
+                    <td>вес контекста:</td>
+                    <td>${h.text('range_context', value=c.range_context, type="number")} %</td>
+                </tr>
+                <tr>
+                    <td>вес поисковой истории:</td>
+                    <td>${h.text('range_search', value=c.range_search, type="number")} %</td>
+                </tr>
+                <tr>
+                    <td>вес ветки ретаргитенга:</td>
+                    <td>${h.text('range_retargeting', value=c.range_retargeting, type="number")} %</td>
+                </tr>
+                <tr class="header hide">
+                    <th colspan="2">
+                        Вывод средств <span>&rarr;</span>
+                    </th>
+                </tr>
+                <tr>
+                    <td>Минимальная сумма вывода:</td>
+                    <td>
+                        <select ${'disabled="disabled"' if c.account.account_type != 'administrator' else ''}
+                        name="edit_minsum" id="edit_minsum">
+                        % for x in [800, 720, 640, 560, 480, 400, 320, 240, 160]:
+                        <option value="${x}">${x}</option>
+                        % endfor
+                        </select> грн
+                        <script type="text/javascript">
+                            document.getElementById("edit_minsum").value = '${int(c.edit_min_out_sum)}';
+                        </script>
+                    </td>
+                </tr>
+                <tr>
+                    <td> Работа по предоплате:</td>
+                    <td>${h.checkbox('edit_prepayment', value=c.edit_prepayment, checked=c.edit_prepayment,
+                        readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Вывод на webmoney-z:</td>
+                    <td>${h.checkbox('edit_money_web_z', value=c.edit_money_web_z, checked=c.edit_money_web_z,
+                        readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Вывод на webmoney-r:</td>
+                    <td>${h.checkbox('edit_money_web_r', value=c.edit_money_web_r, checked=c.edit_money_web_r,
+                        readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Вывод на webmoney-u:</td>
+                    <td>${h.checkbox('edit_money_web_u', value=c.edit_money_web_u, checked=c.edit_money_web_u,
+                        readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Вывод наличкой:</td>
+                    <td>${h.checkbox('edit_money_cash', value=c.edit_money_cash, checked=c.edit_money_cash,
+                        readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Вывод на карточку:</td>
+                    <td>${h.checkbox('edit_money_card', value=c.edit_money_card, checked=c.edit_money_card,
+                        readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Вывод на карточку Приват Банка UAH:</td>
+                    <td>${h.checkbox('edit_money_card_pb_ua', value=c.edit_money_card_pb_ua,
+                        checked=c.edit_money_card_pb_ua, readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Вывод на карточку Приват Банка USD:</td>
+                    <td>${h.checkbox('edit_money_card_pb_us', value=c.edit_money_card_pb_us,
+                        checked=c.edit_money_card_pb_us, readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Вывод на Яндекс Деньги:</td>
+                    <td>${h.checkbox('edit_money_yandex', value=c.edit_money_yandex, checked=c.edit_money_yandex,
+                        readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td>Вывод на счёт-фактуру:</td>
+                    <td>${h.checkbox('edit_money_factura', value=c.edit_money_factura, checked=c.edit_money_factura,
+                        readonly=c.notAdmin, disabled=c.notAdmin)}
+                    </td>
+                </tr>
+                <tr class="header">
+                    <th colspan="2">
+                    </th>
+                </tr>
+                <tr>
+                    <td> Ответственный менеджер:</td>
+                    <td>
+                        <select ${'disabled="disabled"' if c.notAdmin else ''} name="edit_manager_get"
+                        id="edit_manager_get" class="user-details-manager-get">
+                        % for x in c.list_manager:
+                        <option value="${x}">${x}</option>
+                        % endfor
+                        </select>
+                        <script type="text/javascript">
+                            //						$("#user-details-${id} .user-details-manager-get").val()
+                            document.getElementById("edit_manager_get").value = '${c.edit_manager_get}';
+                            if ('${c.edit_manager_get}' == '------' || '${c.edit_manager_get}' == '')document.getElementById("edit_manager_get").selectedIndex = 0;
+                        </script>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Блокировка аккаунта:</td>
+                    <td>
+                        % if c.account.account_type == Account.Administrator:
+                        ${h.select(name="edit_account_blocked", selected_values=c.edit_account_blocked,
+                        options=[('', u'Аккаунт не заблокирован'),
+                        ('light', u'Временная приостановка'),
+                        ('filter', u'Фильтрация кликов'),
+                        ('banned', u'Полностью заблокирован') ])}
+                        % else:
+                        ${h.select(name="edit_account_blocked", selected_values=c.edit_account_blocked,
+                        options=[('', u'Аккаунт не заблокирован'),
+                        ('light', u'Временная приостановка'),
+                        ('filter', u'Фильтрация кликов'),
+                        ('banned', u'Полностью заблокирован') ], disabled=True)}
+                        % endif
+                        <acronym
+                                title="Временная приостановка используется для аккаунтов, которые перестали использовать наши информеры. Клики и показы по аккаунтам с такой блокировкой не учитываются, но пользователь может самостоятельно отменить её, зайдя в свой кабинет. Полная блокировка применяется для аккаунтов, замеченных в нарушениях и т.п. В этом случае, владелец полностью лишается своего аккаунта."
+                                style="font-size: smaller; border-bottom: 1px dashed gray"> в чём разница?</acrnonym>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Фильтрация кликов по времени:</td>
+                    <td> не мельше
+                        % if c.account.account_type == Account.Administrator:
+                        ${h.select(name="edit_time_filter_click", selected_values=c.time_filter_click,
+                        options=[(x,x) for x in xrange(5,31)])}
+                        % else:
+                        ${h.select(name="edit_time_filter_click", selected_values=c.time_filter_click,
+                        options=[(x,x) for x in xrange(5,31)], disabled=True)}
+                        % endif
+                        секунд
+                    </td>
+                </tr>
+
+            </table>
+
+            <span id="error-message"></span>
+
+            <p/>
+            <button class="submit-button">Сохранить</button>
+        </form>
+
+        <div id="dialogSetPassword" title="Установка нового пароля" style="display: none;">
+            Установить новый пароль пользователю <b><span id="dialogSetPassword_user"> %username% </span> </b>
+
+            <form>
+                <input type="hidden" name="token" id="token" value="${c.token}">
+                <fieldset>
+                    <label for="dialogSetPassword_psw1">Новый пароль:</label>
+                    <input type="text" name="dialogSetPassword_psw1" id="dialogSetPassword_psw1"
+                           class="text ui-widget-content ui-corner-all"/>
+                    <label for="dialogSetPassword_psw2">Повторите пароль:</label>
+                    <input type="text" name="dialogSetPassword_psw2" id="dialogSetPassword_psw2"
+                           class="text ui-widget-content ui-corner-all"/>
+                    <button id="generate-psw-button" name="generate-psw-button" class="generate-psw-button">
+                        Сгенерировать
+                    </button>
+                </fieldset>
+                <span id="psw-error-message" class="psw-error-message"></span>
+            </form>
+        </div>
+        <div id="dialogDeleteAccount" title="Удаление аккаунта" style="display: none;">
+            Удалить аккаунт пользователя <b><span id="dialogDeleteAccount_user"> %username% </span> </b>
+
+            <form>
+                <input type="hidden" name="token" id="token" value="${c.token}">
+                <span id="delete-error-message" class="delete-error-message"></span>
+            </form>
+        </div>
+    </div>
+
+    % if c.account.account_type == Account.Administrator:
+    <h3><a href="#">Домены</a></h3>
+
+    <div id="edit_domain_categories">
+        <form action="/manager/saveDomainCategories" method="post" id="save-domain-categories-${id}"
+              name="save-domain-categories-${id}">
+            <input type="hidden" name="token" id="token" value="${c.token}">
+            <input type="hidden" id="login" name="login" value="${c.login}"/>
+            <table>
+                <tr>
+                    <td>
+                        <label for="account_domains">Домены</label>
+                        <select name="account_domains" id="account_domains" multiple='true' size='15'>
+                            % for x in c.account_domains:
+                            <option>${x}</option>
+                            % endfor
+                        </select>
+                    </td>
+
+                    <td>
+                        <label for="categories">Категории</label>
+                        <select name="categories" id="categories" multiple='true' size='15'>
+                            % for x in c.categories:
+                            <option value="${x['guid']}">${x['title']}</option>
+                            % endfor
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <button class="submit-button">Сохранить категории</button>
+            <span id="categories-error-message" class="categories-error-message"></span>
+        </form>
+    </div>
+    % endif
+
+    <h3><a href="#">Цены кликов и показов для РБ</a></h3>
+
+    <div id="cost_block_edit">
+        <table id="table_block_cost"></table>
+    </div>
+
+    <h3><a href="#">Выводы средств</a></h3>
+
+    <div>
+        Сумма на счету <span class="spanAccountSumm">${'%.2f' % c.accountSumm} грн.</span>. <br/>
+        Доступно к выводу <span class="spanAccountSumm">${'%.2f' % c.accountOutSumm} грн.</span>. <br/>
+        % if c.prepayment:
+        Работа по предоплате.
+        % endif
+        <table id="accountMoneyOutHistoryTable"></table>
+    </div>
+
+    <h3><a href="#">Статистика</a></h3>
+
+    <div>
+        <table id="accountDomainsStatsTable"></table>
+    </div>
+
+    <!--h3><a href="#">Настройка веток воркера для РБ</a></h3>
+    <div id="settings_block_edit">
+        <table id="settings_block"></table>
+    </div-->
+
+
+</div>  <!-- end #tabs  or accordion-->
+<!--===================================================================== -->
+<script type="text/javascript">
+    function closeUserDetails() {
+        if (userDetailsTabs) {
+            $("#tabs").tabs('remove', $("#tabs").tabs('length') - 1);
+        }
+        userDetailsTabs = false;
+    }
+    ;
+    $('tr.hide').each(function () {
+        $(this).find('span').text(function (_, value) {
+            return value == '→' ? '↓' : '→'
+        });
+        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        });
+    });
+    $('tr.header').click(function () {
+        $(this).find('span').text(function (_, value) {
+            return value == '→' ? '↓' : '→'
+        });
+        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        });
+    });
+    // $("#tabs").tabs();
+    var div_to_open = ${c.div_to_open};
+    $("#accordion").accordion(
+            {
+                autoHeight: false
+            }
+    );
+    if (div_to_open == "edit_domain_categories") {
+        $("#accordion").accordion("activate", 1);
+    }
+
+    $("#dialogSetPassword").dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            'Сохранить': function () {
+                if ($("#dialogSetPassword_psw1").val().length < 6) {
+                    displayPswMessage('Длина пароля должна быть не меньше шести символов');
+                    return;
+                }
+                if ($("#dialogSetPassword_psw1").val() != $("#dialogSetPassword_psw2").val()) {
+                    displayPswMessage('Повторный пароль неверен!');
+                    return;
+                }
+                $.getJSON("/manager/setNewPassword", {
+                    psw: $("#dialogSetPassword_psw1").val(),
+                    login: $("#login").val(),
+                    token: $("#token").val()
+                }, function (json) {
+                    if (json.error) {
+                        if (json.error_type = "authorizedError")
+                            javascript:window.location.replace("/main/index")
+                        else
+                            displayPswMessage('Ошибка сохранения пароля!');
+                        return;
+                    }
+                    else {
+                        $("#dialogSetPassword").dialog('close');
+                    }
+
+                });
+            },
+            'Отменить': function () {
+                $(this).dialog('close');
+            }
+
+        }
+
+    });
+    $("#dialogDeleteAccount").dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            'Удалить': function () {
+                $.getJSON("/manager/deleteAccount", {
+                    login: $("#login").val(),
+                    token: $("#token").val()
+                }, function (json) {
+                    if (json.error) {
+                        if (json.error_type = "authorizedError")
+                            javascript:window.location.replace("/main/index")
+                        else
+                            displayDeleteMessage('Ошибка удаления!');
+                        return;
+                    }
+                    else {
+                        $("#dialogDeleteAccount").dialog('close');
+                        closeUserDetails();
+                    }
+
+                });
+            },
+            'Отменить': function () {
+                $(this).dialog('close');
+            }
+
+        }
+
+    });
+
+    $("#generate-psw-button").click(function () {
+        $.getJSON("/manager/generateNewPassword", function (json) {
+            if (json.error) {
+                displayPswMessage('Ошибка генерации пароля!');
+            } else {
+                $('#dialogSetPassword_psw1').val(json.new_password);
+                $('#dialogSetPassword_psw2').val(json.new_password);
+            }
+        })
+        return false;
+    });
+
+    $("#edit-psw-button").click(function () {
+        $('#dialogSetPassword_psw1').val('');
+        $('#dialogSetPassword_psw2').val('');
+        $('#psw-error-message').html('');
+        $('#dialogSetPassword_user').html($('#login').val());
+        $("#dialogSetPassword").dialog('open');
+    });
+    $("#delete-account-button").click(function () {
+        $('#delete-error-message').html('');
+        $('#dialogDeleteAccount_user').html($('#login').val());
+        $("#dialogDeleteAccount").dialog('open');
+    });
+
+    function displayMessage(message) {
+        $("#error-message").show().text(message).fadeOut(2500);
+    }
+    function displayCategoriesMessage(message) {
+        $("#categories-error-message").show().text(message).fadeOut(2500);
+    }
+    function displayPswMessage(message) {
+        $("#psw-error-message").show().text(message);
+    }
+    function displayDeleteMessage(message) {
+        $("#delete-error-message").show().text(message);
+    }
+
+    function displayFieldsMessage(message) {
+        $("#fields-error-message").show().text(message);
+    }
+    $('#user-details-${id} button.submit-button').click(function () {
+        $('#user-details-${id}').ajaxSubmit({
+            dataType: 'json',
+            beforeSubmit: function () {
+                $("#user-details-${id} button.submit-button").attr('disabled', true);
+            },
+            success: function (result) {
+                if (result.error == false) {
+                    displayFieldsMessage('');
+                    displayMessage("Изменения успешно сохранены.");
+                }
+                else {
+                    if (result.error_type == "authorizedError")
+                        javascript:window.location.replace("/main/index");
+                    else if (result.msg) {
+                        displayFieldsMessage(result.msg);
+                        displayMessage("Ошибка сохранения!");
+                    }
+                    else
+                        displayMessage("Ошибка сохранения!");
+
+                }
+            },
+            error: function () {
+                displayMessage("Ошибка сохранения! Попробуйте сохранить ещё раз.");
+            },
+            complete: function () {
+                $("#user-details-${id} button.submit-button").attr('disabled', false);
+            }
+        });
+        return false;
+
+    });
+
+    var domains_categories = ${h.JSON(c.domains_categories)};
+    $("#account_domains").change(function () {
+        var domain = $("#account_domains").val();
+        var categories = ${h.JSON(c.categories)};
+        var cat_count = categories.length;
+        var i = 0;
+        while (i < cat_count) {
+            var selected = false;
+            for (var j = 0; j < domains_categories[domain].length; j++) {
+                if (domains_categories[domain][j] == categories[i]['guid'])
+                    selected = true;
+            }
+            var option = new Option(categories[i]['title'], categories[i]['guid'], selected, selected);
+            document.getElementById("categories").options[i] = option;
+            i++;
+        }
+    });
+
+    $('#save-domain-categories-${id} button.submit-button').click(function () {
+        $('#save-domain-categories-${id}').ajaxSubmit({
+            dataType: 'json',
+            beforeSubmit: function () {
+                $("#save-domain-categories-${id} button.submit-button").attr('disabled', true);
+            },
+            success: function (result) {
+                if (result.error == false) {
+                    displayCategoriesMessage("Изменения успешно сохранены.");
+                    domains_categories = result.domains_categories;
+                }
+                else if (result.error_type == "authorizedError")
+                    window.location.replace("/main/index");
+                else {
+                    if (result.msg)
+                        displayCategoriesMessage(result.msg);
+                    else
+                        displayCategoriesMessage("Ошибка сохранения!");
+                }
+            },
+            error: function () {
+                displayCategoriesMessage("Ошибка сохранения! Попробуйте сохранить ещё раз.");
+            },
+            complete: function () {
+                $("#save-domain-categories-${id} button.submit-button").attr('disabled', false);
+            }
+        });
+        return false;
+
+    });
+
+    var accountMoneyOutHistory = ${c.accountMoneyOutHistory}
+            $("#accountMoneyOutHistoryTable").jqGrid({
+                datatype: function (postdata) {
+                    this.addJSONData(accountMoneyOutHistory);
+                },
+                mtype: 'GET',
+                colNames: ['Пользователь', 'Дата', 'Сумма', 'Подтверждено', 'Разрешено', 'Оплачено', 'Телефон', 'Оплата', 'Код протекции', 'Истикает', 'Примечания'],
+                colModel: [
+                    {name: 'user', index: 'user', width: 110, align: 'center', sortable: false, hidden: true},
+                    {name: 'date', index: 'date', width: 100, align: 'center', sortable: false},
+                    {name: 'sum', index: 'sum', width: 100, align: 'center', sortable: false},
+                    {name: 'user_confirmed', index: 'user_confirmed', width: 80, align: 'center', sortable: false},
+                    {name: 'manager_agreed', index: 'manager_agreed', width: 80, align: 'center', sortable: false},
+                    {name: 'approved', index: 'approved', width: 80, align: 'center', sortable: false},
+                    {name: 'phone', index: 'phone', width: 140, align: 'center', sortable: false},
+                    {name: 'payment_type', index: 'payment_type', width: 110, align: 'center', sortable: false},
+                    {name: 'protectionCode', index: 'protectionCode', width: 80, align: 'center', sortable: false},
+                    {name: 'protectionDate', index: 'protectionDate', width: 80, align: 'center', sortable: false},
+                    {name: 'details', index: 'details', width: 420, align: 'left', sortable: false}
+                ],
+                caption: "История вывода средств",
+                gridview: true,
+                rownumbers: false,
+                rowNum: 30,
+                forceFit: true,
+                height: 250
+            });
+
+    $("#accountDomainsStatsTable").jqGrid({
+        caption: "Статистика доменов пользователя",
+        datatype: 'json',
+        url: '/manager/userDomainDetails',
+        postData: {user: '${c.login}'},
+        mtype: 'GET',
+        gridview: true,
+        rowNum: 1000,
+        height: 250,
+        forceFit: true,
+        colNames: ['Дата', 'Домен', 'Показы РБ</br>не гарантированные', 'Показы</br>РБ', 'Показы</br>РП', 'Клики', 'Уникальные клики', 'Ср цена</br>РП', 'CTR РП, %', 'CTR РБ, %',
+            'Итого', 'Социальные</br>Клики', 'Социальные</br>Показы</br>РП', 'Показы в видимой области',],
+        colModel: [
+            {name: 'date', index: 'date', width: 140, align: 'center', sortable: true, firstsortorder: 'desc'},
+            {name: 'domain', index: 'domain', width: 200, align: 'center', sortable: true},
+            {name: 'imp_block_nv', index: 'imp_block_nv', width: 80, align: 'center', sortable: false},
+            {name: 'imp_block', index: 'imp_block', width: 80, align: 'center', sortable: false},
+            {name: 'imp', index: 'imp', width: 80, align: 'center', sortable: false},
+            {name: 'clicks', index: 'clicks', width: 80, align: 'center', sortable: false},
+            {name: 'unique', index: 'unique', width: 80, align: 'center', sortable: false},
+            {name: 'cost', index: 'cost', width: 80, align: 'center', sortable: false},
+            {name: 'ctr', index: 'ctr', width: 80, align: 'center', sortable: false},
+            {name: 'ctr_block', index: 'ctr_block', width: 80, align: 'center', sortable: false},
+            {name: 'summ', index: 'summ', width: 80, align: 'center', sortable: false},
+            {name: 'soc_clicks', index: 'clicks', width: 80, align: 'center', sortable: false},
+            {name: 'soc_imp', index: 'imp', width: 80, align: 'center', sortable: false},
+            {name: 'viewport', index: 'imp_block', width: 80, align: 'center', sortable: false}
+        ]
+    });
+
+    var block_cost_data = ${c.informers};
+    %
+    if c.account.account_type == Account.Administrator:
+    var editrulecp = {minValue: 1, maxValue: 99, number: true};
+    var editrulecn = {number: true};
+    var editrulecm = {number: true};
+    var editruleip = {minValue: 1, maxValue: 99, number: true};
+    var editrulein = {number: true};
+    var editruleim = {number: true};
+    % else:
+    var editrulecp = {minValue: 25, maxValue: 75, number: true};
+    var editrulecn = {minValue: 0.01, maxValue: 0.1, number: true};
+    var editrulecm = {minValue: 0.5, maxValue: 4.0, number: true};
+    var editruleip = {minValue: 25, maxValue: 75, number: true};
+    var editrulein = {minValue: 0.01, maxValue: 0.1, number: true};
+    var editruleim = {minValue: 0.5, maxValue: 16.0, number: true};
+    %
+    endif
+    $(document).ready(function () {
+        $("#table_block_cost").jqGrid({
+            datatype: 'local',
+            data: block_cost_data,
+            colNames: ['', 'Ред/Сох', 'Название', 'Процент цены</br>за клик', 'Минимальная цена</br>за клик', 'Максимальная цена</br>за клик'],
+            colModel: [
+                {name: 'act', index: 'act', width: 45, sortable: false},
+                {name: 'id', index: 'id', align: 'center', hidden: true},
+                {name: 'title', index: 'title', align: 'center', sortable: false, editable: false, width: 270},
+                {
+                    name: 'click_percent',
+                    index: 'click_percent',
+                    sortable: false,
+                    width: 100,
+                    align: 'center',
+                    editable: true,
+                    edittype: "text",
+                    editoptions: {size: 10, maxlength: 5},
+                    editrules: editrulecp
+                },
+                {
+                    name: 'click_cost_min',
+                    index: 'click_cost_min',
+                    sortable: false,
+                    width: 125,
+                    align: 'center',
+                    editable: true,
+                    edittype: "text",
+                    editoptions: {size: 10, maxlength: 5},
+                    editrules: editrulecn
+                },
+                {
+                    name: 'click_cost_max',
+                    index: 'click_cost_max',
+                    sortable: false,
+                    width: 125,
+                    align: 'center',
+                    editable: true,
+                    edittype: "text",
+                    editoptions: {size: 10, maxlength: 5},
+                    editrules: editrulecm
+                },
+            ],
+            gridComplete: function () {
+                var ids = jQuery("#table_block_cost").jqGrid('getDataIDs');
+                for (var i = 0; i < ids.length; i++) {
+                    var cl = ids[i];
+                    be = "<input style='height:22px;width:40px;' type='button' value='Ред' onclick=\"jQuery('#table_block_cost').editRow('" + cl + "');\"  />";
+                    se = "<input style='height:22px;width:40px;' type='button' value='Сох' onclick=\"jQuery('#table_block_cost').saveRow('" + cl + "');\"  />";
+                    re = "<input style='height:22px;width:40px;' type='button' value='Отм' onclick=\"jQuery('#table_block_cost').restoreRow('" + cl + "');\"  />";
+                    jQuery("#table_block_cost").jqGrid('setRowData', ids[i], {act: be + se + re});
+                }
+            },
+            caption: "Установка цен для РБ",
+            editurl: "/manager/informer_cost_save",
+            height: 'auto',
+            sortname: 'title',
+            sortorder: 'asc',
+            viewrecords: true,
+            rowNum: 900,
+            autowidth: true,
+            hiddengrid: false
+        });
+
+    })
+</script>
+% endif
+
+</body>
+</html>

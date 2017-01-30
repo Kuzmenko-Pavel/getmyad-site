@@ -1,0 +1,15 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%
+c.Comment = True
+%>
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+</%def>
+
+<h2>Действие акканута временно приостановлено</h2>
+
+<p>Ваш аккаунт был временно заблокирован из-за долгого отсутствия активности. <br/>
+    Если вы желаете продолжить использовать систему GetMyAd, щёлкните здесь:
+    <a href="${h.url_for(controller='main', action='resumeAccount', id=c.login)}">Разблокировать мой аккаунт!</a>
+</p> 

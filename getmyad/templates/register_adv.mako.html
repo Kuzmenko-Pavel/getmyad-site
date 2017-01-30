@@ -1,0 +1,247 @@
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>Yottos GetMyAd</title>
+<meta name="description"
+      content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+</%def>
+
+<div id="create_account_block">
+
+    <h2>Регистрация пользователя GetMyAd! </h2>
+    ${h.form(h.url_for(controller='register_adv', action='createUser', qualified=False), method='post')}
+    <fieldset>
+        <ol>
+            <li>
+                <label>Тип аккаунта: </label>
+                ${h.select('account_type', 'user', [
+                ('user', u'пользователь'),
+                ('manager', u'менеджер'),
+                ('admin', u'администратор')
+                ])}
+                <script type="text/javascript">
+                    document.getElementById("account_type").value = '${c.account_type}';
+                    if ('${c.account_type}' == '')document.getElementById("account_type").selectedIndex = 0;
+                    document.getElementById("account_type").onchange = function () {
+                        if (document.getElementById("account_type").value == 'user') {
+                            document.getElementById('create_user_account').style.display = 'block';
+                            document.getElementById('create_manager_account').style.display = 'none';
+                        } else {
+                            document.getElementById('create_user_account').style.display = 'none';
+                            document.getElementById('create_manager_account').style.display = 'block';
+                        }
+                    }
+                </script>
+            </li>
+        </ol>
+    </fieldset>
+
+
+    <div id="create_user_account">
+        %if c.user_error_messages:
+        <p class="errorMessage">${c.user_error_messages}</p>
+        %endif
+
+
+        <fieldset>
+            <ol>
+                <li>
+                    <label for="name">ФИО*: </label>${h.text('name', value=c.name)}
+                </li>
+                <li>
+                    <label for="siteURL">URL главной страницы сайта*:</label>${h.text('siteUrl', value=c.siteUrl)}
+                </li>
+                <li>
+                    <label for="phone">Номер телефона*:</label>${h.text('phone', value=c.phone)}
+                </li>
+                <li>
+                    <label for="email">Эл. почта*:</label>${h.text('email', value=c.email)}
+                </li>
+                <li>
+                    <label for="email">Skype:</label>${h.text('skype', value=c.skype)}
+                </li>
+                <li>
+                    Цена за рекламу по кликам
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="click_percent">Процент от цены рекламодателя:</label>
+                    ${h.text('click_percent', value=c.click_percent)} %
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="click_cost_min">но не менее</label>
+                    ${h.text('click_cost_min', value=c.click_cost_min)} грн
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="click_cost_max">и не более</label>
+                    ${h.text('click_cost_max', value=c.click_cost_max)} грн
+                </li>
+
+                <li>
+                    Цена за рекламу по показам (за 1000 показов)
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="imp_percent">Процент от цены рекламодателя:</label>
+                    ${h.text('imp_percent', value=c.imp_percent)} %
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="imp_cost_min">но не менее</label>
+                    ${h.text('imp_cost_min', value=c.imp_cost_min)} грн
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="imp_cost_max">и не более</label>
+                    ${h.text('imp_cost_max', value=c.imp_cost_max)} грн
+                </li>
+                <li>
+                    Настройки веток модуля
+                </li>
+
+                <li class="floatingCostOptions">
+                    <label for="range_short_term">вес краткосрочной истории</label>
+                    ${h.text('range_short_term', value=c.range_short_term)} %
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="range_long_term">вес долгосрочной истории</label>
+                    ${h.text('range_long_term', value=c.range_long_term)} %
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="range_context">вес контекста</label>
+                    ${h.text('range_context', value=c.range_context)} %
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="range_search">вес поисковой истории</label>
+                    ${h.text('range_search', value=c.range_search)} %
+                </li>
+                <li class="floatingCostOptions">
+                    <label for="range_retargeting">вес ветки ретаргетинга</label>
+                    ${h.text('range_retargeting', value=c.range_retargeting)} %
+                </li>
+                <li>
+                    <label for="minsum">Минимальная сумма для вывода средств*:</label>
+                    <select name="minsum" id="minsum">
+                        <%
+                        spisok = [800, 720, 640, 560, 480, 400, 320, 240, 160]
+                        %>
+                        % for x in spisok:
+                        <option value="${x}">${x}</option>
+                        % endfor
+                    </select> грн
+                    <script type="text/javascript">
+                        document.getElementById("minsum").value = '${c.minsum or "800"}';
+                    </script>
+                </li>
+                <li>
+                    <label for="money_cash">Возможность вывода наличными:</label>
+                    ${h.checkbox('money_cash', value=c.money_cash, checked=c.money_cash)}
+                </li>
+                <li>
+                    <label for="money_web_z">Возможность вывода средств на webmoney-z:</label>
+                    ${h.checkbox('money_web_z', value=c.money_web_z, checked=c.money_web_z)}
+                </li>
+                <li>
+                    <label for="money_web_r">Возможность вывода средств на webmoney-r:</label>
+                    ${h.checkbox('money_web_r', value=c.money_web_r, checked=c.money_web_r)}
+                </li>
+                <li>
+                    <label for="money_web_u">Возможность вывода средств на webmoney-u:</label>
+                    ${h.checkbox('money_web_u', value=c.money_web_u, checked=c.money_web_u)}
+                </li>
+                <li>
+                    <label for="money_card">Возможность вывода средств на пластиковую карту:</label>
+                    ${h.checkbox('money_card', value=c.money_card, checked=c.money_card)}
+                </li>
+                <li>
+                    <label for="money_card_pb_ua">Возможность вывода средств на пластиковую карту Приват Банка
+                        UAH:</label>
+                    ${h.checkbox('money_card_pb_ua', value=c.money_card_pb_ua, checked=c.money_card_pb_ua)}
+                </li>
+                <li>
+                    <label for="money_card_pb_us">Возможность вывода средств на пластиковую карту Приват Банка
+                        USD:</label>
+                    ${h.checkbox('money_card_pb_us', value=c.money_card_pb_us, checked=c.money_card_pb_us)}
+                </li>
+                <li>
+                    <label for="money_factura">Возможность вывода средств на счёт-фактуру:</label>
+                    ${h.checkbox('money_factura', value=c.money_factura, checked=c.money_factura)}
+                </li>
+
+                <li>
+                    <label for="money_yandex">Возможность вывода средств на Яндекс Деньги:</label>
+                    ${h.checkbox('money_yandex', value=c.money_yandex, checked=c.money_yandex)}
+                </li>
+                <li>
+                </li>
+                <label for="categories">Категории</label>
+                ${h.select("categories","",c.categories,multiple=True)}
+                </li>
+                <li>
+                    <label for="manager_get"> Ответственный менеджер*: </label>
+                    <select name="manager_get" id="manager_get">
+                        % for x in c.list_manager:
+                        <option value="${x}">${x}</option>
+                        % endfor
+                    </select>
+                    <script type="text/javascript">
+                        var mgr = '${c.manager_get}';
+                        if (mgr != '')document.getElementById("manager_get").value = mgr;
+                        else document.getElementById("manager_get").selectedIndex = 0;
+
+                    </script>
+                </li>
+                <div id="regbutton_div">
+                    <input id="regbutton" name="regButton" type="submit" value="Зарегистрировать"/>
+                </div>
+            </ol>
+        </fieldset>
+
+    </div>
+
+    <div id="create_manager_account" style="display: none;">
+        %if c.manager_error_messages:
+        <p class="errorMessage">${c.manager_error_messages}</p>
+        %endif
+
+        <fieldset>
+            <ol>
+                <li>
+                    <label for="manager_name">ФИО*: </label>${h.text('manager_name', value=c.manager_name)}
+                </li>
+                <li>
+                    <label for="manager_login">Логин*:</label>${h.text('manager_login', value=c.manager_login)}
+                </li>
+                <li>
+                    <label for="manager_phone">Номер телефона*:</label>${h.text('manager_phone', value=c.manager_phone)}
+                </li>
+                <li>
+                    <label for="manager_email">Эл. почта*:</label>${h.text('manager_email', value=c.manager_email)}
+                </li>
+                <li>
+                    <label for="manager_email">Skype *:</label>${h.text('manager_skype', value=c.manager_skype)}
+                </li>
+
+                <div id="regbutton_div">
+                    <input id="regbutton" name="regButton" type="submit" value="Зарегистрировать"/>
+                </div>
+            </ol>
+        </fieldset>
+
+        ${h.end_form()}
+
+    </div>
+
+
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+        // Начальный значения типа регистрируемого аккаунта
+        if ('${c.account_type}' == 'user' || '${c.account_type}' == '') {
+            $('#create_user_account').show();
+            $('#create_manager_account').hide();
+        } else {
+            $('#create_user_account').hide();
+            $('#create_manager_account').show();
+        }
+
+    });
+
+</script>

@@ -1,0 +1,115 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+<title>GetMyAd | Проверка работоспособности рекламных выгрузок</title>
+<meta name="description"
+      content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+</%def>
+<div id="checkInformers">
+    <h1>Проверка работоспособности информеров</h1>
+
+    <p>Сервер показа рекламы: <b>${c.getmyad_worker_server}</b></p>
+
+    <p> Страна:
+        <%
+        countries = {'AZ': u'Азербайджан',
+        'AM': u'Армения',
+        'BY': u'Беларусь',
+        'KZ': u'Казахстан',
+        'KG': u'Киргизия',
+        'MD': u'Молдавия',
+        'RU': u'Россия',
+        'TJ': u'Таджикистан',
+        'TM': u'Туркмения',
+        'UZ': u'Узбекистан',
+        'UA': u'Украина'}
+        %>
+        <select id="selectCountry">
+            % for x in countries.items():
+            <option value="${x[0]}">${x[1]}</option>
+            %endfor
+        </select>
+
+    </p>
+    <p> Область: ${h.select(name="regiontargeting", selected_values=c.selected_region, options=c.all_geo_regions) } </p>
+
+    <script type="text/javascript">
+        var selectCountry = document.getElementById("selectCountry");
+        selectCountry.value = '${c.country or "UA"}';
+        selectCountry.onchange = function () {
+            window.location.href = '/manager/checkInformers/' + selectCountry.value;
+        }
+        regiontargeting.onchange = function () {
+            var url = "/manager/checkInformers/" + selectCountry.value;
+            var region = regiontargeting.value;
+            if (region)
+                url += "?region=" + escape(regiontargeting.value);
+            window.location.href = url;
+        }
+    </script>
+    <p><b></b></p>
+    <table class="datatable">
+        <tr>
+            <th></th>
+            <th>Быстрый переход к аккаунтам:</th>
+        </tr>
+        <% current_account = ' ' %>
+        % for inf in c.informers:
+        % if current_account <> inf['user']:
+        % if current_account[0] <> inf['user'][0]: # Первая буква
+        <% first = True %>
+        </tr></td>
+        <tr>
+            <td><b>${inf['user'][0]}</b></td>
+            <td>
+                % endif
+                <% current_account = inf['user'] %>
+                % if not first:
+                <span style="color:#9a9"> | </span>
+                % endif
+                <% first = False %>
+                <a class="account-link" href="javascript:void(0);">${current_account}</a>
+                % endif
+                % endfor
+    </table>
+
+    <hr/>
+
+    <div id="informerView"></div>
+
+
+    <script>
+        var informers = ${h.JSON(c.informers)};
+
+        $(function () {
+
+            /** Возвращает html для проверки информера informer */
+            function InformerHtml(informer) {
+                var url = "${c.getmyad_worker_server}";
+                url += '?scr=' + informer.guid +
+                        '&test=true' +
+                        '&mod=' + informer.lastModified +
+                        '&country=' + $('#selectCountry').val() +
+                        '&region=' + encodeURIComponent($("#regiontargeting").val());
+                return '<h2><u>' + informer.domain + '</u> ' + informer.title + '</h2>' +
+                        '<ifr' + 'ame src="' + url + '" ' +
+                        'width="' + informer.width + '" height="' + informer.height +
+                        '" frameborder="0" scrolling="no"></iframe>';
+            }
+
+            /** Отображает для проверки все информеры пользователя user */
+            function ShowInformersByUser(user) {
+                var content = '<h1> Проверка информеров пользователя ' + user + '</h1>';
+                for (var i = 0; i < informers.length; i++) {
+                    if (informers[i].user == user)
+                        content += InformerHtml(informers[i]);
+                }
+                $("#informerView").html(content);
+            }
+
+            $(".account-link").click(function () {
+                ShowInformersByUser($(this).text());
+            })
+        });
+    </script>
+</div>
