@@ -4,96 +4,90 @@ c.Comment = False
 %>
 <!DOCTYPE html>
 % if url.current() == '/':
-<html manifest="getmyad.cache">
+    <html manifest="getmyad.cache">
 % else:
-<html>
+    <html>
 %endif
-<head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <meta name="keywords"
-          content="Yottos, GetMyAd, реклама, контекстная, текстовый формат, баннер, баннерная сеть, показы баннеров, демонстрация баннера, размещение баннера на странице, размещение баннера на сайте, располагать баннер, рекламная сеть, тизер, партнерская программа, партнерская сеть, тизерная, заработок, Интернет, свой сайт, размещение рекламы, click, реклама на сайте, заработать на сайте, максимум дохода от своего контента, заработок в интернете без вложений, заработок в интернете за клики, как заработать в интернете, партнерские программы заработка, высокий ctr, Internet реклама, реклама в Интернет"/>
+    <head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="keywords" content="Yottos, GetMyAd, реклама, контекстная, текстовый формат, баннер, баннерная сеть, показы баннеров, демонстрация баннера, размещение баннера на странице, размещение баннера на сайте, располагать баннер, рекламная сеть, тизер, партнерская программа, партнерская сеть, тизерная, заработок, Интернет, свой сайт, размещение рекламы, click, реклама на сайте, заработать на сайте, максимум дохода от своего контента, заработок в интернете без вложений, заработок в интернете за клики, как заработать в интернете, партнерские программы заработка, высокий ctr, Internet реклама, реклама в Интернет"/>
 
-
-    <link rel="stylesheet" href="/css/style.css" type="text/css" media="screen, projection"/>
-    <link type="text/css" href="/lib/css/theme/jquery-ui-1.8.1.custom.css" rel="stylesheet"/>
-    <link type="text/css" href="/lib/grid/css/ui.jqgrid.css" rel="stylesheet"/>
-    <link rel="stylesheet" media="screen" type="text/css" href="/lib/colorpicker/css/colorpicker.css"/>
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css" media="screen, projection" />
+	<link type="text/css" href="/lib/css/theme/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
+    <link type="text/css" href="/lib/grid/css/ui.jqgrid.css" rel="stylesheet" />
+    <link rel="stylesheet" media="screen" type="text/css" href="/lib/colorpicker/css/colorpicker.css" />
 
 
     <script src="/lib/jquery/jquery-1.9.1.min.js"></script>
     <script src="/lib/jquery/jquery-migrate-1.2.1.min.js"></script>
     <script type="text/javascript" src="/lib/plugins/jquery.tools.min.js"></script>
-    <script type="text/javascript" src="/lib/plugins/jquery.form.js"></script>
-    <script type="text/javascript" src="/lib/plugins/jquery.tooltip.min.js"></script>
-    <script type="text/javascript" src="/lib/flot/jquery.flot.min.js"></script>
+	<script type="text/javascript" src="/lib/plugins/jquery.form.js"></script>
+	<script type="text/javascript" src="/lib/plugins/jquery.tooltip.min.js"></script>
+	<script type="text/javascript" src="/lib/flot/jquery.flot.min.js"></script>
     <script type="text/javascript" src="/lib/ui/i18n/ui.datepicker-ru.js"></script>
-    <script type="text/javascript" src="/lib/ui/jquery-ui-1.8.1.custom.min.js"></script>
+	<script type="text/javascript" src="/lib/ui/jquery-ui-1.8.1.custom.min.js"></script>
     <script type="text/javascript" src="/lib/colorpicker/colorpicker.js"></script>
     <script type="text/javascript" src="/lib/plugins/template.js"></script>
     <script type="text/javascript" src="/lib/plugins/json2.js"></script>
-    <script type="text/javascript" src="/lib/grid/js/i18n/grid.locale-ru.js"></script>
-    <script type="text/javascript" src="/lib/grid/js/jquery.jqGrid.min.js"></script>
+	<script type="text/javascript" src="/lib/grid/js/i18n/grid.locale-ru.js" ></script>		
+	<script type="text/javascript" src="/lib/grid/js/jquery.jqGrid.min.js" ></script>		
     <script type="text/javascript" src="/lib/plugins/swfobject.js"></script>
 
-    <!--[if lte IE 6]>
-    <link rel="stylesheet" href="/css/style_ie.css" type="text/css" media="screen, projection"/><![endif]-->
-    <!--[if IE]>
-    <script type="text/javascript" src="/lib/plugins/excanvas.compiled.js"></script><![endif]-->
+    <!--[if lte IE 6]><link rel="stylesheet" href="/css/style_ie.css" type="text/css" media="screen, projection" /><![endif]-->
+	<!--[if IE]><script type="text/javascript" src="/lib/plugins/excanvas.compiled.js"></script><![endif]-->
     <script type='text/javascript'><!--
-    $(document).ready(function () {
-        enableSelectBoxes();
-    });
-
-    function enableSelectBoxes() {
-        $('div.selectBox').each(function () {
-            $(this).children('span.selected,span.selectArrow').click(function () {
-                if ($(this).parent().children('div.selectOptions').css('display') == 'none') {
-                    $(this).parent().children('div.selectOptions').css('display', 'block');
-                    $(this).parent().children('span.selectArrow').css('color', '#9ecf00');
-                    $(this).parent().children('span.selected,span.selectArrow').css('background-color', '#f9f9f9');
+                $(document).ready(function() {
+                    enableSelectBoxes();
+                });
+                
+                function enableSelectBoxes(){
+                    $('div.selectBox').each(function(){
+                        $(this).children('span.selected,span.selectArrow').click(function(){
+                            if($(this).parent().children('div.selectOptions').css('display') == 'none'){
+                                $(this).parent().children('div.selectOptions').css('display','block');
+                                $(this).parent().children('span.selectArrow').css('color','#9ecf00');
+                                $(this).parent().children('span.selected,span.selectArrow').css('background-color','#f9f9f9');
+                            }
+                            else
+                            {
+                                $(this).parent().children('div.selectOptions').css('display','none');
+                            }
+                        });
+                        
+                        $(this).find('span.selectOption').click(function(){
+                            $(this).parent().css('display','none');
+                            $(this).closest('div.selectBox').attr('value',$(this).attr('value'));
+                            $(this).parent().siblings('span.selected').html($(this).html());
+                        });
+                    }); 
                 }
-                else {
-                    $(this).parent().children('div.selectOptions').css('display', 'none');
-                }
-            });
-
-            $(this).find('span.selectOption').click(function () {
-                $(this).parent().css('display', 'none');
-                $(this).closest('div.selectBox').attr('value', $(this).attr('value'));
-                $(this).parent().siblings('span.selected').html($(this).html());
-            });
-        });
-    }
-    //-->
+        //-->
     </script>
     ${self.head()}
 </head>
 <body>
-<script type="text/javascript">
-    yottos_ac = '43711F9F-464B-4DA2-A013-D23A581A9538';
-    yottos_remarketing_offer_id = 2;
-    yottos_remarketing_time = 30;
-</script>
-<script type="text/javascript" src="https://cdn.yottos.com/getmyad/_t.js"></script>
-<div id="conteiner">
+    <script type="text/javascript">
+        yottos_ac = '43711F9F-464B-4DA2-A013-D23A581A9538';
+        yottos_remarketing_offer_id = 2; 
+        yottos_remarketing_time = 30; 
+    </script> 
+    <script type="text/javascript" src="https://cdn.yottos.com/getmyad/_t.js"></script>
+    <div id="conteiner">
     <div id="headerBorder">
-        <div id="header">
-            <%include file="include/main/header.mako.html"/>
-        </div>
-        <!-- #header-->
+    <div id="header">
+        <%include file="include/main/header.mako.html"/>
+    </div><!-- #header-->
     </div>
     <div id="wrapper">
         <div id="content">
             ${self.body()}
-        </div>
-        <!-- #content-->
+        </div><!-- #content-->
+    </div><!-- #wrapper -->
     </div>
-    <!-- #wrapper -->
-</div>
-<div id="footer">
-    <%include file="include/main/footer.mako.html"/>
-</div>
-<!-- #footer -->
+    <div id="footer">
+        <%include file="include/main/footer.mako.html"/>
+    </div><!-- #footer -->
 </body>
 
 </html>

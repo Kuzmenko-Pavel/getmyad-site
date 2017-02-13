@@ -1,751 +1,689 @@
 # -*- coding: utf-8 -*-
 <%inherit file="/main.mako.html" />
 <%def name="head()">
-<title>Статистика GetMyAd</title>
-<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
-<link href="/css/jquery.formstyler.css" rel="stylesheet"/>
-<script src="/js/jquery.formstyler.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+    <title>Статистика GetMyAd</title>
+    <link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection" />
+	<link href="/css/jquery.formstyler.css" rel="stylesheet" />
+    <script src="/js/jquery.formstyler.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 </%def>
 <style type="text/css">
 
-    .list {
-        width: 190px;
-    }
+.list {
+	width: 190px;
+}	
+.conditions {
+    margin: 10px;
+	padding: 5px; 
+}
 
-    .conditions {
-        margin: 10px;
-        padding: 5px;
-    }
+#common {
+	float: left;
+} 
 
-    #common {
-        float: left;
-    }
+.opt {
+/*	color: green;
+	padding: 50px;*/ 
+}
 
-    .opt {
-        /*	color: green;
-            padding: 50px;*/
-    }
-
-    th {
-        padding-top: 15px;
-        text-align: left;
-    }
-
-    .jq-select-multiple ul {
-        min-height: 400px;
-    }
+th {
+    padding-top: 15px;
+    text-align: left;
+}
+.jq-select-multiple ul{
+    min-height: 400px;
+}
 </style>
 
 <div id="conditions" class="conditions">
-    <a href="${h.url_for(controller='adload', action='campaign_overview', id=c.campaign.id)}">&larr; к управлению
-        кампанией</a>
-
-    <form action="/adload/saveConditions" method="post" id="conditions_form" name="conditions_form">
-        <input type="hidden" name="token" value="${c.token}"/>
-        <table>
-            <tr>
-                <th>
-                    <label for="time_from">Время показа: </label>
+    <a href="${h.url_for(controller='adload', action='campaign_overview', id=c.campaign.id)}">&larr; к управлению кампанией</a>
+	 <form action="/adload/saveConditions" method="post" id="conditions_form" name="conditions_form">
+	 	<input type="hidden" name="token" value="${c.token}"/>
+		<table>
+			<tr>
+				<th>
+					<label for="time_from">Время показа: </label>
                 </th>
             </tr>
             <tr>
-                <td>
-                    <%
-                    def timeToStr(time):
-                    time = int(time)
-                    if time <=9:
-                    time = '0' + str(time)
-                    return time
-
-                    c.startShowTimeHours = timeToStr(c.startShowTimeHours)
-                    c.startShowTimeMinutes = timeToStr(c.startShowTimeMinutes)
-                    c.endShowTimeHours= timeToStr(c.endShowTimeHours)
-                    c.endShowTimeMinutes = timeToStr(c.endShowTimeMinutes)
-
-                    hours = []
-                    i = 0
-                    while i <= 24:
-                    if i <=9:
-                    hours.append('0' + str(i))
-
-                    else: hours.append(i)
-                    i += 1
-                    minutes = ['00', '15', '30', 45]
-                    %>
-                    c
-                    <select name="hours_from" id="hours_from">
-                        % for x in hours:
-                        <option> ${x}</option>
-                        % endfor
-                    </select>
-                    <b>:</>
-                    <select name="minutes_from" id="minutes_from">
-                        % for x in minutes:
-                        <option> ${x}</option>
-                        % endfor
-                    </select>
-                    до
-                    <select name="hours_to" id="hours_to">
-                        % for x in hours:
-                        <option> ${x}</option>
-                        % endfor
-                    </select>
-                    <b>:</>
-                    <select name="minutes_to" id="minutes_to">
-                        % for x in minutes:
-                        <option> ${x}</option>
-                        % endfor
-                    </select>
-                    <script type="text/javascript">
-                        document.getElementById('hours_from').value = '${c.startShowTimeHours}';
-                        document.getElementById('minutes_from').value = '${c.startShowTimeMinutes}';
-                        document.getElementById('hours_to').value = '${c.endShowTimeHours}';
-                        document.getElementById('minutes_to').value = '${c.endShowTimeMinutes}';
-                    </script>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="daysOFWeek">Дни недели: </label>
+				<td>
+					<%
+						def timeToStr(time):
+							time = int(time)
+							if time <=9:
+								time = '0' + str(time)
+							return time		
+							
+						c.startShowTimeHours = timeToStr(c.startShowTimeHours)
+						c.startShowTimeMinutes = timeToStr(c.startShowTimeMinutes)
+						c.endShowTimeHours= timeToStr(c.endShowTimeHours)
+						c.endShowTimeMinutes = timeToStr(c.endShowTimeMinutes)
+							
+						hours = []
+						i = 0
+						while i <= 24:
+							if i <=9:
+								hours.append('0' + str(i))
+								
+							else: hours.append(i)
+							i += 1
+						minutes = ['00', '15', '30', 45]	
+					%>
+					c 
+					  <select name="hours_from" id="hours_from">
+						% for x in hours:
+							<option> ${x} </option>
+						% endfor  
+					  </select>
+					  <b>:</>			
+					  <select name="minutes_from" id="minutes_from">
+						% for x in minutes:
+							<option> ${x} </option>
+						% endfor
+					  </select>
+					   до
+					  <select name="hours_to" id="hours_to">
+						% for x in hours:
+							<option> ${x} </option>
+						% endfor  
+					  </select>
+					  <b>:</>			
+					  <select name="minutes_to" id="minutes_to">
+						% for x in minutes:
+							<option> ${x} </option>
+						% endfor
+					  </select>
+					  <script type="text/javascript">
+						document.getElementById('hours_from').value = '${c.startShowTimeHours}';
+						document.getElementById('minutes_from').value = '${c.startShowTimeMinutes}';
+						document.getElementById('hours_to').value = '${c.endShowTimeHours}';
+						document.getElementById('minutes_to').value = '${c.endShowTimeMinutes}';
+					  </script>
+				</td>
+			</tr>
+			<tr>
+				<th>	
+					<label for="daysOFWeek">Дни недели: </label>
                 </th>
             </tr>
             <tr>
-                <td>
-                    <%
-                    daysOfWeek = [u'Пн', u'Вт', u'Ср', u'Чт', u'Пт', u'Сб', u'Вс']
-                    i = 0
-                    %>
-                    % for x in daysOfWeek:
-                    <%
-                    i += 1
-                    if i in c.days:
-                    check = True
-                    else:
-                    check = False
-                    name = 'day' + str(i)
-                    %>
-                    <b>${x}</b>
-                    % if check:
-                    <input type="checkbox" name="${name}" id="${name}" checked=""/>
-                    % else:
-                    <input type="checkbox" name="${name}" id="${name}"/>
-                    %endif
-                    % endfor
-                </td>
+				<td>
+					<%
+						daysOfWeek = [u'Пн', u'Вт', u'Ср', u'Чт', u'Пт', u'Сб', u'Вс']
+						i = 0
+					%>
+					% for x in daysOfWeek:
+					<%
+					 	i += 1
+						if i in c.days:
+							check = True
+						else:
+							check = False	
+						name = 'day' + str(i)
+					 %>  
+						<b>${x}</b>
+						% if check:
+							<input type="checkbox" name="${name}" id="${name}" checked=""/>
+						% else:	
+							<input type="checkbox" name="${name}" id="${name}"/>
+						%endif
+					% endfor
+				</td>
+			</tr>	
+			<tr >
+				<th>
+					<label for="UnicImpressionLot">Уникальность показа: </label>
+				</th>
             </tr>
             <tr>
-                <th>
-                    <label for="UnicImpressionLot">Уникальность показа: </label>
-                </th>
+				<td>	
+					<input type="number" min="1" max="10"  name="UnicImpressionLot" id="UnicImpressionLot" value="${c.UnicImpressionLot}"/>
+				</td>	
+            </tr>
+			<tr >
+				<th>
+					<label for="offer_by_campaign_unique">Кол-во РП в рекламном блоке: </label>
+				</th>
             </tr>
             <tr>
-                <td>
-                    <input type="number" min="1" max="10" name="UnicImpressionLot" id="UnicImpressionLot"
-                           value="${c.UnicImpressionLot}"/>
-                </td>
+				<td>	
+					<input type="number"  name="offer_by_campaign_unique" id="offer_by_campaign_unique" value="${c.offer_by_campaign_unique}"/>
+				</td>	
+            </tr>
+			<tr >
+				<th>
+					<label for="load_count">Кол-во загружаемых РП: </label>
+				</th>
             </tr>
             <tr>
-                <th>
-                    <label for="offer_by_campaign_unique">Кол-во РП в рекламном блоке: </label>
-                </th>
+				<td>	
+					<input type="number" min="100" max="1000000"  name="load_count" id="load_count" value="${c.load_count}"/>
+				</td>	
+            </tr>
+            <tr>  
+			  <th>
+			    <label for="all_categories">Категория товаров:</label>
+			  </th>
             </tr>
             <tr>
-                <td>
-                    <input type="number" name="offer_by_campaign_unique" id="offer_by_campaign_unique"
-                           value="${c.offer_by_campaign_unique}"/>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="load_count">Кол-во загружаемых РП: </label>
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="number" min="100" max="1000000" name="load_count" id="load_count"
-                           value="${c.load_count}"/>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="all_categories">Категория товаров:</label>
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <select id="all_categories" name="all_categories" multiple="true" size='10'>
-                        % for x in c.all_categories:
-                        % if x['guid'] in c.categories:
-                        <option value="${x['guid']}" selected='true'>${x['title']}</option>
-                        % else:
-                        <option value="${x['guid']}">${x['title']}</option>
-                        % endif
-                        % endfor
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="geoTargeting">Геотаргетинг</label>
-                </th>
+			  <td>
+			    <select id="all_categories" name="all_categories" multiple="true" size='10'>
+			          % for x in c.all_categories:
+			           % if x['guid'] in c.categories:
+			               <option value="${x['guid']}" selected='true'>${x['title']}</option>
+			           % else:
+			               <option value="${x['guid']}">${x['title']}</option>
+			           % endif         
+			          % endfor
+			    </select>
+			  </td>	
+			</tr>  
+			<tr>
+				<th>
+					<label for="geoTargeting">Геотаргетинг</label>
+				</th>
             </tr>
             <tr>
                 <td>
-                    <select name="geoTargeting" id="geoTargeting" multiple='true' size='8'>
-                        %for country in c.all_geo_countries:
-                        %if not isinstance(country['country'], list):
+				  <select name="geoTargeting" id="geoTargeting" multiple='true' size='8'>
+				    %for country in c.all_geo_countries:
+                      %if not isinstance(country['country'], list):
                         %if country['country'] in c.geoTargeting:
                         <option selected='selected' value="${country['country']}">${country['ru']}</option>
                         %else:
                         <option value="${country['country']}">${country['ru']}</option>
                         %endif
-                        %else:
+                      %else:
                         %if set(country['country']).issubset(set(c.geoTargeting)):
                         <option selected='selected' value="${country['name']}">${country['ru']}</option>
                         %else:
                         <option value="${country['name']}">${country['ru']}</option>
                         %endif
-                        %endif
-                        %endfor
-                    </select>
-                    ${h.select(name="regionTargeting", selected_values=c.regionTargeting, options=c.all_geo_regions,
-                    multiple=True, size=8) }
-                </td>
+				      %endif  
+				    %endfor
+				  </select>
+                  ${h.select(name="regionTargeting", selected_values=c.regionTargeting, options=c.all_geo_regions, multiple=True, size=8) }
+				</td> 
+			</tr>
+            <tr>  
+			  <th>
+			    <label for="all_device">Устроуства:</label>
+			  </th>
             </tr>
             <tr>
-                <th>
-                    <label for="all_device">Устроуства:</label>
-                </th>
+			  <td>
+			    <select id="all_device" name="all_device" multiple="true" size='8'>
+			          % for x in c.all_device:
+			           % if x['name'] in c.device:
+			               <option value="${x['name']}" selected='true'>${x['title']}</option>
+			           % else:
+			               <option value="${x['name']}">${x['title']}</option>
+			           % endif         
+			          % endfor
+			    </select>
+			  </td>	
+			</tr>  
+            <tr>  
+			  <th>
+			    <label for="gender">Пол:</label>
+			  </th>
             </tr>
             <tr>
-                <td>
-                    <select id="all_device" name="all_device" multiple="true" size='8'>
-                        % for x in c.all_device:
-                        % if x['name'] in c.device:
-                        <option value="${x['name']}" selected='true'>${x['title']}</option>
-                        % else:
-                        <option value="${x['name']}">${x['title']}</option>
-                        % endif
-                        % endfor
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="gender">Пол:</label>
-                </th>
-            </tr>
-            <tr>
-                <td>
+            <td>
                     ${h.select(name="gender", selected_values=c.gender, options=c.all_gender)}
-                </td>
+			</td>	
+			</tr>  
+            <tr>  
+			  <th>
+			    <label for="gender">Ценовой диапазон пользователей:</label>
+			  </th>
             </tr>
             <tr>
-                <th>
-                    <label for="gender">Ценовой диапазон пользователей:</label>
-                </th>
-            </tr>
-            <tr>
-                <td>
+            <td>
                     ${h.select(name="cost", selected_values=c.cost, options=c.all_cost)}
-                </td>
+			</td>	
+			</tr>  
+      <tr>
+        <th >
+          <label>Аккаунты/домены/информеры для показа: </label> 
+        </th>
             </tr>
-            <tr>
-                <th>
-                    <label>Аккаунты/домены/информеры для показа: </label>
-                </th>
+    <tr>
+        <td>
+          <input type="radio" id="showOnAllInformers" name="showCoverage" value="all" ${"checked" if c.showCoverage == 'all' else ""}>
+            Все, кроме запрещённых
+          </input>
+        </td>
             </tr>
-            <tr>
-                <td>
-                    <input type="radio" id="showOnAllInformers" name="showCoverage" value="all" ${"checked" if
-                    c.showCoverage == 'all' else ""}>
-                    Все, кроме запрещённых
-                    </input>
-                </td>
+    <tr>
+        <td>
+          <input type="radio" id="showOnThematicInformers" name="showCoverage" value="thematic" ${"checked" if c.showCoverage == 'thematic' else ""} >
+            Тематические и разрешённые, кроме запрещённых
+          </input>
+        </td>
             </tr>
-            <tr>
-                <td>
-                    <input type="radio" id="showOnThematicInformers" name="showCoverage" value="thematic" ${"checked" if
-                    c.showCoverage == 'thematic' else ""} >
-                    Тематические и разрешённые, кроме запрещённых
-                    </input>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="radio" id="showOnAllowedInformers" name="showCoverage" value="allowed" ${"checked" if
-                    c.showCoverage == 'allowed' else ""} >
-                    Только разрешённые
-                    </input>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    Ретаргетинг
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="retargeting" name="retargeting" ${"checked" if c.campaign.retargeting
-                    else ""}>Ретаргетинг</input>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="retargeting_type">Тип ретаргетинга: </label>
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    ${h.select("retargeting_type",c.retargeting_type,c.retargeting_types,multiple=false)}
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="text" name="target" id="target" value="${c.target}">Цель ретаргетинга</input>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="html_notification" name="html_notification" ${"checked" if
-                    c.campaign.html_notification else ""}>Всплывашка</input>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="brending" name="brending" ${"checked" if c.campaign.brending else
-                    ""}>Зашита бренда</input>
-                </td>
-            </tr>
-            <tr>
-            <tr>
-                <th>
-                    <label for="recomendet_count">Алгоритм показа рекомендованых РП: </label>
-                </th>
+    <tr>
+        <td>
+          <input type="radio" id="showOnAllowedInformers" name="showCoverage" value="allowed" ${"checked" if c.showCoverage == 'allowed' else ""} >
+            Только разрешённые
+          </input>
+        </td>
+      </tr>
+      <tr>
+          <th>
+            Ретаргетинг
+          </th>
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" id="retargeting" name="retargeting" ${"checked" if c.campaign.retargeting else ""}>Ретаргетинг</input>
+            </td>
+       </tr>
+        <tr >
+            <th>
+                <label for="retargeting_type">Тип ретаргетинга: </label>
+            </th>
+        </tr>
+        <tr>
+            <td>
+                ${h.select("retargeting_type",c.retargeting_type,c.retargeting_types,multiple=false)}
+        </td>
+        </tr>
+        <tr>
+            <td>	
+                <input type="text"  name="target" id="target" value="${c.target}">Цель ретаргетинга</input>
+            </td>	
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" id="html_notification" name="html_notification" ${"checked" if c.campaign.html_notification else ""}>Всплывашка</input>
+            </td>
+       </tr>
+        <tr>
+            <td>
+                <input type="checkbox" id="brending" name="brending" ${"checked" if c.campaign.brending else ""}>Зашита бренда</input>
+            </td>
+       </tr>
+        <tr>
+			<tr >
+				<th>
+					<label for="recomendet_count">Алгоритм показа рекомендованых РП: </label>
+				</th>
             </tr>
             <tr>
                 <td>
                     ${h.select("recomendet_type",c.recomendet_type,c.recomendet_types,multiple=false)}
-                </td>
+            </td>
+            </tr>
+			<tr >
+				<th>
+					<label for="recomendet_count">Кол-во рекомендованых РП: </label>
+				</th>
             </tr>
             <tr>
-                <th>
-                    <label for="recomendet_count">Кол-во рекомендованых РП: </label>
-                </th>
+				<td>	
+					<input type="number" min="0" max="10"  name="recomendet_count" id="load_count" value="${c.recomendet_count}"/>
+				</td>	
+            </tr>
+        </tr>
+      <tr>
+        <th>
+            Только контекстная реклама
+        </th>
             </tr>
             <tr>
-                <td>
-                    <input type="number" min="0" max="10" name="recomendet_count" id="load_count"
-                           value="${c.recomendet_count}"/>
-                </td>
-            </tr>
-            </tr>
-            <tr>
-                <th>
-                    Только контекстная реклама
-                </th>
+        <td>
+            <input type="checkbox" id="contextOnly" name="contextOnly" ${"checked" if c.campaign.contextOnly else ""} />
+        </td>
+      </tr>
+			<tr>
+				<th>
+					<label for="socialCampaign">Социальная реклама:</label> 
+				</th>
             </tr>
             <tr>
-                <td>
-                    <input type="checkbox" id="contextOnly" name="contextOnly" ${"checked" if c.campaign.contextOnly
-                    else ""} />
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="socialCampaign">Социальная реклама:</label>
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="socialCampaign" name="socialCampaign" ${"checked" if c.campaign.social
-                    else ""} />
-                </td>
-            </tr>
+				<td>
+					<input type="checkbox" id="socialCampaign" name="socialCampaign" ${"checked" if c.campaign.social else ""} />
+				</td>
+			</tr>
+			
+      <tr>
+        <th>
+            Параметры отображения рекламы
+        </th>
+    </tr>
+    <tr>
+        <td>
+            <input type="checkbox" id="disabledRetargitingStyle" name="disabledRetargitingStyle" ${"checked" if c.campaign.disabled_retargiting_style else ""}>Отключить стиль ретаргетинговых товаров</input>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <input type="checkbox" id="disabledRecomendetStyle" name="disabledRecomendetStyle" ${"checked" if c.campaign.disabled_recomendet_style else ""}>Отключить стиль рекомендованых товаров</input>
+        </td>
+    </tr>
 
-            <tr>
-                <th>
-                    Параметры отображения рекламы
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="disabledRetargitingStyle" name="disabledRetargitingStyle" ${"checked" if
-                    c.campaign.disabled_retargiting_style else ""}>Отключить стиль ретаргетинговых товаров</input>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="disabledRecomendetStyle" name="disabledRecomendetStyle" ${"checked" if
-                    c.campaign.disabled_recomendet_style else ""}>Отключить стиль рекомендованых товаров</input>
-                </td>
-            </tr>
-
-            <tr>
-                <th>
-                    Параметры URL
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="yottosPartnerMarker" name="yottosPartnerMarker" ${"checked" if
-                    c.campaign.yottos_partner_marker else ""}>Передавать в URL маркер yottos_partner</input>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="yottosTranslitMarker" name="yottosTranslitMarker" ${"checked" if
-                    c.campaign.yottos_translit_marker else ""}>Передавать метки транслитом ('рейтинг' =
-                    'rejting')</input>
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    <input type="checkbox" id="yottosHideSiteMarker" name="yottosHideSiteMarker" ${"checked" if
-                    c.campaign.yottos_hide_site_marker else ""}>Скрывать сайт партнера</input>
-                </td>
-            </tr>
-
-        </table>
-        <input type="submit" class="styler" value="Сохранить">
-    </form>
-    <a href="${h.url_for(controller='adload', action='campaign_overview', id=c.campaign.id)}">&larr; к управлению
-        кампанией</a>
-</div>
-
-<hr/>
-
+      <tr>
+        <th>
+            Параметры URL
+        </th>
+    </tr>
+    <tr>
+        <td>
+            <input type="checkbox" id="yottosPartnerMarker" name="yottosPartnerMarker" ${"checked" if c.campaign.yottos_partner_marker else ""}>Передавать в URL маркер yottos_partner</input>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <input type="checkbox" id="yottosTranslitMarker" name="yottosTranslitMarker" ${"checked" if c.campaign.yottos_translit_marker else ""}>Передавать метки транслитом ('рейтинг' = 'rejting')</input>
+        </td>
+      </tr>
+      
+      <tr>
+        <td>
+            <input type="checkbox" id="yottosHideSiteMarker" name="yottosHideSiteMarker" ${"checked" if c.campaign.yottos_hide_site_marker else ""}>Скрывать сайт партнера</input>
+        </td>
+      </tr>
+      
+		</table>
+		<input type="submit" class="styler" value="Сохранить">
+	</form>
+  <a href="${h.url_for(controller='adload', action='campaign_overview', id=c.campaign.id)}">&larr; к управлению кампанией</a>
+</div>	
+			
+			<hr />
+			
 <div class="conditions">
-    <form action="/adload/switchShowActiveOrAll" method="post" id="show_all_or_active_form"
-          name="show_all_or_active_form"/>
+  <form action="/adload/switchShowActiveOrAll"  method="post" id="show_all_or_active_form" name="show_all_or_active_form"/>
     <input type="hidden" name="token" value="${c.token}"/>
     <table>
-        <tr>
-            <td>
-                <input type="radio" name="showActiveOrAll" id="showActive" value="active" ${"checked" if
-                c.showActiveOrAll == "active" else ""}>
-                Показывать только активные аккаунты
-                </input>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input type="radio" name="showActiveOrAll" id="showAll" value="all" ${"checked" if c.showActiveOrAll ==
-                "all" else ""}>
-                Показывать все аккаунты
-                </input>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input class="styler" type="submit" value="Применить"/>
-            </td>
-        </tr>
+     <tr> 
+       <td>
+          <input type="radio" name="showActiveOrAll" id="showActive" value="active" ${"checked" if c.showActiveOrAll == "active" else ""}>
+            Показывать только активные аккаунты
+          </input>
+       </td>   
+     </tr>
+     <tr>
+       <td>
+          <input type="radio" name="showActiveOrAll" id="showAll" value="all" ${"checked" if c.showActiveOrAll == "all" else ""}>
+            Показывать все аккаунты
+          </input>
+       </td>  
+     </tr>
+     <tr>
+       <td>
+         <input class="styler" type="submit" value="Применить"/>
+       </td>  
+     </tr>          
     </table>
-    </form>
+  </form>  
+  
+  <div id='all-accounts'>
+    <table>
+      <tr>
+        <td>
+          <div id='common-accounts'>
+            <h3>Все аккаунты</h3>
+            <form name="common_accounts_form" action="" method="post">
+              <input type="hidden" name="token" value="${c.token}"/>
+              <div id="accounts-buttons">
+                <input type="button" class="styler" name="add-acc-to-show-btn" id="add-acc-to-show-btn" value="Показывать" 
+                onClick="document.common_accounts_form.action='/adload/addAccountsToShowList'; 
+                document.common_accounts_form.submit();" /> 
+                
+                <input type="button" class="styler" name="add-acc-to-ignore-btn" id="add-acc-to-ignore-btn" value="Игнорировать" 
+                onClick="document.common_accounts_form.action='/adload/addAccountsToIgnoreList'; 
+                document.common_accounts_form.submit();" />
+              </div>
+              <select id="common-accounts-list" name="common-accounts-list" class="list" multiple="true" size="16">
+                % for x in sorted(c.common.get('accounts')):
+                  <option>${x}</option>
+                % endfor
+              </select>
+            </form> 
+          </div>
+        </td>
+        <td>
+          <div id='show-accounts'>  
+            <h3>Разрешённые</h3>
+            <form name="show_accounts_form" action="/adload/removeAccountsFromShowList" method="post">
+              <input type="hidden" name="token" value="${c.token}"/>
+              <div id="show-accounts-buttons">
+                <input type="submit" class="styler" id="remove_accounts_from_show" name="remove_accounts_from_show" value="Убрать"/>
+              </div>
+              <select id="show-accounts-list" name="show-accounts-list" class="list" multiple="true" size="16">
+                % for x in sorted(c.shown.get('accounts')):
+                  <option>${x}</option>
+                % endfor
+              </select>
+            </form>
+          </div>
+        </td>
+        <td>
+          <div id='ignore-accounts'>  
+            <h3>Запрещённые</h3>
+            <form name="ignore_accounts_form" action="/adload/removeAccountsFromIgnoreList" method="post">
+              <input type="hidden" name="token" value="${c.token}"/>
+              <div id="ignore-accounts-buttons">
+                <input type="submit" class="styler" id="remove_accounts_from_ignore" name="remove_accounts_from_ignore" value="Убрать"/>
+              </div>
+              <select id="ignore-accounts-list" name="ignore-accounts-list" class="list" multiple="true" size="16">
+                % for x in sorted(c.ignored.get('accounts')):
+                  <option>${x}</option>
+                % endfor
+              </select>
+            </form>
+          </div>
+        </td> 
+      </tr>  
+    </table>
+  </div>  
+  
+			<hr />
+  <div id='all-domains'>
+    <table>
+      <tr>
+        <td>
+          <div id='common-domains'> 
+          <h3>Все домены</h3>
+          <form name="common_domains_form" action="" method="post">
+          <input type="hidden" name="token" value="${c.token}"/>  
+          <div id="domains-buttons">
+            <input type="button" class="styler" name="add-domains-to-show-btn" id="add-domains-to-show-btn" value="Показывать" 
+            onClick="document.common_domains_form.action='/adload/addDomainsToShowList'; 
+            document.common_domains_form.submit();" />  
+            
+            <input type="button" class="styler" name="add-domains-to-ignore-btn" id="add-domains-to-ignore-btn" value="Не показывать" 
+            onClick="document.common_domains_form.action='/adload/addDomainsToIgnoreList'; 
+            document.common_domains_form.submit();" />
+          </div>    
+          <select id="common-domains-list" name="common-domains-list" class="list" multiple="true" size="16">
+              % for x in sorted(c.common.get('domains').keys()):
+                <optgroup class="opt" label=${x}>
+                  % for y in sorted(c.common.get('domains')[x]):
+                  <option>${y}</option>
+                  % endfor
+                </optgroup> 
+              % endfor 
+          </select>
+          </form> 
+          </div>
+        </td>
+        <td>
+          <div id='show-domains'> 
+            <h3>Разрешённые</h3>
+            <form name="show_domains_form" action="/adload/removeDomainsFromShowList" method="post">
+              <input type="hidden" name="token" value="${c.token}"/>
+              <div id="show-domains-buttons">
+                <input type="submit" class="styler" id="remove_domains_from_show" name="remove_domains_from_show" value="Убрать"/>
+              </div>
+              <select id="show-domains-list" name="show-domains-list" class="list" multiple="true" size="16">
+                % for x in sorted(c.shown.get('domains').keys()):
+                  <optgroup label=${x}>
+                    % for y in sorted(c.shown.get('domains')[x]):
+                    <option>${y}</option>
+                    % endfor
+                  </optgroup> 
+                % endfor 
+              </select>
+            </form>
+          </div>
+        </td>
+        <td>
+          <div id='ignore-domains'> 
+            <h3>Запрещённые</h3>
+            <form name="ignore_domains_form" action="/adload/removeDomainsFromIgnoreList" method="post">
+              <input type="hidden" name="token" value="${c.token}"/>
+              <div id="ignore-domains-buttons">
+                <input type="submit" class="styler" id="remove_domains_from_ignore" name="remove_domains_from_ignore" value="Убрать"/>
+              </div>
+              <select id="ignore-domains-list" name="ignore-domains-list" class="list" multiple="true" size="16">
+                % for x in sorted(c.ignored.get('domains').keys()):
+                  <optgroup label=${x}>
+                    % for y in sorted(c.ignored.get('domains')[x]):
+                    <option>${y}</option>
+                    % endfor
+                  </optgroup> 
+                % endfor 
+              </select>
+            </form>
+          </div>
+        </td>      
+      </tr> 
+    </table>  
+  </div>  
 
-    <div id='all-accounts'>
-        <table>
-            <tr>
-                <td>
-                    <div id='common-accounts'>
-                        <h3>Все аккаунты</h3>
-
-                        <form name="common_accounts_form" action="" method="post">
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="accounts-buttons">
-                                <input type="button" class="styler" name="add-acc-to-show-btn" id="add-acc-to-show-btn"
-                                       value="Показывать"
-                                       onClick="document.common_accounts_form.action='/adload/addAccountsToShowList';
-                document.common_accounts_form.submit();"/>
-
-                                <input type="button" class="styler" name="add-acc-to-ignore-btn"
-                                       id="add-acc-to-ignore-btn" value="Игнорировать"
-                                       onClick="document.common_accounts_form.action='/adload/addAccountsToIgnoreList';
-                document.common_accounts_form.submit();"/>
-                            </div>
-                            <select id="common-accounts-list" name="common-accounts-list" class="list" multiple="true"
-                                    size="16">
-                                % for x in sorted(c.common.get('accounts')):
-                                <option>${x}</option>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-                <td>
-                    <div id='show-accounts'>
-                        <h3>Разрешённые</h3>
-
-                        <form name="show_accounts_form" action="/adload/removeAccountsFromShowList" method="post">
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="show-accounts-buttons">
-                                <input type="submit" class="styler" id="remove_accounts_from_show"
-                                       name="remove_accounts_from_show" value="Убрать"/>
-                            </div>
-                            <select id="show-accounts-list" name="show-accounts-list" class="list" multiple="true"
-                                    size="16">
-                                % for x in sorted(c.shown.get('accounts')):
-                                <option>${x}</option>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-                <td>
-                    <div id='ignore-accounts'>
-                        <h3>Запрещённые</h3>
-
-                        <form name="ignore_accounts_form" action="/adload/removeAccountsFromIgnoreList" method="post">
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="ignore-accounts-buttons">
-                                <input type="submit" class="styler" id="remove_accounts_from_ignore"
-                                       name="remove_accounts_from_ignore" value="Убрать"/>
-                            </div>
-                            <select id="ignore-accounts-list" name="ignore-accounts-list" class="list" multiple="true"
-                                    size="16">
-                                % for x in sorted(c.ignored.get('accounts')):
-                                <option>${x}</option>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <hr/>
-    <div id='all-domains'>
-        <table>
-            <tr>
-                <td>
-                    <div id='common-domains'>
-                        <h3>Все домены</h3>
-
-                        <form name="common_domains_form" action="" method="post">
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="domains-buttons">
-                                <input type="button" class="styler" name="add-domains-to-show-btn"
-                                       id="add-domains-to-show-btn" value="Показывать"
-                                       onClick="document.common_domains_form.action='/adload/addDomainsToShowList';
-            document.common_domains_form.submit();"/>
-
-                                <input type="button" class="styler" name="add-domains-to-ignore-btn"
-                                       id="add-domains-to-ignore-btn" value="Не показывать"
-                                       onClick="document.common_domains_form.action='/adload/addDomainsToIgnoreList';
-            document.common_domains_form.submit();"/>
-                            </div>
-                            <select id="common-domains-list" name="common-domains-list" class="list" multiple="true"
-                                    size="16">
-                                % for x in sorted(c.common.get('domains').keys()):
-                                <optgroup class="opt" label=${x}>
-                                    % for y in sorted(c.common.get('domains')[x]):
-                                    <option>${y}</option>
-                                    % endfor
-                                </optgroup>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-                <td>
-                    <div id='show-domains'>
-                        <h3>Разрешённые</h3>
-
-                        <form name="show_domains_form" action="/adload/removeDomainsFromShowList" method="post">
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="show-domains-buttons">
-                                <input type="submit" class="styler" id="remove_domains_from_show"
-                                       name="remove_domains_from_show" value="Убрать"/>
-                            </div>
-                            <select id="show-domains-list" name="show-domains-list" class="list" multiple="true"
-                                    size="16">
-                                % for x in sorted(c.shown.get('domains').keys()):
-                                <optgroup label=${x}>
-                                    % for y in sorted(c.shown.get('domains')[x]):
-                                    <option>${y}</option>
-                                    % endfor
-                                </optgroup>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-                <td>
-                    <div id='ignore-domains'>
-                        <h3>Запрещённые</h3>
-
-                        <form name="ignore_domains_form" action="/adload/removeDomainsFromIgnoreList" method="post">
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="ignore-domains-buttons">
-                                <input type="submit" class="styler" id="remove_domains_from_ignore"
-                                       name="remove_domains_from_ignore" value="Убрать"/>
-                            </div>
-                            <select id="ignore-domains-list" name="ignore-domains-list" class="list" multiple="true"
-                                    size="16">
-                                % for x in sorted(c.ignored.get('domains').keys()):
-                                <optgroup label=${x}>
-                                    % for y in sorted(c.ignored.get('domains')[x]):
-                                    <option>${y}</option>
-                                    % endfor
-                                </optgroup>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <hr/>
-    <div id='all-adv'>
-        <h3>Рекламные блоки</h3>
-        <span style="display: block;">Для поиска рекламного блока по индетификатору, введите индетификатор в поле и кликните в свободном месте. Пример: 3a14c42a-2fa7-11e0-a734-00163e0300c1</span>
-        <span style="display: block;"> <input id="searchInput" class="type-search styler" type="text"/> </span>
-        <table>
-            <tr>
-                <td>
-                    <div id="common-adv">
-                        <form name="common_adv_form" action="" method="post">
-                            <h3>Все рекламные блоки</h3>
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="adv-buttons">
-                                <input type="button" class="styler" name="add-adv-to-show-btn" id="add-adv-to-show-btn"
-                                       value="Показывать"
-                                       onClick="document.common_adv_form.action='/adload/addAdvToShowList';
-              document.common_adv_form.submit();"/>
-                                <input type="button" class="styler" name="add-adv-to-ignore-btn"
-                                       id="add-adv-to-ignore-btn" value="Не показывать"
-                                       onClick="document.common_adv_form.action='/adload/addAdvToIgnoreList';
-              document.common_adv_form.submit();"/>
-                            </div>
-                            <select id="common-adv-list" name="common-adv-list" class="list" multiple="true" size="16">
-                                % for x in sorted(c.common.get('adv').keys()):
-                                <optgroup label=${x}>
-                                    % for y in sorted(c.common.get('adv')[x]):
-                                    <optgroup label=${y}>
-                                        % for z in c.common.get('adv')[x][y]:
-                                        <option value="${z['guid']}">${z['title']}</option>
-                                        % endfor
-                                    </optgroup>
-                                    % endfor
-                                </optgroup>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-                <td>
-                    <div id="show-adv">
-                        <h3>Разрешённые</h3>
-
-                        <form name="show_adv_form" action="/adload/removeAdvFromShowList" method="post">
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="show-adv-buttons">
-                                <input type="submit" class="styler" id="remove_adv_from_show"
-                                       name="remove_adv_from_show" value="Убрать"/>
-                            </div>
-                            <select id="show-adv-list" name="show-adv-list" class="list" multiple="true" size="16">
-                                % for x in sorted(c.shown.get('adv').keys()):
-                                <optgroup label=${x}>
-                                    % for y in sorted(c.shown.get('adv')[x]):
-                                    <optgroup label=${y}>
-                                        % for z in c.shown.get('adv')[x][y]:
-                                        <option value='${z[' guid
-                                        ']}'>${z['title']}</option>
-                                        % endfor
-                                    </optgroup>
-                                    % endfor
-                                </optgroup>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-                <td>
-                    <div id="ignore-adv">
-                        <h3>Запрещённые</h3>
-
-                        <form name="ignore_adv_form" action="/adload/removeAdvFromIgnoreList" method="post">
-                            <input type="hidden" name="token" value="${c.token}"/>
-
-                            <div id="ignore-adv-buttons">
-                                <input type="submit" class="styler" class="styler" id="remove_adv_from_ignore"
-                                       name="remove_adv_from_ignore" value="Убрать"/>
-                            </div>
-                            <select id="ignore-adv-list" name="ignore-adv-list" class="list" multiple="true" size="16">
-                                % for x in sorted(c.ignored.get('adv').keys()):
-                                <optgroup label=${x}>
-                                    % for y in sorted(c.ignored.get('adv')[x]):
-                                    <optgroup label=${y}>
-                                        % for z in c.ignored.get('adv')[x][y]:
-                                        <option value='${z[' guid
-                                        ']}'>${z['title']}</option>
-                                        % endfor
-                                    </optgroup>
-                                    % endfor
-                                </optgroup>
-                                % endfor
-                            </select>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-    <a href="${h.url_for(controller='adload', action='campaign_overview', id=c.campaign.id)}">&larr; к управлению
-        кампанией</a>
-
-</div>
+			<hr />
+  <div id='all-adv'>
+      <h3>Рекламные блоки</h3>
+      <span style="display: block;">Для поиска рекламного блока по индетификатору, введите индетификатор в поле и кликните в свободном месте. Пример: 3a14c42a-2fa7-11e0-a734-00163e0300c1</span>
+      <span style="display: block;"> <input id="searchInput" class="type-search styler" type="text" /> </span>
+    <table>
+    <tr>
+      <td>
+        <div id="common-adv"> 
+          <form name="common_adv_form" action="" method="post">
+            <h3>Все рекламные блоки</h3>
+            <input type="hidden" name="token" value="${c.token}"/>
+            <div id="adv-buttons">
+              <input type="button" class="styler" name="add-adv-to-show-btn" id="add-adv-to-show-btn" value="Показывать" 
+              onClick="document.common_adv_form.action='/adload/addAdvToShowList'; 
+              document.common_adv_form.submit();" />  
+              <input type="button" class="styler" name="add-adv-to-ignore-btn" id="add-adv-to-ignore-btn" value="Не показывать" 
+              onClick="document.common_adv_form.action='/adload/addAdvToIgnoreList'; 
+              document.common_adv_form.submit();" />
+            </div>
+            <select id="common-adv-list" name="common-adv-list" class="list" multiple="true" size="16">
+              % for x in sorted(c.common.get('adv').keys()):
+                <optgroup label=${x}>
+                  % for y in sorted(c.common.get('adv')[x]):
+                  <optgroup label=${y}>
+                    % for z in c.common.get('adv')[x][y]:
+                        <option  value="${z['guid']}">${z['title']}</option>
+                    % endfor
+                  </optgroup>
+                  % endfor
+                </optgroup> 
+              % endfor 
+            </select>
+          </form>
+        </div>
+      </td>
+      <td>
+        <div id="show-adv"> 
+            <h3>Разрешённые</h3>
+            <form name="show_adv_form" action="/adload/removeAdvFromShowList" method="post">
+              <input type="hidden" name="token" value="${c.token}"/>
+              <div id="show-adv-buttons">
+                <input type="submit" class="styler" id="remove_adv_from_show" name="remove_adv_from_show" value="Убрать"/>
+              </div>
+              <select id="show-adv-list" name="show-adv-list" class="list" multiple="true" size="16">
+                % for x in sorted(c.shown.get('adv').keys()):
+                  <optgroup label=${x}>
+                    % for y in sorted(c.shown.get('adv')[x]):
+                    <optgroup label=${y}>
+                      % for z in c.shown.get('adv')[x][y]:
+                        <option value='${z['guid']}'>${z['title']}</option>
+                      % endfor
+                    </optgroup>
+                    % endfor
+                  </optgroup> 
+                % endfor 
+              </select>
+            </form>
+        </div>
+      </td>
+      <td>
+        <div id="ignore-adv"> 
+          <h3>Запрещённые</h3>
+            <form name="ignore_adv_form" action="/adload/removeAdvFromIgnoreList" method="post">
+              <input type="hidden" name="token" value="${c.token}"/>
+              <div id="ignore-adv-buttons">
+                <input type="submit" class="styler" class="styler" id="remove_adv_from_ignore" name="remove_adv_from_ignore" value="Убрать"/>
+              </div>
+              <select id="ignore-adv-list" name="ignore-adv-list" class="list" multiple="true" size="16">
+                % for x in sorted(c.ignored.get('adv').keys()):
+                  <optgroup label=${x}>
+                    % for y in sorted(c.ignored.get('adv')[x]):
+                    <optgroup label=${y}>
+                        % for z in c.ignored.get('adv')[x][y]:
+                            <option value='${z['guid']}'>${z['title']}</option>
+                      % endfor
+                    </optgroup>
+                    % endfor
+                  </optgroup> 
+                % endfor 
+              </select>
+            </form>
+          </div>  
+      </td>      
+    </tr> 
+    </table> 
+  </div>  
+  <a href="${h.url_for(controller='adload', action='campaign_overview', id=c.campaign.id)}">&larr; к управлению кампанией</a>
+ 
+</div>  
 </div>
 
 <script type="text/javascript">
-    var field = $('#common-adv-list').find('option');
-    var s = $('#common-adv-list');
-    // собственно поиск
-    $('#searchInput').bind('blur', function () {
-        var q = new RegExp($(this).val(), 'ig');
-
-        for (var i = 0, l = field.length; i < l; i += 1) {
-            var option = $(field[i]).val();
-            if ($(this).val().length > 0) {
-                if (option.match(q)) {
-                    field[i].selected = true;
-                    var optionTop = s.find(field[i]).offset().top;
-                    var selectTop = s.offset().top;
-                    s.scrollTop(s.scrollTop() + (optionTop - selectTop));
-                }
-                else {
-                    field[i].selected = false;
-                }
+var field = $('#common-adv-list').find('option');
+var s = $('#common-adv-list');
+// собственно поиск
+$('#searchInput').bind('blur', function() {
+    var q = new RegExp($(this).val(), 'ig');
+ 
+    for (var i = 0, l = field.length; i < l; i += 1)
+    {
+        var option = $(field[i]).val();
+        if ($(this).val().length > 0)
+        {
+            if (option.match(q)){
+                field[i].selected = true;
+                var optionTop = s.find(field[i]).offset().top;
+                var selectTop = s.offset().top;
+                s.scrollTop(s.scrollTop() + (optionTop - selectTop));
+            } 
+            else
+            {
+                field[i].selected = false;
             }
         }
-        s.trigger('refresh');
-    });
-    $('input, select').styler({selectVisibleOptions: 400});
-    $('#geoTargeting').styler('destroy');
-    $('#regiontargeting').styler('destroy');
-    $('#all_categories').styler('destroy');
-    $('#all_device').styler('destroy');
-    $('#common-accounts-list').styler('destroy');
-    $('#common-domains-list').styler('destroy');
-    $('#common-accounts-list').select2();
-    $('#common-domains-list').select2();
-    $('#all_categories').select2();
-    $('#all_device').select2();
-    $('#geoTargeting').select2();
-    $('#regiontargeting').select2();
+        }
+    s.trigger('refresh');
+});
+$('input, select').styler({selectVisibleOptions:400});
+$('#geoTargeting').styler('destroy');
+$('#regiontargeting').styler('destroy');
+$('#all_categories').styler('destroy');
+$('#all_device').styler('destroy');
+$('#common-accounts-list').styler('destroy');
+$('#common-domains-list').styler('destroy');
+$('#common-accounts-list').select2();
+$('#common-domains-list').select2();
+$('#all_categories').select2();
+$('#all_device').select2();
+$('#geoTargeting').select2();
+$('#regiontargeting').select2();
 </script>

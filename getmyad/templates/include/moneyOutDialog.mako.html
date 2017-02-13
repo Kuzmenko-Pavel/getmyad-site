@@ -1,340 +1,326 @@
 # -*- coding: utf-8 -*-
 <%!
-from datetime import datetime
+	from datetime import datetime
 %>
 <div id="moneyOut" class="dialog">
-    <style type="text/css">
-        form label {
-            display: block;
-        }
-
-        form input {
-            display: block;
-            margin-bottom: 10px;
-            width: 200px;
-        }
-
-        form select {
-            margin-bottom: 10px;
-        }
-    </style>
-    <form name="moneyOut_form" id="moneyOut_form" action="/private/moneyOutSubmit" method="get">
+    <style type="text/css">					
+    form label { display: block; }
+    form input {	
+        display: block;
+        margin-bottom: 10px;
+        width: 200px;
+    }
+    form select {
+        margin-bottom: 10px;
+    }
+    </style>				
+    <form name="moneyOut_form" id="moneyOut_form" action="/private/moneyOutSubmit" method="get" >
         <input type="hidden" name="token" value="${c.token}"/>
-
-        <h2>Заявка на вывод средств</h2>
-
-        <p>Уважаемый партнёр, вывод средств доступен через
+            <h2>Заявка на вывод средств</h2>
+            <p>Уважаемый партнёр, вывод средств доступен через
             <select name="moneyOut_paymentType" id="moneyOut_paymentType">
                 % if 'webmoney_z' in c.money_out_paymentType:
-                <option value="webmoney_z">WebMoney — вывод на Z-кошелёк</option>
+                    <option value="webmoney_z">WebMoney — вывод на Z-кошелёк</option>
                 % endif
                 % if 'webmoney_r' in c.money_out_paymentType:
-                <option value="webmoney_r">WebMoney — вывод на R-кошелёк</option>
+                    <option value="webmoney_r">WebMoney — вывод на R-кошелёк</option>
                 % endif
                 % if 'webmoney_u' in c.money_out_paymentType:
-                <option value="webmoney_u">WebMoney — вывод на U-кошелёк</option>
+                    <option value="webmoney_u">WebMoney — вывод на U-кошелёк</option>
                 % endif
                 % if 'cash' in c.money_out_paymentType:
-                <option value="cash">Наличный расчет</option>
+                    <option value="cash">Наличный расчет</option>
                 % endif
                 % if 'card' in c.money_out_paymentType:
-                <option value="card">Банковская платёжная карта</option>
+                    <option value="card">Банковская платёжная карта</option>
                 % endif
                 % if 'card_pb_ua' in c.money_out_paymentType:
-                <option value="card_pb_ua">Приват Банковская платёжная карта UAH</option>
+                    <option value="card_pb_ua">Приват Банковская платёжная карта UAH</option>
                 % endif
                 % if 'card_pb_us' in c.money_out_paymentType:
-                <option value="card_pb_us">Приват Банковская платёжная карта USD</option>
+                    <option value="card_pb_us">Приват Банковская платёжная карта USD</option>
                 % endif
                 % if 'factura' in c.money_out_paymentType:
-                <option value="factura">Счёт фактура</option>
+                    <option value="factura">Счёт фактура</option>
                 % endif
                 % if 'yandex' in c.money_out_paymentType:
-                <option value="yandex">Яндекс Деньги</option>
+                    <option value="yandex">Яндекс Деньги</option>
                 % endif
-            </select>
-            <acrnonym id="moneyOut_linkHelp"
-                      title="Webmoney — популярная система онлайн-платежей. Если у Вас ещё нет Webmoney-кошелька, зарегистрироваться можно на сайте webmoney.ru. Согласно тарифам системы WebMoney, за совершение каждой транзакции системой взымается комиссия в размере 0.8% от суммы платежа. Пример: при выводе 800грн, комиссия системы WebMoney составит 0.8% (6.40 грн). Итого, в Ваш кошелёк поступит 793.60грн."
-                      style="font-size: smaller; border-bottom: 1px dashed gray"> узнать больше
-            </acrnonym>
-        </p>
-        % if 'webmoney_z' in c.money_out_paymentType:
-        <fieldset id="moneyOut_webmoney">
-            <label for="moneyOut_summ">Сумма для разового вывода</label>
-            <input type="text" id="moneyOut_summ" name="moneyOut_summ" value="0"/>
+            </select>	
+            <acrnonym id="moneyOut_linkHelp" title="Webmoney — популярная система онлайн-платежей. Если у Вас ещё нет Webmoney-кошелька, зарегистрироваться можно на сайте webmoney.ru. Согласно тарифам системы WebMoney, за совершение каждой транзакции системой взымается комиссия в размере 0.8% от суммы платежа. Пример: при выводе 800грн, комиссия системы WebMoney составит 0.8% (6.40 грн). Итого, в Ваш кошелёк поступит 793.60грн." style="font-size: smaller; border-bottom: 1px dashed gray"> узнать больше </acrnonym>
+            </p>
+            % if 'webmoney_z' in c.money_out_paymentType:
+                <fieldset id="moneyOut_webmoney">
+                    <label for="moneyOut_summ">Сумма для разового вывода</label>
+                    <input type="text" id="moneyOut_summ" name="moneyOut_summ" value="0" />
 
-            <label for="moneyOut_webmoneyLogin">WMID с которым Вы входите в кошелёк WebMoney</label>
-            <input type="text" id="moneyOut_webmoneyLogin" name="moneyOut_webmoneyLogin"/>
+                    <label for="moneyOut_webmoneyLogin">WMID с которым Вы входите в кошелёк WebMoney</label>
+                    <input type="text" id="moneyOut_webmoneyLogin" name="moneyOut_webmoneyLogin" />
+                    
+                    <label for="moneyOut_webmoneyAccountNumber">Номер Z-кошелька вместе с буквой Z</label>
+                    <input type="text" id="moneyOut_webmoneyAccountNumber" name="moneyOut_webmoneyAccountNumber" />
 
-            <label for="moneyOut_webmoneyAccountNumber">Номер Z-кошелька вместе с буквой Z</label>
-            <input type="text" id="moneyOut_webmoneyAccountNumber" name="moneyOut_webmoneyAccountNumber"/>
+                    <label for="moneyOut_phone">Моб. телефон (для проверки) </label>
+                    <input type="text" id="moneyOut_phone" name="moneyOut_phone" />
+                    
+                    <label for="moneyOut_comment">Примечания</label>
+                    <textarea rows="4" cols="45" id="moneyOut_comment" name="moneyOut_comment"></textarea>
+                </fieldset>
+            % endif 
+            % if 'webmoney_r' in c.money_out_paymentType:
+                <fieldset id="moneyOut_webmoney_r">
+                    <label for="moneyOut_summ_r">Сумма для разового вывода</label>
+                    <input type="text" id="moneyOut_summ_r" name="moneyOut_summ_r" value="0" />
 
-            <label for="moneyOut_phone">Моб. телефон (для проверки) </label>
-            <input type="text" id="moneyOut_phone" name="moneyOut_phone"/>
+                    <label for="moneyOut_webmoneyLogin_r">WMID с которым Вы входите в кошелёк WebMoney</label>
+                    <input type="text" id="moneyOut_webmoneyLogin_r" name="moneyOut_webmoneyLogin_r" />
+                    
+                    <label for="moneyOut_webmoneyAccountNumber_r">Номер R-кошелька вместе с буквой R</label>
+                    <input type="text" id="moneyOut_webmoneyAccountNumber_r" name="moneyOut_webmoneyAccountNumber_r" />
 
-            <label for="moneyOut_comment">Примечания</label>
-            <textarea rows="4" cols="45" id="moneyOut_comment" name="moneyOut_comment"></textarea>
-        </fieldset>
-        % endif
-        % if 'webmoney_r' in c.money_out_paymentType:
-        <fieldset id="moneyOut_webmoney_r">
-            <label for="moneyOut_summ_r">Сумма для разового вывода</label>
-            <input type="text" id="moneyOut_summ_r" name="moneyOut_summ_r" value="0"/>
+                    <label for="moneyOut_phone_r">Моб. телефон (для проверки) </label>
+                    <input type="text" id="moneyOut_phone_r" name="moneyOut_phone_r" />
+                    
+                    <label for="moneyOut_comment_r">Примечания</label>
+                    <textarea rows="4" cols="45" id="moneyOut_comment_r" name="moneyOut_comment_r"></textarea>
+                </fieldset>
+            % endif 
+            % if 'webmoney_u' in c.money_out_paymentType:
+                <fieldset id="moneyOut_webmoney_u">
+                    <label for="moneyOut_summ_u">Сумма для разового вывода</label>
+                    <input type="text" id="moneyOut_summ_u" name="moneyOut_summ_u" value="0" />
 
-            <label for="moneyOut_webmoneyLogin_r">WMID с которым Вы входите в кошелёк WebMoney</label>
-            <input type="text" id="moneyOut_webmoneyLogin_r" name="moneyOut_webmoneyLogin_r"/>
+                    <label for="moneyOut_webmoneyLogin_u">WMID с которым Вы входите в кошелёк WebMoney</label>
+                    <input type="text" id="moneyOut_webmoneyLogin_u" name="moneyOut_webmoneyLogin_u" />
+                    
+                    <label for="moneyOut_webmoneyAccountNumber_u">Номер U-кошелька вместе с буквой U</label>
+                    <input type="text" id="moneyOut_webmoneyAccountNumber_u" name="moneyOut_webmoneyAccountNumber_u" />
 
-            <label for="moneyOut_webmoneyAccountNumber_r">Номер R-кошелька вместе с буквой R</label>
-            <input type="text" id="moneyOut_webmoneyAccountNumber_r" name="moneyOut_webmoneyAccountNumber_r"/>
+                    <label for="moneyOut_phone_u">Моб. телефон (для проверки) </label>
+                    <input type="text" id="moneyOut_phone_u" name="moneyOut_phone_u" />
+                    
+                    <label for="moneyOut_comment_u">Примечания</label>
+                    <textarea rows="4" cols="45" id="moneyOut_comment_u" name="moneyOut_comment_u"></textarea>
+                </fieldset>
+            % endif 
+            % if 'cash' in c.money_out_paymentType:
+                <fieldset id="moneyOut_cash" style="display: none; ">
+                    <div style="height: 400px; overflow-y: scroll;">
+                    <label for="moneyOut_cashSumm">Сумма для разового вывода</label>
+                    <input type="text" id="moneyOut_cashSumm" name="moneyOut_cashSumm" value="0" />
+                    <label for="moneyOut_cashPhone">Моб. телефон (для проверки) </label>
+                    <input type="text" id="moneyOut_cashPhone" name="moneyOut_cashPhone" />
+                    
+                    <label for="moneyOut_cashComment">Примечания</label>
+                        <textarea rows="4" cols="45" id="moneyOut_cashComment" name="moneyOut_cashComment"></textarea>
+                    </div>	
+                    </fieldset>
+            % endif                    
+            % if 'card' in c.money_out_paymentType:
+                <fieldset id="moneyOut_card" style="display: none; ">
+                    <div style="height: 400px; overflow-y: scroll;">
+                    <label for="moneyOut_cardSumm">Сумма для разового вывода</label>
+                    <input type="text" id="moneyOut_cardSumm" name="moneyOut_cardSumm" value="0" />
+                    
+                    <label for="moneyOut_cardBank">Название банка</label>
+                    <input type="text" id="moneyOut_cardBank" name="moneyOut_cardBank"/>
+                    
+                    <label for="moneyOut_cardType">Тип карты</label>
+                    <select id="moneyOut_cardType" name="moneyOut_cardType">
+                      <option value="Visa">Visa</option>    
+                      <option value="MasterCard">MasterCard</option>
+                    </select>
 
-            <label for="moneyOut_phone_r">Моб. телефон (для проверки) </label>
-            <input type="text" id="moneyOut_phone_r" name="moneyOut_phone_r"/>
-
-            <label for="moneyOut_comment_r">Примечания</label>
-            <textarea rows="4" cols="45" id="moneyOut_comment_r" name="moneyOut_comment_r"></textarea>
-        </fieldset>
-        % endif
-        % if 'webmoney_u' in c.money_out_paymentType:
-        <fieldset id="moneyOut_webmoney_u">
-            <label for="moneyOut_summ_u">Сумма для разового вывода</label>
-            <input type="text" id="moneyOut_summ_u" name="moneyOut_summ_u" value="0"/>
-
-            <label for="moneyOut_webmoneyLogin_u">WMID с которым Вы входите в кошелёк WebMoney</label>
-            <input type="text" id="moneyOut_webmoneyLogin_u" name="moneyOut_webmoneyLogin_u"/>
-
-            <label for="moneyOut_webmoneyAccountNumber_u">Номер U-кошелька вместе с буквой U</label>
-            <input type="text" id="moneyOut_webmoneyAccountNumber_u" name="moneyOut_webmoneyAccountNumber_u"/>
-
-            <label for="moneyOut_phone_u">Моб. телефон (для проверки) </label>
-            <input type="text" id="moneyOut_phone_u" name="moneyOut_phone_u"/>
-
-            <label for="moneyOut_comment_u">Примечания</label>
-            <textarea rows="4" cols="45" id="moneyOut_comment_u" name="moneyOut_comment_u"></textarea>
-        </fieldset>
-        % endif
-        % if 'cash' in c.money_out_paymentType:
-        <fieldset id="moneyOut_cash" style="display: none; ">
-            <div style="height: 400px; overflow-y: scroll;">
-                <label for="moneyOut_cashSumm">Сумма для разового вывода</label>
-                <input type="text" id="moneyOut_cashSumm" name="moneyOut_cashSumm" value="0"/>
-                <label for="moneyOut_cashPhone">Моб. телефон (для проверки) </label>
-                <input type="text" id="moneyOut_cashPhone" name="moneyOut_cashPhone"/>
-
-                <label for="moneyOut_cashComment">Примечания</label>
-                <textarea rows="4" cols="45" id="moneyOut_cashComment" name="moneyOut_cashComment"></textarea>
-            </div>
-        </fieldset>
-        % endif
-        % if 'card' in c.money_out_paymentType:
-        <fieldset id="moneyOut_card" style="display: none; ">
-            <div style="height: 400px; overflow-y: scroll;">
-                <label for="moneyOut_cardSumm">Сумма для разового вывода</label>
-                <input type="text" id="moneyOut_cardSumm" name="moneyOut_cardSumm" value="0"/>
-
-                <label for="moneyOut_cardBank">Название банка</label>
-                <input type="text" id="moneyOut_cardBank" name="moneyOut_cardBank"/>
-
-                <label for="moneyOut_cardType">Тип карты</label>
-                <select id="moneyOut_cardType" name="moneyOut_cardType">
-                    <option value="Visa">Visa</option>
-                    <option value="MasterCard">MasterCard</option>
-                </select>
-
-                <label for="moneyOut_cardCurrency">Валюта банковской карты</label>
-                <select id="moneyOut_cardCurrency" name="moneyOut_cardCurrency">
-                    <option value="UAH">UAH</option>
-                    <option value="USD">USD</option>
-                </select>
-
-                <label for="moneyOut_cardNumber">Номер банковской карты</label>
-                <input type="text" id="moneyOut_cardNumber" name="moneyOut_cardNumber"/>
-
-                <label for="moneyOut_cardName">Ф.И.О владельца карты</label>
-                <input type="text" id="moneyOut_cardName" name="moneyOut_cardName"/>
-
-                <label for="moneyOut_cardDate">Срок действия карты</label>
-                <select name="moneyOut_cardMonth" id="moneyOut_cardMonth">
-                    <% monthNames = [u'янв', u'фев', u'мар', u'апр', u'май', u'июн', u'июл', u'авг', u'сен', u'окт',
-                    u'ноя', u'дек']; %>
-                    % for i, month_name in enumerate(monthNames):
-                    <option value="${i+1}">${month_name}</option>
-                    % endfor
-                </select>
-
-                <select name="moneyOut_cardYear" id="moneyOut_cardYear">
+                    <label for="moneyOut_cardCurrency">Валюта банковской карты</label>
+                    <select id="moneyOut_cardCurrency" name="moneyOut_cardCurrency">
+                        <option value="UAH">UAH</option>
+                        <option value="USD">USD</option>    
+                    </select>
+                    
+                    <label for="moneyOut_cardNumber">Номер банковской карты</label>
+                    <input type="text" id="moneyOut_cardNumber" name="moneyOut_cardNumber" />
+                    
+                    <label for="moneyOut_cardName">Ф.И.О владельца карты</label>
+                    <input type="text" id="moneyOut_cardName" name="moneyOut_cardName" />
+                    
+                    <label for="moneyOut_cardDate">Срок действия карты</label>
+                    <select name="moneyOut_cardMonth" id="moneyOut_cardMonth">
+                    <%	monthNames = [u'янв', u'фев', u'мар', u'апр', u'май', u'июн', u'июл', u'авг', u'сен', u'окт', u'ноя', u'дек']; %>
+                        % for i, month_name in enumerate(monthNames):
+                             <option value="${i+1}">${month_name}</option>
+                        % endfor
+                    </select>
+                    
+                    <select name="moneyOut_cardYear" id="moneyOut_cardYear">
                     <%
-                    years = []
-                    year = datetime.today().year
-                    for i in range(0, 10):
-                    years.append(year + i)
+                        years = []
+                        year = datetime.today().year 
+                        for i in range(0, 10):
+                            years.append(year + i)
                     %>
-                    % for x in years:
-                    <option value="${x}">${x}</option>
-                    % endfor
-                </select>
+                        % for x in years:
+                             <option value="${x}">${x}</option>
+                        % endfor
+                    </select>
+                        
+                    <label for="moneyOut_cardBankMFO">МФО банка</label>
+                    <input type="text" name="moneyOut_cardBankMFO" id="moneyOut_cardBankMFO" size="6"/>
+                    
+                    <label for="moneyOut_cardBankOKPO">ОКПО</label> 
+                    <input type="text" name="moneyOut_cardBankOKPO" id="moneyOut_cardBankOKPO" size="10" />
 
-                <label for="moneyOut_cardBankMFO">МФО банка</label>
-                <input type="text" name="moneyOut_cardBankMFO" id="moneyOut_cardBankMFO" size="6"/>
+                    <label for="moneyOut_cardBankTransitAccount">Транзитный счёт банка</label>
+                    <input type="text" name="moneyOut_cardBankTransitAccount" id="moneyOut_cardBankTransitAccount" />
+                    
+                    <label for="moneyOut_cardPhone">Моб. телефон (для проверки) </label>
+                    <input type="text" id="moneyOut_cardPhone" name="moneyOut_cardPhone" />
+                    
+                    <label for="moneyOut_cardComment">Примечания</label>
+                        <textarea rows="4" cols="45" id="moneyOut_cardComment" name="moneyOut_cardComment"></textarea>
+                    </div>	
+                    </fieldset>
+            % endif                    
+            % if 'card_pb_ua' in c.money_out_paymentType:
+                <fieldset id="moneyOut_card_pb_ua" style="display: none; ">
+                    <div style="height: 400px; overflow-y: scroll;">
+                    <label for="moneyOut_cardSumm_pb_ua">Сумма для разового вывода</label>
+                    <input type="text" id="moneyOut_cardSumm_pb_ua" name="moneyOut_cardSumm_pb_ua" value="0" />
+                    
+                    <label for="moneyOut_cardType_pb_ua">Тип карты</label>
+                    <select id="moneyOut_cardType_pb_ua" name="moneyOut_cardType_pb_ua">
+                      <option value="Visa">Visa</option>    
+                      <option value="MasterCard">MasterCard</option>
+                    </select>
 
-                <label for="moneyOut_cardBankOKPO">ОКПО</label>
-                <input type="text" name="moneyOut_cardBankOKPO" id="moneyOut_cardBankOKPO" size="10"/>
-
-                <label for="moneyOut_cardBankTransitAccount">Транзитный счёт банка</label>
-                <input type="text" name="moneyOut_cardBankTransitAccount" id="moneyOut_cardBankTransitAccount"/>
-
-                <label for="moneyOut_cardPhone">Моб. телефон (для проверки) </label>
-                <input type="text" id="moneyOut_cardPhone" name="moneyOut_cardPhone"/>
-
-                <label for="moneyOut_cardComment">Примечания</label>
-                <textarea rows="4" cols="45" id="moneyOut_cardComment" name="moneyOut_cardComment"></textarea>
-            </div>
-        </fieldset>
-        % endif
-        % if 'card_pb_ua' in c.money_out_paymentType:
-        <fieldset id="moneyOut_card_pb_ua" style="display: none; ">
-            <div style="height: 400px; overflow-y: scroll;">
-                <label for="moneyOut_cardSumm_pb_ua">Сумма для разового вывода</label>
-                <input type="text" id="moneyOut_cardSumm_pb_ua" name="moneyOut_cardSumm_pb_ua" value="0"/>
-
-                <label for="moneyOut_cardType_pb_ua">Тип карты</label>
-                <select id="moneyOut_cardType_pb_ua" name="moneyOut_cardType_pb_ua">
-                    <option value="Visa">Visa</option>
-                    <option value="MasterCard">MasterCard</option>
-                </select>
-
-                <label for="moneyOut_cardCurrency_pb_ua">Валюта банковской карты</label>
-                <select id="moneyOut_cardCurrency_pb_ua" name="moneyOut_cardCurrency_pb_ua">
-                    <option value="UAH" selected>UAH</option>
-                </select>
-
-                <label for="moneyOut_cardNumber_pb_ua">Номер банковской карты</label>
-                <input type="text" id="moneyOut_cardNumber_pb_ua" name="moneyOut_cardNumber_pb_ua"/>
-
-                <label for="moneyOut_cardName_pb_ua">Ф.И.О владельца карты</label>
-                <input type="text" id="moneyOut_cardName_pb_ua" name="moneyOut_cardName_pb_ua"/>
-
-                <label for="moneyOut_cardDate_pb_ua">Срок действия карты</label>
-                <select name="moneyOut_cardMonth_pb_ua" id="moneyOut_cardMonth_pb_ua">
-                    <% monthNames = [u'янв', u'фев', u'мар', u'апр', u'май', u'июн', u'июл', u'авг', u'сен', u'окт',
-                    u'ноя', u'дек']; %>
-                    % for i, month_name in enumerate(monthNames):
-                    <option value="${i+1}">${month_name}</option>
-                    % endfor
-                </select>
-
-                <select name="moneyOut_cardYear_pb_ua" id="moneyOut_cardYear_pb_ua">
+                    <label for="moneyOut_cardCurrency_pb_ua">Валюта банковской карты</label>
+                    <select id="moneyOut_cardCurrency_pb_ua" name="moneyOut_cardCurrency_pb_ua">
+                        <option value="UAH" selected>UAH</option>
+                    </select>
+                    
+                    <label for="moneyOut_cardNumber_pb_ua">Номер банковской карты</label>
+                    <input type="text" id="moneyOut_cardNumber_pb_ua" name="moneyOut_cardNumber_pb_ua" />
+                    
+                    <label for="moneyOut_cardName_pb_ua">Ф.И.О владельца карты</label>
+                    <input type="text" id="moneyOut_cardName_pb_ua" name="moneyOut_cardName_pb_ua" />
+                    
+                    <label for="moneyOut_cardDate_pb_ua">Срок действия карты</label>
+                    <select name="moneyOut_cardMonth_pb_ua" id="moneyOut_cardMonth_pb_ua">
+                    <%	monthNames = [u'янв', u'фев', u'мар', u'апр', u'май', u'июн', u'июл', u'авг', u'сен', u'окт', u'ноя', u'дек']; %>
+                        % for i, month_name in enumerate(monthNames):
+                             <option value="${i+1}">${month_name}</option>
+                        % endfor
+                    </select>
+                    
+                    <select name="moneyOut_cardYear_pb_ua" id="moneyOut_cardYear_pb_ua">
                     <%
-                    years = []
-                    year = datetime.today().year
-                    for i in range(0, 10):
-                    years.append(year + i)
+                        years = []
+                        year = datetime.today().year 
+                        for i in range(0, 10):
+                            years.append(year + i)
                     %>
-                    % for x in years:
-                    <option value="${x}">${x}</option>
-                    % endfor
-                </select>
+                        % for x in years:
+                             <option value="${x}">${x}</option>
+                        % endfor
+                    </select>
+                    
+                    <label for="moneyOut_cardPhone_pb_ua">Моб. телефон (для проверки) </label>
+                    <input type="text" id="moneyOut_cardPhone_pb_ua" name="moneyOut_cardPhone_pb_ua" />
+                    
+                    <label for="moneyOut_cardComment_pb_ua">Примечания</label>
+                        <textarea rows="4" cols="45" id="moneyOut_cardComment_pb_ua" name="moneyOut_cardComment_pb_ua"></textarea>
+                    </div>	
+                    </fieldset>
+            % endif                    
+            % if 'card_pb_us' in c.money_out_paymentType:
+                <fieldset id="moneyOut_card_pb_us" style="display: none; ">
+                    <div style="height: 400px; overflow-y: scroll;">
+                    <label for="moneyOut_cardSumm_pb_us">Сумма для разового вывода</label>
+                    <input type="text" id="moneyOut_cardSumm_pb_us" name="moneyOut_cardSumm_pb_us" value="0" />
+                    
+                    <label for="moneyOut_cardType_pb_us">Тип карты</label>
+                    <select id="moneyOut_cardType_pb_us" name="moneyOut_cardType_pb_us">
+                      <option value="Visa">Visa</option>    
+                      <option value="MasterCard">MasterCard</option>
+                    </select>
 
-                <label for="moneyOut_cardPhone_pb_ua">Моб. телефон (для проверки) </label>
-                <input type="text" id="moneyOut_cardPhone_pb_ua" name="moneyOut_cardPhone_pb_ua"/>
-
-                <label for="moneyOut_cardComment_pb_ua">Примечания</label>
-                <textarea rows="4" cols="45" id="moneyOut_cardComment_pb_ua"
-                          name="moneyOut_cardComment_pb_ua"></textarea>
-            </div>
-        </fieldset>
-        % endif
-        % if 'card_pb_us' in c.money_out_paymentType:
-        <fieldset id="moneyOut_card_pb_us" style="display: none; ">
-            <div style="height: 400px; overflow-y: scroll;">
-                <label for="moneyOut_cardSumm_pb_us">Сумма для разового вывода</label>
-                <input type="text" id="moneyOut_cardSumm_pb_us" name="moneyOut_cardSumm_pb_us" value="0"/>
-
-                <label for="moneyOut_cardType_pb_us">Тип карты</label>
-                <select id="moneyOut_cardType_pb_us" name="moneyOut_cardType_pb_us">
-                    <option value="Visa">Visa</option>
-                    <option value="MasterCard">MasterCard</option>
-                </select>
-
-                <label for="moneyOut_cardCurrency_pb_us">Валюта банковской карты</label>
-                <select id="moneyOut_cardCurrency_pb_us" name="moneyOut_cardCurrency_pb_us">
-                    <option value="USD" selected>USD</option>
-                </select>
-
-                <label for="moneyOut_cardNumber_pb_us">Номер банковской карты</label>
-                <input type="text" id="moneyOut_cardNumber_pb_us" name="moneyOut_cardNumber_pb_us"/>
-
-                <label for="moneyOut_cardName_pb_us">Ф.И.О владельца карты</label>
-                <input type="text" id="moneyOut_cardName_pb_us" name="moneyOut_cardName_pb_us"/>
-
-                <label for="moneyOut_cardDate_pb_us">Срок действия карты</label>
-                <select name="moneyOut_cardMonth_pb_us" id="moneyOut_cardMonth_pb_us">
-                    <% monthNames = [u'янв', u'фев', u'мар', u'апр', u'май', u'июн', u'июл', u'авг', u'сен', u'окт',
-                    u'ноя', u'дек']; %>
-                    % for i, month_name in enumerate(monthNames):
-                    <option value="${i+1}">${month_name}</option>
-                    % endfor
-                </select>
-
-                <select name="moneyOut_cardYear_pb_us" id="moneyOut_cardYear_pb_us">
+                    <label for="moneyOut_cardCurrency_pb_us">Валюта банковской карты</label>
+                    <select id="moneyOut_cardCurrency_pb_us" name="moneyOut_cardCurrency_pb_us">
+                        <option value="USD" selected>USD</option>    
+                    </select>
+                    
+                    <label for="moneyOut_cardNumber_pb_us">Номер банковской карты</label>
+                    <input type="text" id="moneyOut_cardNumber_pb_us" name="moneyOut_cardNumber_pb_us" />
+                    
+                    <label for="moneyOut_cardName_pb_us">Ф.И.О владельца карты</label>
+                    <input type="text" id="moneyOut_cardName_pb_us" name="moneyOut_cardName_pb_us" />
+                    
+                    <label for="moneyOut_cardDate_pb_us">Срок действия карты</label>
+                    <select name="moneyOut_cardMonth_pb_us" id="moneyOut_cardMonth_pb_us">
+                    <%	monthNames = [u'янв', u'фев', u'мар', u'апр', u'май', u'июн', u'июл', u'авг', u'сен', u'окт', u'ноя', u'дек']; %>
+                        % for i, month_name in enumerate(monthNames):
+                             <option value="${i+1}">${month_name}</option>
+                        % endfor
+                    </select>
+                    
+                    <select name="moneyOut_cardYear_pb_us" id="moneyOut_cardYear_pb_us">
                     <%
-                    years = []
-                    year = datetime.today().year
-                    for i in range(0, 10):
-                    years.append(year + i)
+                        years = []
+                        year = datetime.today().year 
+                        for i in range(0, 10):
+                            years.append(year + i)
                     %>
-                    % for x in years:
-                    <option value="${x}">${x}</option>
-                    % endfor
-                </select>
+                        % for x in years:
+                             <option value="${x}">${x}</option>
+                        % endfor
+                    </select>
+                        
+                    <label for="moneyOut_cardPhone_pb_us">Моб. телефон (для проверки) </label>
+                    <input type="text" id="moneyOut_cardPhone_pb_us" name="moneyOut_cardPhone_pb_us" />
+                    
+                    <label for="moneyOut_cardComment_pb_us">Примечания</label>
+                        <textarea rows="4" cols="45" id="moneyOut_cardComment_pb_us" name="moneyOut_cardComment_pb_us"></textarea>
+                    </div>	
+                    </fieldset>
+            % endif                    
+            % if 'factura' in c.money_out_paymentType:
+                <fieldset id="moneyOut_factura" style="display: none">
+                  
+                      <label for="moneyOut_facturaSumm">Сумма для разового вывода</label>
+                      <input type="text" id="moneyOut_facturaSumm" name="moneyOut_facturaSumm">
+                    
+                      <label for="moneyOut_facturaContact">Контактное лицо</label>
+                      <input type="text" id="moneyOut_facturaContact" name="moneyOut_facturaContact" />
+                      
+                      <label for="moneyOut_facturaPhone">Контактный телефон</label>
+                      <input type="text" id="moneyOut_facturaPhone" name="moneyOut_facturaPhone" />
+                    
+                      <label for="moneyOut_facturaComment">Примечания</label>
+                      <textarea rows="4" cols="45" id="moneyOut_facturaComment" name="moneyOut_facturaComment"></textarea>
+                      
+                      <br/>
+                      <a href="javascript:void(0);" id="uploadButton">Добавить счёт-фактуру</a>
+                      <span id="factura_files"></span>
+                      <a href="javascript:void(0);" id="removeUploadFactura" name="removeUploadFactura">Удалить файл</a>
+                      <input type="hidden" name="moneyOut_facturaLocation" id="moneyOut_facturaLocation" />
+                </fieldset>
+            % endif
+            % if 'yandex' in c.money_out_paymentType:
+                <fieldset id="moneyOut_yandex" style="display: none">
+                    <label for="moneyOut_yandexSumm">Сумма для разового вывода</label>
+                    <input type="text" id="moneyOut_yandexSumm" name="moneyOut_yandexSumm">
+                    <label for="moneyOut_yandex_number">Номер Яндекс счёта</label>
+                    <input type="text" id="moneyOut_yandex_number" name="moneyOut_yandex_number" />
 
-                <label for="moneyOut_cardPhone_pb_us">Моб. телефон (для проверки) </label>
-                <input type="text" id="moneyOut_cardPhone_pb_us" name="moneyOut_cardPhone_pb_us"/>
-
-                <label for="moneyOut_cardComment_pb_us">Примечания</label>
-                <textarea rows="4" cols="45" id="moneyOut_cardComment_pb_us"
-                          name="moneyOut_cardComment_pb_us"></textarea>
-            </div>
-        </fieldset>
-        % endif
-        % if 'factura' in c.money_out_paymentType:
-        <fieldset id="moneyOut_factura" style="display: none">
-
-            <label for="moneyOut_facturaSumm">Сумма для разового вывода</label>
-            <input type="text" id="moneyOut_facturaSumm" name="moneyOut_facturaSumm">
-
-            <label for="moneyOut_facturaContact">Контактное лицо</label>
-            <input type="text" id="moneyOut_facturaContact" name="moneyOut_facturaContact"/>
-
-            <label for="moneyOut_facturaPhone">Контактный телефон</label>
-            <input type="text" id="moneyOut_facturaPhone" name="moneyOut_facturaPhone"/>
-
-            <label for="moneyOut_facturaComment">Примечания</label>
-            <textarea rows="4" cols="45" id="moneyOut_facturaComment" name="moneyOut_facturaComment"></textarea>
-
-            <br/>
-            <a href="javascript:void(0);" id="uploadButton">Добавить счёт-фактуру</a>
-            <span id="factura_files"></span>
-            <a href="javascript:void(0);" id="removeUploadFactura" name="removeUploadFactura">Удалить файл</a>
-            <input type="hidden" name="moneyOut_facturaLocation" id="moneyOut_facturaLocation"/>
-        </fieldset>
-        % endif
-        % if 'yandex' in c.money_out_paymentType:
-        <fieldset id="moneyOut_yandex" style="display: none">
-            <label for="moneyOut_yandexSumm">Сумма для разового вывода</label>
-            <input type="text" id="moneyOut_yandexSumm" name="moneyOut_yandexSumm">
-            <label for="moneyOut_yandex_number">Номер Яндекс счёта</label>
-            <input type="text" id="moneyOut_yandex_number" name="moneyOut_yandex_number"/>
-
-            <label for="moneyOut_phone">Моб. телефон (для проверки) </label>
-            <input type="text" id="moneyOut_yandex_phone" name="moneyOut_yandex_phone"/>
-
-            <label for="moneyOut_comment">Примечания</label>
-            <textarea rows="4" cols="45" id="moneyOut_yandex_comment" name="moneyOut_yandex_comment"></textarea>
-        </fieldset>
-        % endif
-        <div id="moneyOut_errorMessage" class="errorMessage"></div>
-        <div id="moneyOut_wait" style="text-align: right; display: none;">
-            <img src="/img/wait26trans.gif"/>
-        </div>
+                    <label for="moneyOut_phone">Моб. телефон (для проверки) </label>
+                    <input type="text" id="moneyOut_yandex_phone" name="moneyOut_yandex_phone" />
+                    
+                    <label for="moneyOut_comment">Примечания</label>
+                    <textarea rows="4" cols="45" id="moneyOut_yandex_comment" name="moneyOut_yandex_comment"></textarea>
+                </fieldset>
+            % endif
+            <div id="moneyOut_errorMessage" class="errorMessage"></div>        
+            <div id="moneyOut_wait" style="text-align: right; display: none;" >
+                <img src="/img/wait26trans.gif" />
+            </div> 
     </form>
 </div>

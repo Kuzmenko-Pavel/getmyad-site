@@ -1,2482 +1,989 @@
 <%text>
 <style type="text/css" media="all">
-    html, body {
-        padding: 0;
-        margin: 0;
-    }
-
-    .reset {
-        padding: 0;
-        margin: 0;
-        border: 0;
-        outline: 0;
-        display: block;
-        background: transparent;
-        vertical-align: baseline;
-        text-decoration: none;
-        text-rendering: auto;
-        -webkit-font-smoothing: antialiased;
-        font-size: 100%;
-        -ms-text-size-adjust: 100%;
-        -webkit-text-size-adjust: 100%;
-        font-family: arial, sans serif;
-        color: black;
-        line-height: normal;
-        overflow: hidden;
-        behavior: url(PIE.htc);
-    }
-
-    ul {
-        list-style: none;
-        list-style-image: none;
-    }
-
-    img {
-        -ms-interpolation-mode: nearest-neighbor;
-        image-rendering: -webkit-optimize-contrast;
-    }
-
-    #mainContainer {
-        position: relative;
-        width: ${Main.width};
-        height: ${Main.height};
-
-    {
-        if Main [ 'borderColorStatus' ]
-    }
-    borde: none
-
-    ;
-    {
-        else
-    }
-    border: ${Main.borderWidth} px solid # ${Main.borderColor}
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if Main [ 'backgroundColorStatus' ]
-    }
-    background-color: transparent
-
-    ;
-    {
-        else
-    }
-    background-color:
-
-    #
-    ${Main.backgroundColor}
-
-    ;
-    {
-    /
-    if
-    }
-    -webkit-border-top-left-radius: ${Main.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${Main.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${Main.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${Main.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${Main.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${Main.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${Main.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${Main.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${Main.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${Main.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${Main.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${Main.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${Main.border_top_left_radius} px ${Main.border_top_right_radius} px ${Main.border_bottom_right_radius} px ${Main.border_bottom_left_radius} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    #mainHeader {
-        position: relative;
-        top: ${MainHeader.top} px;
-        left: ${MainHeader.left} px;
-        width: ${MainHeader.width};
-        height: ${MainHeader.height};
-    }
-
-    #mainFooter {
-        position: relative;
-        top: ${MainFooter.top} px;
-        left: ${MainFooter.left} px;
-        width: ${MainFooter.width};
-        height: ${MainFooter.height};
-    }
-
-    .advBlock {
-        width: ${Advertise.width};
-        height: ${Advertise.height};
-        border: ${Advertise.borderWidth} px solid # ${Advertise.borderColor};
-
-    {
-        if Advertise [ 'backgroundColorStatus' ]
-    }
-    background-color: transparent
-
-    ;
-    {
-        else
-    }
-    background-color:
-
-    #
-    ${Advertise.backgroundColor}
-
-    ;
-    {
-    /
-    if
-    }
-    float: left
-
-    ;
-    position: relative
-
-    ;
-    top: ${Advertise.top} px
-
-    ;
-    left: ${Advertise.left} px
-
-    ;
-    margin-top: ${Advertise.margin_top} px
-
-    ;
-    margin-right: ${Advertise.margin_right} px
-
-    ;
-    margin-bottom: ${Advertise.margin_bottom} px
-
-    ;
-    margin-left: ${Advertise.margin_left} px
-
-    ;
-    -webkit-border-top-left-radius: ${Advertise.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${Advertise.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${Advertise.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${Advertise.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${Advertise.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${Advertise.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${Advertise.border_top_left_radius} px ${Advertise.border_top_right_radius} px ${Advertise.border_bottom_right_radius} px ${Advertise.border_bottom_left_radius} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRetBlock {
-        width: ${Advertise.width};
-        height: ${Advertise.height};
-        top: ${Advertise.top} px;
-        left: ${Advertise.left} px;
-        border: ${Advertise.borderWidthRet} px solid # ${Advertise.borderColorRet};
-
-    {
-        if Advertise [ 'backgroundColorRetStatus' ]
-    }
-    background-color: transparent
-
-    ;
-    {
-        else
-    }
-    background-color:
-
-    #
-    ${Advertise.backgroundColorRet}
-
-    ;
-    {
-    /
-    if
-    }
-    float: left
-
-    ;
-    position: relative
-
-    ;
-    margin-top: ${Advertise.margin_top} px
-
-    ;
-    margin-right: ${Advertise.margin_right} px
-
-    ;
-    margin-bottom: ${Advertise.margin_bottom} px
-
-    ;
-    margin-left: ${Advertise.margin_left} px
-
-    ;
-    -webkit-border-top-left-radius: ${Advertise.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${Advertise.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${Advertise.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${Advertise.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${Advertise.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${Advertise.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${Advertise.border_top_left_radius} px ${Advertise.border_top_right_radius} px ${Advertise.border_bottom_right_radius} px ${Advertise.border_bottom_left_radius} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-    .advRecBlock {
-        width: ${Advertise.width};
-        height: ${Advertise.height};
-        top: ${Advertise.top} px;
-        left: ${Advertise.left} px;
-        border: ${Advertise.borderWidthRec} px solid # ${Advertise.borderColorRec};
-
-    {
-        if Advertise [ 'backgroundColorRecStatus' ]
-    }
-    background-color: transparent
-
-    ;
-    {
-        else
-    }
-    background-color:
-
-    #
-    ${Advertise.backgroundColorRec}
-
-    ;
-    {
-    /
-    if
-    }
-    float: left
-
-    ;
-    position: relative
-
-    ;
-    margin-top: ${Advertise.margin_top} px
-
-    ;
-    margin-right: ${Advertise.margin_right} px
-
-    ;
-    margin-bottom: ${Advertise.margin_bottom} px
-
-    ;
-    margin-left: ${Advertise.margin_left} px
-
-    ;
-    -webkit-border-top-left-radius: ${Advertise.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${Advertise.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${Advertise.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${Advertise.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${Advertise.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${Advertise.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${Advertise.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${Advertise.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${Advertise.border_top_left_radius} px ${Advertise.border_top_right_radius} px ${Advertise.border_bottom_right_radius} px ${Advertise.border_bottom_left_radius} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advHeader, .advHeader:hover, .advHeader:visited, .advHeader:active, .advHeader:link {
-        position: absolute;
-        top: ${Header.top} px;
-        left: ${Header.left} px;
-        width: ${Header.width};
-        height: ${Header.height};
-        border: ${Header.borderWidth} px solid # ${Header.borderColor};
-        cursor: pointer;
-        text-align: ${Header.align || 'center'};
-        color: # ${Header.fontColor};
-        -webkit-border-top-left-radius: ${Header.border_top_left_radius} px;
-        -webkit-border-top-right-radius: ${Header.border_top_right_radius} px;
-        -webkit-border-bottom-right-radius: ${Header.border_bottom_right_radius} px;
-        -webkit-border-bottom-left-radius: ${Header.border_bottom_left_radius} px;
-        -moz-border-radius-topleft: ${Header.border_top_left_radius} px;
-        -moz-border-radius-topright: ${Header.border_top_right_radius} px;
-        -moz-border-radius-bottomright: ${Header.border_bottom_right_radius} px;
-        -moz-border-radius-bottomleft: ${Header.border_bottom_left_radius} px;
-        border-top-left-radius: ${Header.border_top_left_radius} px;
-        border-top-right-radius: ${Header.border_top_right_radius} px;
-        border-bottom-right-radius: ${Header.border_bottom_right_radius} px;
-        border-bottom-left-radius: ${Header.border_bottom_left_radius} px;
-        border-radius: ${Header.border_top_left_radius} px ${Header.border_top_right_radius} px ${Header.border_bottom_right_radius} px ${Header.border_bottom_left_radius} px;
-
-    {
-        if Header [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-        else
-    }
-    text-decoration: none
-
-    ;
-    {
-    /
-    if
-    }
-    color:
-
-    #
-    ${Header.fontColor}
-
-    ;
-    font-size: ${Header.fontSize} px
-
-    ;
-    {
-        if Header [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    font-family: ${Header.fontFamily}
-
-    ;
-    {
-        if Header [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${Header.line_height}
-
-    ;
-    letter-spacing: ${Header.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advHeader:hover {
-        text-decoration: underline;
-    }
-
-    .advDescription, .advDescription:hover, .advDescription:visited, .advDescription:active, .advDescription:link {
-        position: absolute;
-        top: ${Description.top} px;
-        left: ${Description.left} px;
-        width: ${Description.width};
-        height: ${Description.height};
-        border: ${Description.borderWidth} px solid # ${Description.borderColor};
-        cursor: pointer;
-        text-align: ${Description.align || 'center'};
-
-    {
-        if Description [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    -webkit-border-top-left-radius: ${Description.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${Description.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${Description.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${Description.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${Description.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${Description.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${Description.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${Description.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${Description.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${Description.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${Description.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${Description.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${Description.border_top_left_radius} px ${Description.border_top_right_radius} px ${Description.border_bottom_right_radius} px ${Description.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${Description.fontColor}
-
-    ;
-    font-size: ${Description.fontSize} px
-
-    ;
-    font-family:${Description.fontFamily}
-
-    ;
-    {
-        if Description [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if Description [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if Description [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${Description.line_height}
-
-    ;
-    letter-spacing: ${Description.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advDescription:hover {
-        text-decoration: underline;
-    }
-
-    .advCost, .advCost:link, .advCost:hover, .advCost:visited, .advCost:active {
-        position: absolute;
-        top: ${Cost.top} px;
-        left: ${Cost.left} px;
-        width: ${Cost.width};
-        height: ${Cost.height};
-        border: ${Cost.borderWidth} px solid # ${Cost.borderColor};
-        cursor: pointer;
-        text-align: ${Cost.align || 'center'};
-
-    {
-        if Cost [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    -webkit-border-top-left-radius: ${Cost.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${Cost.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${Cost.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${Cost.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${Cost.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${Cost.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${Cost.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${Cost.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${Cost.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${Cost.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${Cost.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${Cost.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${Cost.border_top_left_radius} px ${Cost.border_top_right_radius} px ${Cost.border_bottom_right_radius} px ${Cost.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${Cost.fontColor}
-
-    ;
-    font-size: ${Cost.fontSize} px
-
-    ;
-    font-family:${Cost.fontFamily}
-
-    ;
-    {
-        if Cost [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if Cost [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if Cost [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${Cost.line_height}
-
-    ;
-    letter-spacing: ${Cost.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advCost:hover {
-        text-decoration: underline;
-    }
-
-    .advRetHeader, .advRetHeader:hover, .advRetHeader:visited, .advRetHeader:active, .advRetHeader:link {
-        position: absolute;
-        cursor: pointer;
-        top: ${RetHeader.top} px;
-        left: ${RetHeader.left} px;
-        width: ${RetHeader.width};
-        height: ${RetHeader.height};
-        border: ${RetHeader.borderWidth} px solid # ${Header.borderColor};
-        text-align: ${RetHeader.align || 'center'};
-        color: # ${RetHeader.fontColor};
-        -webkit-border-top-left-radius: ${RetHeader.border_top_left_radius} px;
-        -webkit-border-top-right-radius: ${RetHeader.border_top_right_radius} px;
-        -webkit-border-bottom-right-radius: ${RetHeader.border_bottom_right_radius} px;
-        -webkit-border-bottom-left-radius: ${RetHeader.border_bottom_left_radius} px;
-        -moz-border-radius-topleft: ${RetHeader.border_top_left_radius} px;
-        -moz-border-radius-topright: ${RetHeader.border_top_right_radius} px;
-        -moz-border-radius-bottomright: ${RetHeader.border_bottom_right_radius} px;
-        -moz-border-radius-bottomleft: ${RetHeader.border_bottom_left_radius} px;
-        border-top-left-radius: ${RetHeader.border_top_left_radius} px;
-        border-top-right-radius: ${RetHeader.border_top_right_radius} px;
-        border-bottom-right-radius: ${RetHeader.border_bottom_right_radius} px;
-        border-bottom-left-radius: ${RetHeader.border_bottom_left_radius} px;
-        border-radius: ${RetHeader.border_top_left_radius} px ${RetHeader.border_top_right_radius} px ${RetHeader.border_bottom_right_radius} px ${RetHeader.border_bottom_left_radius} px;
-
-    {
-        if RetHeader [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    color:
-
-    #
-    ${RetHeader.fontColor}
-
-    ;
-    font-size: ${RetHeader.fontSize} px
-
-    ;
-    {
-        if RetHeader [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    font-family: ${RetHeader.fontFamily}
-
-    ;
-    {
-        if RetHeader [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${RetHeader.line_height}
-
-    ;
-    letter-spacing: ${RetHeader.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRetHeader:hover {
-        text-decoration: underline;
-    }
-
-    .advRetDescription, .advRetDescription:hover, .advRetDescription:visited, .advRetDescription:active, .advRetDescription:link {
-        position: absolute;
-        cursor: pointer;
-        top: ${RetDescription.top} px;
-        left: ${RetDescription.left} px;
-        width: ${RetDescription.width};
-        height: ${RetDescription.height};
-        border: ${RetDescription.borderWidth} px solid # ${RetDescription.borderColor};
-        text-align: ${RetDescription.align || 'center'};
-
-    {
-        if RetDescription [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    -webkit-border-top-left-radius: ${RetDescription.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${RetDescription.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${RetDescription.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${RetDescription.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${RetDescription.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${RetDescription.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${RetDescription.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${RetDescription.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${RetDescription.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${RetDescription.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${RetDescription.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${RetDescription.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${RetDescription.border_top_left_radius} px ${RetDescription.border_top_right_radius} px ${RetDescription.border_bottom_right_radius} px ${RetDescription.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${RetDescription.fontColor}
-
-    ;
-    font-size: ${RetDescription.fontSize} px
-
-    ;
-    font-family:${RetDescription.fontFamily}
-
-    ;
-    {
-        if RetDescription [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RetDescription [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RetDescription [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${RetDescription.line_height}
-
-    ;
-    letter-spacing: ${RetDescription.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRetDescription:hover {
-        text-decoration: underline;
-    }
-
-    .advRetCost, .advRetCost:link, .advRetCost:hover, .advRetCost:visited, .advRetCost:active {
-        position: absolute;
-        cursor: pointer;
-        top: ${RetCost.top} px;
-        left: ${RetCost.left} px;
-        width: ${RetCost.width};
-        height: ${RetCost.height};
-        border: ${RetCost.borderWidth} px solid # ${RetCost.borderColor};
-        text-align: ${RetCost.align || 'center'};
-
-    {
-        if RetCost [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    -webkit-border-top-left-radius: ${RetCost.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${RetCost.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${RetCost.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${RetCost.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${RetCost.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${RetCost.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${RetCost.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${RetCost.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${RetCost.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${RetCost.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${RetCost.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${RetCost.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${RetCost.border_top_left_radius} px ${RetCost.border_top_right_radius} px ${RetCost.border_bottom_right_radius} px ${RetCost.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${RetCost.fontColor}
-
-    ;
-    font-size: ${RetCost.fontSize} px
-
-    ;
-    font-family:${RetCost.fontFamily}
-
-    ;
-    {
-        if RetCost [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RetCost [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RetCost [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${RetCost.line_height}
-
-    ;
-    letter-spacing: ${RetCost.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRetCost:hover {
-        text-decoration: underline;
-    }
-
-    .advRecHeader, .advRecHeader:hover, .advRecHeader:visited, .advRecHeader:active, .advRecHeader:link {
-        position: absolute;
-        cursor: pointer;
-        top: ${RecHeader.top} px;
-        left: ${RecHeader.left} px;
-        width: ${RecHeader.width};
-        height: ${RecHeader.height};
-        border: ${RecHeader.borderWidth} px solid # ${RecHeader.borderColor};
-        text-align: ${RecHeader.align || 'center'};
-        color: # ${RecHeader.fontColor};
-        -webkit-border-top-left-radius: ${RecHeader.border_top_left_radius} px;
-        -webkit-border-top-right-radius: ${RecHeader.border_top_right_radius} px;
-        -webkit-border-bottom-right-radius: ${RecHeader.border_bottom_right_radius} px;
-        -webkit-border-bottom-left-radius: ${RecHeader.border_bottom_left_radius} px;
-        -moz-border-radius-topleft: ${RecHeader.border_top_left_radius} px;
-        -moz-border-radius-topright: ${RecHeader.border_top_right_radius} px;
-        -moz-border-radius-bottomright: ${RecHeader.border_bottom_right_radius} px;
-        -moz-border-radius-bottomleft: ${RecHeader.border_bottom_left_radius} px;
-        border-top-left-radius: ${RecHeader.border_top_left_radius} px;
-        border-top-right-radius: ${RecHeader.border_top_right_radius} px;
-        border-bottom-right-radius: ${RecHeader.border_bottom_right_radius} px;
-        border-bottom-left-radius: ${RecHeader.border_bottom_left_radius} px;
-        border-radius: ${RecHeader.border_top_left_radius} px ${RecHeader.border_top_right_radius} px ${RecHeader.border_bottom_right_radius} px ${RecHeader.border_bottom_left_radius} px;
-
-    {
-        if RecHeader [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    color:
-
-    #
-    ${RecHeader.fontColor}
-
-    ;
-    font-size: ${RecHeader.fontSize} px
-
-    ;
-    {
-        if RecHeader [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    font-family: ${RecHeader.fontFamily}
-
-    ;
-    {
-        if RecHeader [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${RecHeader.line_height}
-
-    ;
-    letter-spacing: ${RecHeader.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRecHeader:hover {
-        text-decoration: underline;
-    }
-
-    .advRecDescription, .advRecDescription:hover, .advRecDescription:visited, .advRecDescription:active, .advRecDescription:link {
-        position: absolute;
-        cursor: pointer;
-        top: ${RecDescription.top} px;
-        left: ${RecDescription.left} px;
-        width: ${RecDescription.width};
-        height: ${RecDescription.height};
-        border: ${RecDescription.borderWidth} px solid # ${RecDescription.borderColor};
-        overflow: hidden;
-        text-align: ${RecDescription.align || 'center'};
-
-    {
-        if Description [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    -webkit-border-top-left-radius: ${RecDescription.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${RecDescription.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${RecDescription.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${RecDescription.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${RecDescription.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${RecDescription.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${RecDescription.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${RecDescription.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${RecDescription.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${RecDescription.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${RecDescription.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${RecDescription.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${RecDescription.border_top_left_radius} px ${RecDescription.border_top_right_radius} px ${RecDescription.border_bottom_right_radius} px ${RecDescription.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${RecDescription.fontColor}
-
-    ;
-    font-size: ${RecDescription.fontSize} px
-
-    ;
-    font-family:${RecDescription.fontFamily}
-
-    ;
-    {
-        if RecDescription [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RecDescription [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RecDescription [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${RecDescription.line_height}
-
-    ;
-    letter-spacing: ${RecDescription.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRecDescription:hover {
-        text-decoration: underline;
-    }
-
-    .advRecCost, .advRecCost:link, .advRecCost:hover, .advRecCost:visited, .advRecCost:active {
-        position: absolute;
-        cursor: pointer;
-        top: ${RecCost.top} px;
-        left: ${RecCost.left} px;
-        width: ${RecCost.width};
-        height: ${RecCost.height};
-        border: ${RecCost.borderWidth} px solid # ${RecCost.borderColor};
-        text-align: ${Cost.align || 'center'};
-
-    {
-        if Cost [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    -webkit-border-top-left-radius: ${RecCost.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${RecCost.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${RecCost.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${RecCost.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${RecCost.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${RecCost.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${RecCost.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${RecCost.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${RecCost.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${RecCost.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${RecCost.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${RecCost.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${RecCost.border_top_left_radius} px ${RecCost.border_top_right_radius} px ${RecCost.border_bottom_right_radius} px ${RecCost.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${RecCost.fontColor}
-
-    ;
-    font-size: ${RecCost.fontSize} px
-
-    ;
-    font-family:${RecCost.fontFamily}
-
-    ;
-    {
-        if RecCost [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RecCost [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RecCost [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${RecCost.line_height}
-
-    ;
-    letter-spacing: ${RecCost.letter_spacing} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRecCost:hover {
-        text-decoration: underline;
-    }
-
-    .advImageConS {
-        width: ${Image.width};
-        height: ${Image.height};
-        position: absolute;
-        cursor: pointer;
-        top: ${Image.top} px;
-        left: ${Image.left} px;
-
-    {
-        if Image [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    border: ${Image.borderWidth} px solid # ${Image.borderColor}
-
-    ;
-    -webkit-border-top-left-radius: ${Image.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${Image.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${Image.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${Image.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${Image.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${Image.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${Image.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${Image.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${Image.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${Image.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${Image.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${Image.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${Image.border_top_left_radius} px ${Image.border_top_right_radius} px ${Image.border_bottom_right_radius} px ${Image.border_bottom_left_radius} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRecImageConS {
-        width: ${RecImage.width};
-        height: ${RecImage.height};
-        position: absolute;
-        cursor: pointer;
-        top: ${RecImage.top} px;
-        left: ${RecImage.left} px;
-
-    {
-        if RecImage [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    border: ${RecImage.borderWidth} px solid # ${RecImage.borderColor}
-
-    ;
-    -webkit-border-top-left-radius: ${RecImage.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${RecImage.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${RecImage.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${RecImage.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${RecImage.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${RecImage.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${RecImage.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${RecImage.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${RecImage.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${RecImage.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${RecImage.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${RecImage.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${RecImage.border_top_left_radius} px ${RecImage.border_top_right_radius} px ${RecImage.border_bottom_right_radius} px {
-        RecImage . border_bottom_left_radius
-    }
-
-    px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRetImageConS {
-        width: ${RetImage.width};
-        height: ${RetImage.height};
-        position: absolute;
-        cursor: pointer;
-        top: ${RetImage.top} px;
-        left: ${RetImage.left} px;
-
-    {
-        if RetImage [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    border: ${RetImage.borderWidth} px solid # ${RetImage.borderColor}
-
-    ;
-    -webkit-border-top-left-radius: ${RetImage.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${RetImage.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${RetImage.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${RetImage.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${RetImage.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${RetImage.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${RetImage.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${RetImage.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${RetImage.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${RetImage.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${RetImage.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${RetImage.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${RetImage.border_top_left_radius} px ${RetImage.border_top_right_radius} px ${RetImage.border_bottom_right_radius} px ${RetImage.border_bottom_left_radius} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advImageS {
-        width: ${Image.width};
-        height: ${Image.height};
-        border-radius: ${Image.border_top_left_radius} px ${Image.border_top_right_radius} px ${Image.border_bottom_right_radius} px ${Image.border_bottom_left_radius} px;
-        position: relative;
-        zoom: 1;
-
-    {
-        if Image [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRecImageS {
-        width: ${RecImage.width};
-        height: ${RecImage.height};
-
-    border-radius: ${RecImage.border_top_left_radius} px ${RecImage.border_top_right_radius} px ${RecImage.border_bottom_right_radius} px {
-        RecImage . border_bottom_left_radius
-    }
-
-    px
-
-    ;
-    position: relative
-
-    ;
-    zoom:
-
-    1
-    ;
-    {
-        if RecImage [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRetImageS {
-        width: ${RetImage.width};
-        height: ${RetImage.height};
-        border-radius: ${RetImage.border_top_left_radius} px ${RetImage.border_top_right_radius} px ${RetImage.border_bottom_right_radius} px ${RetImage.border_bottom_left_radius} px;
-        position: relative;
-        zoom: 1;
-
-    {
-        if RetImage [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advImageConS ul, .advRecImageConS ul, .advRetImageConS ul {
-        position: relative;
-        display: -moz-inline-stack;
-        display: inline-block;
-        zoom: 1;
-        *display: inline;
-        behavior: url(PIE.htc);
-    }
-
-    .advImageConS ul li, .advRecImageConS ul li, .advRetImageConS ul li {
-        float: left;
-        display: -moz-inline-stack;
-        display: inline-block;
-        zoom: 1;
-        *display: inline;
-        behavior: url(PIE.htc);
-    }
-
-    div.control_prev, div.control_next {
-        position: absolute;
-        top: 35%;
-        z-index: 2000;
-        display: block;
-        padding: 15% 0%;
-        width: auto;
-        height: auto;
-        background: #2a2a2a;
-        color: #fff;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 9px;
-        opacity: 0.5;
-        border: 1px solid #fff;
-        cursor: pointer;
-        behavior: url(PIE.htc);
-    }
-
-    div.control_prev:hover, div.control_next:hover {
-        opacity: 1;
-        padding: 15% 15%;
-        -webkit-transition: all 0.2s ease;
-        behavior: url(PIE.htc);
-    }
-
-    div.control_prev {
-        border-radius: 0 5px 5px 0;
-        behavior: url(PIE.htc);
-    }
-
-    div.control_next {
-        right: 0;
-        border-radius: 5px 0 0 5px;
-        behavior: url(PIE.htc);
-    }
-
-    .advButton, .advButton:link, .advButton:hover, .advButton:visited, .advButton:active {
-        position: relative;
-        top: ${Button.top} px;
-        left: ${Button.left} px;
-        width: ${Button.width};
-        height: ${Button.height};
-        border: ${Button.borderWidth} px solid # ${Button.borderColor};
-        cursor: pointer;
-        text-align: ${Button.align || 'center'};
-
-    {
-        if Button [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    background-color:
-
-    #
-    ${Button.backgroundColor}
-
-    ;
-    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${Button.backgroundColor}),
-    color-stop
-
-    (
-    1
-    ,
-    #
-    ${Button.backgroundColor2}
-
-    )
-    )
-    ;
-    background:-moz-linear-gradient(top, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%)
-
-    ;
-    background:-webkit-linear-gradient(top, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%)
-
-    ;
-    background:-o-linear-gradient(top, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%)
-
-    ;
-    background:-ms-linear-gradient(top, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%)
-
-    ;
-    background:linear-gradient(to bottom, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%)
-
-    ;
-    filter:progid:DXImageTransform.Microsoft.
-
-    gradient
-
-    (
-    startColorstr
-
-    =
-    '#${Button.backgroundColor}'
-    ,
-    endColorstr
-
-    =
-    '#${Button.backgroundColor2}'
-    ,
-    GradientType
-
-    =
-    0
-    )
-    ;
-    -webkit-border-top-left-radius: ${Button.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${Button.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${Button.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${Button.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${Button.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${Button.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${Button.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${Button.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${Button.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${Button.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${Button.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${Button.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${Button.fontColor}
-
-    ;
-    font-size: ${Button.fontSize} px
-
-    ;
-    font-family:${Button.fontFamily}
-
-    ;
-    {
-        if Button [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if Button [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if Button [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${Button.line_height}
-
-    ;
-    letter-spacing: ${Button.letter_spacing} px
-
-    ;
-    text-decoration:none
-
-    ;
-    z-index:
-    expression
-
-    (
-    runtimeStyle.zIndex
-
-    =
-    1
-    ,
-    insertAdjacentHTML
-
-    (
-    'beforeEnd'
-    ,
-    '${Button.content}'
-    )
-    )
-    ;
-    border-radius: ${Button.border_top_left_radius} px ${Button.border_top_right_radius} px ${Button.border_bottom_right_radius} px ${Button.border_bottom_left_radius} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advButton:hover {
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, # ${Button.backgroundColor2}), color-stop(1, # ${Button.backgroundColor}));
-        background: -moz-linear-gradient(top, # ${Button.backgroundColor2} 5%, # ${Button.backgroundColor} 100%);
-        background: -webkit-linear-gradient(top, # ${Button.backgroundColor2} 5%, # ${Button.backgroundColor} 100%);
-        background: -o-linear-gradient(top, # ${Button.backgroundColor2} 5%, # ${Button.backgroundColor} 100%);
-        background: -ms-linear-gradient(top, # ${Button.backgroundColor2} 5%, # ${Button.backgroundColor} 100%);
-        background: linear-gradient(to bottom, # ${Button.backgroundColor2} 5%, # ${Button.backgroundColor} 100%);
-        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#${Button.backgroundColor2}', endColorstr='#${Button.backgroundColor}', GradientType=0);
-        background-color: # ${Button.backgroundColor2};
-        behavior: url(PIE.htc);
-    }
-
-    .advButton span {
+html, body{
+    padding: 0;
+    margin: 0;
+}
+.reset
+{
+    padding: 0;
+    margin: 0;
+    border: 0;
+    outline: 0; 
+    display: block;
+    background: transparent;
+    vertical-align: baseline;
+    text-decoration: none;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    font-size: 100%;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    font-family: arial, sans serif;
+    color: black;
+    line-height: normal;
+    overflow: hidden;
+    behavior: url(PIE.htc);
+}
+ul {
+    list-style: none;
+    list-style-image: none;
+}
+img {
+    -ms-interpolation-mode: nearest-neighbor;
+    image-rendering: -webkit-optimize-contrast;
+}
+#mainContainer {
+	position: relative;
+	width: ${Main.width};
+    height: ${Main.height};
+{if Main['borderColorStatus']}
+    borde: none;
+{else}
+    border: ${Main.borderWidth}px solid #${Main.borderColor};
+{/if}
+{if Main['backgroundColorStatus']}
+    background-color: transparent;
+{else}
+    background-color: #${Main.backgroundColor};
+{/if}
+    -webkit-border-top-left-radius: ${Main.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Main.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Main.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Main.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Main.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Main.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Main.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Main.border_bottom_left_radius}px;
+    border-top-left-radius: ${Main.border_top_left_radius}px;
+    border-top-right-radius: ${Main.border_top_right_radius}px;
+    border-bottom-right-radius: ${Main.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Main.border_bottom_left_radius}px;
+    border-radius: ${Main.border_top_left_radius}px ${Main.border_top_right_radius}px ${Main.border_bottom_right_radius}px ${Main.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
+
+#mainHeader {
+	position: relative;
+	top: ${MainHeader.top}px;
+	left: ${MainHeader.left}px;
+	width: ${MainHeader.width};
+    height: ${MainHeader.height};
+}
+
+#mainFooter {
+	position: relative;
+	top: ${MainFooter.top}px;
+	left: ${MainFooter.left}px;
+	width: ${MainFooter.width};
+    height: ${MainFooter.height};
+}
+
+.advBlock {
+	width: ${Advertise.width};
+	height: ${Advertise.height};
+	border: ${Advertise.borderWidth}px solid #${Advertise.borderColor};
+    {if Advertise['backgroundColorStatus']}
+        background-color: transparent;
+    {else}
+        background-color: #${Advertise.backgroundColor};
+    {/if}
+	float: left;
+	position: relative;
+	top: ${Advertise.top}px;
+	left: ${Advertise.left}px;
+    margin-top: ${Advertise.margin_top}px;
+    margin-right: ${Advertise.margin_right}px;
+    margin-bottom: ${Advertise.margin_bottom}px;
+    margin-left: ${Advertise.margin_left}px;
+    -webkit-border-top-left-radius: ${Advertise.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Advertise.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Advertise.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Advertise.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Advertise.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Advertise.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Advertise.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Advertise.border_bottom_left_radius}px;
+    border-top-left-radius: ${Advertise.border_top_left_radius}px;
+    border-top-right-radius: ${Advertise.border_top_right_radius}px;
+    border-bottom-right-radius: ${Advertise.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Advertise.border_bottom_left_radius}px;
+    border-radius: ${Advertise.border_top_left_radius}px ${Advertise.border_top_right_radius}px ${Advertise.border_bottom_right_radius}px ${Advertise.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
+
+.advRetBlock {
+	width: ${Advertise.width};
+	height: ${Advertise.height};
+	top: ${Advertise.top}px;
+	left: ${Advertise.left}px;
+	border: ${Advertise.borderWidthRet}px solid #${Advertise.borderColorRet};
+    {if Advertise['backgroundColorRetStatus']}
+        background-color: transparent;
+    {else}
+        background-color: #${Advertise.backgroundColorRet};
+    {/if}
+	float: left;
+	position: relative;
+    margin-top: ${Advertise.margin_top}px;
+    margin-right: ${Advertise.margin_right}px;
+    margin-bottom: ${Advertise.margin_bottom}px;
+    margin-left: ${Advertise.margin_left}px;
+    -webkit-border-top-left-radius: ${Advertise.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Advertise.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Advertise.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Advertise.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Advertise.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Advertise.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Advertise.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Advertise.border_bottom_left_radius}px;
+    border-top-left-radius: ${Advertise.border_top_left_radius}px;
+    border-top-right-radius: ${Advertise.border_top_right_radius}px;
+    border-bottom-right-radius: ${Advertise.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Advertise.border_bottom_left_radius}px;
+    border-radius: ${Advertise.border_top_left_radius}px ${Advertise.border_top_right_radius}px ${Advertise.border_bottom_right_radius}px ${Advertise.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
+.advRecBlock {
+	width: ${Advertise.width};
+	height: ${Advertise.height};
+	top: ${Advertise.top}px;
+	left: ${Advertise.left}px;
+	border: ${Advertise.borderWidthRec}px solid #${Advertise.borderColorRec};
+    {if Advertise['backgroundColorRecStatus']}
+        background-color: transparent;
+    {else}
+        background-color: #${Advertise.backgroundColorRec};
+    {/if}
+	float: left;
+	position: relative;
+    margin-top: ${Advertise.margin_top}px;
+    margin-right: ${Advertise.margin_right}px;
+    margin-bottom: ${Advertise.margin_bottom}px;
+    margin-left: ${Advertise.margin_left}px;
+    -webkit-border-top-left-radius: ${Advertise.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Advertise.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Advertise.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Advertise.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Advertise.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Advertise.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Advertise.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Advertise.border_bottom_left_radius}px;
+    border-top-left-radius: ${Advertise.border_top_left_radius}px;
+    border-top-right-radius: ${Advertise.border_top_right_radius}px;
+    border-bottom-right-radius: ${Advertise.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Advertise.border_bottom_left_radius}px;
+    border-radius: ${Advertise.border_top_left_radius}px ${Advertise.border_top_right_radius}px ${Advertise.border_bottom_right_radius}px ${Advertise.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
+
+.advHeader, .advHeader:hover, .advHeader:visited, .advHeader:active, .advHeader:link {
+	position: absolute;
+	top: ${Header.top}px;
+	left: ${Header.left}px;
+	width: ${Header.width};
+	height: ${Header.height};
+	border: ${Header.borderWidth}px solid #${Header.borderColor};
+    cursor:pointer;
+	text-align: ${Header.align || 'center'};
+	color: #${Header.fontColor};
+    -webkit-border-top-left-radius: ${Header.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Header.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Header.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Header.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Header.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Header.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Header.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Header.border_bottom_left_radius}px;
+    border-top-left-radius: ${Header.border_top_left_radius}px;
+    border-top-right-radius: ${Header.border_top_right_radius}px;
+    border-bottom-right-radius: ${Header.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Header.border_bottom_left_radius}px;
+    border-radius: ${Header.border_top_left_radius}px ${Header.border_top_right_radius}px ${Header.border_bottom_right_radius}px ${Header.border_bottom_left_radius}px;
+{if Header['fontUnderline']}
+	text-decoration: underline;
+{else}
+	text-decoration: none;
+{/if}
+	color: #${Header.fontColor};
+	font-size: ${Header.fontSize}px;
+{if Header['fontBold']}
+	font-weight: bold;
+{/if}
+    font-family: ${Header.fontFamily};
+{if Header['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${Header.line_height};
+    letter-spacing: ${Header.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advHeader:hover {
+	text-decoration: underline;
+}
+	
+.advDescription, .advDescription:hover, .advDescription:visited, .advDescription:active, .advDescription:link {
+	position: absolute;
+	top: ${Description.top}px;
+	left: ${Description.left}px;
+	width: ${Description.width};
+	height: ${Description.height};
+	border: ${Description.borderWidth}px solid #${Description.borderColor};
+    cursor:pointer;
+	text-align: ${Description.align || 'center'};
+{if Description['hide']}
+	display: none;
+{/if}
+    -webkit-border-top-left-radius: ${Description.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Description.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Description.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Description.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Description.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Description.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Description.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Description.border_bottom_left_radius}px;
+    border-top-left-radius: ${Description.border_top_left_radius}px;
+    border-top-right-radius: ${Description.border_top_right_radius}px;
+    border-bottom-right-radius: ${Description.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Description.border_bottom_left_radius}px;
+    border-radius: ${Description.border_top_left_radius}px ${Description.border_top_right_radius}px ${Description.border_bottom_right_radius}px ${Description.border_bottom_left_radius}px;
+	color: #${Description.fontColor};
+	font-size: ${Description.fontSize}px;
+	font-family:${Description.fontFamily};
+{if Description['fontBold']}
+	font-weight: bold;
+{/if}
+{if Description['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if Description['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${Description.line_height};
+    letter-spacing: ${Description.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advDescription:hover {
+	text-decoration: underline;
+}
+
+.advCost, .advCost:link, .advCost:hover, .advCost:visited, .advCost:active {
+	position: absolute;
+	top: ${Cost.top}px;
+	left: ${Cost.left}px;
+	width: ${Cost.width};
+	height: ${Cost.height};
+	border: ${Cost.borderWidth}px solid #${Cost.borderColor};
+    cursor:pointer;
+	text-align: ${Cost.align || 'center'};
+{if Cost['hide']}
+	display: none;
+{/if}
+    -webkit-border-top-left-radius: ${Cost.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Cost.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Cost.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Cost.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Cost.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Cost.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Cost.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Cost.border_bottom_left_radius}px;
+    border-top-left-radius: ${Cost.border_top_left_radius}px;
+    border-top-right-radius: ${Cost.border_top_right_radius}px;
+    border-bottom-right-radius: ${Cost.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Cost.border_bottom_left_radius}px;
+    border-radius: ${Cost.border_top_left_radius}px ${Cost.border_top_right_radius}px ${Cost.border_bottom_right_radius}px ${Cost.border_bottom_left_radius}px;
+	color: #${Cost.fontColor};
+	font-size: ${Cost.fontSize}px;
+	font-family:${Cost.fontFamily};
+{if Cost['fontBold']}
+	font-weight: bold;
+{/if}
+{if Cost['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if Cost['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${Cost.line_height};
+    letter-spacing: ${Cost.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advCost:hover {
+	text-decoration: underline;
+}
+
+.advRetHeader, .advRetHeader:hover, .advRetHeader:visited, .advRetHeader:active, .advRetHeader:link {
+	position: absolute;
+    cursor:pointer;
+	top: ${RetHeader.top}px;
+	left: ${RetHeader.left}px;
+	width: ${RetHeader.width};
+	height: ${RetHeader.height};
+	border: ${RetHeader.borderWidth}px solid #${Header.borderColor};
+	text-align: ${RetHeader.align || 'center'};
+	color: #${RetHeader.fontColor};
+    -webkit-border-top-left-radius: ${RetHeader.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RetHeader.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RetHeader.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RetHeader.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RetHeader.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RetHeader.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RetHeader.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RetHeader.border_bottom_left_radius}px;
+    border-top-left-radius: ${RetHeader.border_top_left_radius}px;
+    border-top-right-radius: ${RetHeader.border_top_right_radius}px;
+    border-bottom-right-radius: ${RetHeader.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RetHeader.border_bottom_left_radius}px;
+    border-radius: ${RetHeader.border_top_left_radius}px ${RetHeader.border_top_right_radius}px ${RetHeader.border_bottom_right_radius}px ${RetHeader.border_bottom_left_radius}px;
+{if RetHeader['fontUnderline']}
+	text-decoration: underline;
+{/if}
+	color: #${RetHeader.fontColor};
+	font-size: ${RetHeader.fontSize}px;
+{if RetHeader['fontBold']}
+	font-weight: bold;
+{/if}
+	font-family: ${RetHeader.fontFamily};
+{if RetHeader['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${RetHeader.line_height};
+    letter-spacing: ${RetHeader.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advRetHeader:hover {
+	text-decoration: underline;
+}
+
+.advRetDescription, .advRetDescription:hover, .advRetDescription:visited, .advRetDescription:active, .advRetDescription:link {
+	position: absolute;
+    cursor:pointer;
+	top: ${RetDescription.top}px;
+	left: ${RetDescription.left}px;
+	width: ${RetDescription.width};
+	height: ${RetDescription.height};
+	border: ${RetDescription.borderWidth}px solid #${RetDescription.borderColor};
+	text-align: ${RetDescription.align || 'center'};
+{if RetDescription['hide']}
+	display: none;
+{/if}
+    -webkit-border-top-left-radius: ${RetDescription.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RetDescription.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RetDescription.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RetDescription.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RetDescription.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RetDescription.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RetDescription.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RetDescription.border_bottom_left_radius}px;
+    border-top-left-radius: ${RetDescription.border_top_left_radius}px;
+    border-top-right-radius: ${RetDescription.border_top_right_radius}px;
+    border-bottom-right-radius: ${RetDescription.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RetDescription.border_bottom_left_radius}px;
+    border-radius: ${RetDescription.border_top_left_radius}px ${RetDescription.border_top_right_radius}px ${RetDescription.border_bottom_right_radius}px ${RetDescription.border_bottom_left_radius}px;
+	color: #${RetDescription.fontColor};
+	font-size: ${RetDescription.fontSize}px;
+	font-family:${RetDescription.fontFamily};
+{if RetDescription['fontBold']}
+	font-weight: bold;
+{/if}
+{if RetDescription['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if RetDescription['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${RetDescription.line_height};
+    letter-spacing: ${RetDescription.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advRetDescription:hover {
+	text-decoration: underline;
+}
+
+.advRetCost, .advRetCost:link, .advRetCost:hover, .advRetCost:visited, .advRetCost:active {
+	position: absolute;
+    cursor:pointer;
+	top: ${RetCost.top}px;
+	left: ${RetCost.left}px;
+	width: ${RetCost.width};
+	height: ${RetCost.height};
+	border: ${RetCost.borderWidth}px solid #${RetCost.borderColor};
+	text-align: ${RetCost.align || 'center'};
+{if RetCost['hide']}
+	display: none;
+{/if}
+    -webkit-border-top-left-radius: ${RetCost.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RetCost.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RetCost.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RetCost.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RetCost.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RetCost.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RetCost.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RetCost.border_bottom_left_radius}px;
+    border-top-left-radius: ${RetCost.border_top_left_radius}px;
+    border-top-right-radius: ${RetCost.border_top_right_radius}px;
+    border-bottom-right-radius: ${RetCost.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RetCost.border_bottom_left_radius}px;
+    border-radius: ${RetCost.border_top_left_radius}px ${RetCost.border_top_right_radius}px ${RetCost.border_bottom_right_radius}px ${RetCost.border_bottom_left_radius}px;
+	color: #${RetCost.fontColor};
+	font-size: ${RetCost.fontSize}px;
+	font-family:${RetCost.fontFamily};
+{if RetCost['fontBold']}
+	font-weight: bold;
+{/if}
+{if RetCost['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if RetCost['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${RetCost.line_height};
+    letter-spacing: ${RetCost.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advRetCost:hover {
+	text-decoration: underline;
+}
+.advRecHeader, .advRecHeader:hover, .advRecHeader:visited, .advRecHeader:active, .advRecHeader:link {
+	position: absolute;
+    cursor:pointer;
+	top: ${RecHeader.top}px;
+	left: ${RecHeader.left}px;
+	width: ${RecHeader.width};
+	height: ${RecHeader.height};
+	border: ${RecHeader.borderWidth}px solid #${RecHeader.borderColor};
+	text-align: ${RecHeader.align || 'center'};
+	color: #${RecHeader.fontColor};
+    -webkit-border-top-left-radius: ${RecHeader.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RecHeader.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RecHeader.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RecHeader.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RecHeader.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RecHeader.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RecHeader.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RecHeader.border_bottom_left_radius}px;
+    border-top-left-radius: ${RecHeader.border_top_left_radius}px;
+    border-top-right-radius: ${RecHeader.border_top_right_radius}px;
+    border-bottom-right-radius: ${RecHeader.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RecHeader.border_bottom_left_radius}px;
+    border-radius: ${RecHeader.border_top_left_radius}px ${RecHeader.border_top_right_radius}px  ${RecHeader.border_bottom_right_radius}px ${RecHeader.border_bottom_left_radius}px;
+{if RecHeader['fontUnderline']}
+	text-decoration: underline;
+{/if}
+	color: #${RecHeader.fontColor};
+	font-size: ${RecHeader.fontSize}px;
+{if RecHeader['fontBold']}
+	font-weight: bold;
+{/if}
+	font-family: ${RecHeader.fontFamily};
+{if RecHeader['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${RecHeader.line_height};
+    letter-spacing: ${RecHeader.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advRecHeader:hover {
+	text-decoration: underline;
+}
+	
+.advRecDescription, .advRecDescription:hover, .advRecDescription:visited, .advRecDescription:active, .advRecDescription:link {
+	position: absolute;
+    cursor:pointer;
+	top: ${RecDescription.top}px;
+	left: ${RecDescription.left}px;
+	width: ${RecDescription.width};
+	height: ${RecDescription.height};
+	border: ${RecDescription.borderWidth}px solid #${RecDescription.borderColor};
+	overflow: hidden;		
+	text-align: ${RecDescription.align || 'center'};
+{if Description['hide']}
+	display: none;
+{/if}
+    -webkit-border-top-left-radius: ${RecDescription.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RecDescription.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RecDescription.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RecDescription.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RecDescription.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RecDescription.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RecDescription.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RecDescription.border_bottom_left_radius}px;
+    border-top-left-radius: ${RecDescription.border_top_left_radius}px;
+    border-top-right-radius: ${RecDescription.border_top_right_radius}px;
+    border-bottom-right-radius: ${RecDescription.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RecDescription.border_bottom_left_radius}px;
+    border-radius: ${RecDescription.border_top_left_radius}px ${RecDescription.border_top_right_radius}px ${RecDescription.border_bottom_right_radius}px ${RecDescription.border_bottom_left_radius}px;
+	color: #${RecDescription.fontColor};
+	font-size: ${RecDescription.fontSize}px;
+	font-family:${RecDescription.fontFamily};
+{if RecDescription['fontBold']}
+	font-weight: bold;
+{/if}
+{if RecDescription['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if RecDescription['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${RecDescription.line_height};
+    letter-spacing: ${RecDescription.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advRecDescription:hover {
+	text-decoration: underline;
+}
+
+.advRecCost, .advRecCost:link, .advRecCost:hover, .advRecCost:visited, .advRecCost:active {
+	position: absolute;
+    cursor:pointer;
+	top: ${RecCost.top}px;
+	left: ${RecCost.left}px;
+	width: ${RecCost.width};
+	height: ${RecCost.height};
+	border: ${RecCost.borderWidth}px solid #${RecCost.borderColor};
+	text-align: ${Cost.align || 'center'};
+{if Cost['hide']}
+	display: none;
+{/if}
+    -webkit-border-top-left-radius: ${RecCost.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RecCost.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RecCost.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RecCost.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RecCost.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RecCost.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RecCost.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RecCost.border_bottom_left_radius}px;
+    border-top-left-radius: ${RecCost.border_top_left_radius}px;
+    border-top-right-radius: ${RecCost.border_top_right_radius}px;
+    border-bottom-right-radius: ${RecCost.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RecCost.border_bottom_left_radius}px;
+    border-radius: ${RecCost.border_top_left_radius}px ${RecCost.border_top_right_radius}px ${RecCost.border_bottom_right_radius}px ${RecCost.border_bottom_left_radius}px;
+	color: #${RecCost.fontColor};
+	font-size: ${RecCost.fontSize}px;
+	font-family:${RecCost.fontFamily};
+{if RecCost['fontBold']}
+	font-weight: bold;
+{/if}
+{if RecCost['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if RecCost['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${RecCost.line_height};
+    letter-spacing: ${RecCost.letter_spacing}px;
+    behavior: url(PIE.htc);
+}
+
+.advRecCost:hover {
+	text-decoration: underline;
+}
+
+.advImageConS {
+	width: ${Image.width};
+	height: ${Image.height};
+    position: absolute;
+    cursor:pointer;
+	top: ${Image.top}px;
+	left: ${Image.left}px;
+{if Image['hide']}
+	display: none;
+{/if}
+	border: ${Image.borderWidth}px solid #${Image.borderColor};
+    -webkit-border-top-left-radius: ${Image.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Image.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Image.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Image.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Image.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Image.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Image.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Image.border_bottom_left_radius}px;
+    border-top-left-radius: ${Image.border_top_left_radius}px;
+    border-top-right-radius: ${Image.border_top_right_radius}px;
+    border-bottom-right-radius: ${Image.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Image.border_bottom_left_radius}px;
+    border-radius: ${Image.border_top_left_radius}px ${Image.border_top_right_radius}px ${Image.border_bottom_right_radius}px ${Image.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
+
+
+.advRecImageConS {
+	width: ${RecImage.width};
+	height: ${RecImage.height};
+    position: absolute;
+    cursor:pointer;
+	top: ${RecImage.top}px;
+	left: ${RecImage.left}px;
+{if RecImage['hide']}
+	display: none;
+{/if}
+	border: ${RecImage.borderWidth}px solid #${RecImage.borderColor};
+    -webkit-border-top-left-radius: ${RecImage.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RecImage.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RecImage.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RecImage.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RecImage.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RecImage.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RecImage.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RecImage.border_bottom_left_radius}px;
+    border-top-left-radius: ${RecImage.border_top_left_radius}px;
+    border-top-right-radius: ${RecImage.border_top_right_radius}px;
+    border-bottom-right-radius: ${RecImage.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RecImage.border_bottom_left_radius}px;
+    border-radius: ${RecImage.border_top_left_radius}px ${RecImage.border_top_right_radius}px ${RecImage.border_bottom_right_radius}px {RecImage.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
+
+.advRetImageConS {
+	width: ${RetImage.width};
+	height: ${RetImage.height};
+    position: absolute;
+    cursor:pointer;
+	top: ${RetImage.top}px;
+	left: ${RetImage.left}px;
+{if RetImage['hide']}
+	display: none;
+{/if}
+	border: ${RetImage.borderWidth}px solid #${RetImage.borderColor};
+    -webkit-border-top-left-radius: ${RetImage.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RetImage.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RetImage.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RetImage.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RetImage.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RetImage.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RetImage.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RetImage.border_bottom_left_radius}px;
+    border-top-left-radius: ${RetImage.border_top_left_radius}px;
+    border-top-right-radius: ${RetImage.border_top_right_radius}px;
+    border-bottom-right-radius: ${RetImage.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RetImage.border_bottom_left_radius}px;
+    border-radius: ${RetImage.border_top_left_radius}px ${RetImage.border_top_right_radius}px ${RetImage.border_bottom_right_radius}px ${RetImage.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
+
+.advImageS {
+	width: ${Image.width};
+	height: ${Image.height};
+    border-radius: ${Image.border_top_left_radius}px ${Image.border_top_right_radius}px ${Image.border_bottom_right_radius}px ${Image.border_bottom_left_radius}px;
+    position: relative;
+    zoom: 1;
+{if Image['hide']}
+	display: none;
+{/if}
+    behavior: url(PIE.htc);
+}
+
+
+.advRecImageS {
+	width: ${RecImage.width};
+	height: ${RecImage.height};
+    border-radius: ${RecImage.border_top_left_radius}px ${RecImage.border_top_right_radius}px ${RecImage.border_bottom_right_radius}px {RecImage.border_bottom_left_radius}px;
+    position: relative;
+    zoom: 1;
+{if RecImage['hide']}
+	display: none;
+{/if}
+    behavior: url(PIE.htc);
+}
+
+.advRetImageS {
+	width: ${RetImage.width};
+	height: ${RetImage.height};
+    border-radius: ${RetImage.border_top_left_radius}px ${RetImage.border_top_right_radius}px ${RetImage.border_bottom_right_radius}px ${RetImage.border_bottom_left_radius}px;
+    position: relative;
+    zoom: 1;
+{if RetImage['hide']}
+	display: none;
+{/if}
+    behavior: url(PIE.htc);
+}
+
+.advImageConS ul, .advRecImageConS ul, .advRetImageConS ul {
+    position: relative;
+    display: -moz-inline-stack;
+    display: inline-block;
+    zoom: 1;
+    *display: inline;
+    behavior: url(PIE.htc);
+}
+
+.advImageConS ul li, .advRecImageConS ul li, .advRetImageConS ul li {
+    float: left;
+    display: -moz-inline-stack;
+    display: inline-block;
+    zoom: 1;
+    *display: inline;
+    behavior: url(PIE.htc);
+}
+div.control_prev, div.control_next {
+  position: absolute;
+  top: 35%;
+  z-index: 2000;
+  display: block;
+  padding: 15% 0%;
+  width: auto;
+  height: auto;
+  background: #2a2a2a;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 9px;
+  opacity: 0.5;
+  border: 1px solid #fff;
+  cursor: pointer;
+  behavior: url(PIE.htc);
+}
+
+div.control_prev:hover, div.control_next:hover {
+  opacity: 1;
+  padding: 15% 15%;
+  -webkit-transition: all 0.2s ease;
+  behavior: url(PIE.htc);
+}
+
+div.control_prev {
+  border-radius: 0 5px 5px 0;
+  behavior: url(PIE.htc);
+}
+
+div.control_next {
+  right: 0;
+  border-radius: 5px 0 0 5px;
+  behavior: url(PIE.htc);
+}
+.advButton, .advButton:link, .advButton:hover, .advButton:visited, .advButton:active {
+	position: relative;
+	top: ${Button.top}px;
+	left: ${Button.left}px;
+	width: ${Button.width};
+	height: ${Button.height};
+	border: ${Button.borderWidth}px solid #${Button.borderColor};
+    cursor:pointer;
+	text-align: ${Button.align || 'center'};
+{if Button['hide']}
+	display: none;
+{/if}
+    background-color: #${Button.backgroundColor};
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${Button.backgroundColor}), color-stop(1, #${Button.backgroundColor2}));
+    background:-moz-linear-gradient(top, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%);
+    background:-webkit-linear-gradient(top, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%);
+    background:-o-linear-gradient(top, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%);
+    background:-ms-linear-gradient(top, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%);
+    background:linear-gradient(to bottom, #${Button.backgroundColor} 5%, #${Button.backgroundColor2} 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#${Button.backgroundColor}', endColorstr='#${Button.backgroundColor2}',GradientType=0);
+    -webkit-border-top-left-radius: ${Button.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${Button.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${Button.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${Button.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${Button.border_top_left_radius}px;
+    -moz-border-radius-topright: ${Button.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${Button.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${Button.border_bottom_left_radius}px;
+    border-top-left-radius: ${Button.border_top_left_radius}px;
+    border-top-right-radius: ${Button.border_top_right_radius}px;
+    border-bottom-right-radius: ${Button.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${Button.border_bottom_left_radius}px;
+	color: #${Button.fontColor};
+	font-size: ${Button.fontSize}px;
+	font-family:${Button.fontFamily};
+{if Button['fontBold']}
+	font-weight: bold;
+{/if}
+{if Button['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if Button['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${Button.line_height};
+    letter-spacing: ${Button.letter_spacing}px;
+    text-decoration:none;
+    z-index: expression(runtimeStyle.zIndex = 1, insertAdjacentHTML('beforeEnd', '${Button.content}'));
+    border-radius: ${Button.border_top_left_radius}px ${Button.border_top_right_radius}px ${Button.border_bottom_right_radius}px ${Button.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
+
+.advButton:hover {
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${Button.backgroundColor2}), color-stop(1, #${Button.backgroundColor}));
+    background:-moz-linear-gradient(top, #${Button.backgroundColor2} 5%, #${Button.backgroundColor} 100%);
+    background:-webkit-linear-gradient(top, #${Button.backgroundColor2} 5%, #${Button.backgroundColor} 100%);
+    background:-o-linear-gradient(top, #${Button.backgroundColor2} 5%, #${Button.backgroundColor} 100%);
+    background:-ms-linear-gradient(top, #${Button.backgroundColor2} 5%, #${Button.backgroundColor} 100%);
+    background:linear-gradient(to bottom, #${Button.backgroundColor2} 5%, #${Button.backgroundColor} 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#${Button.backgroundColor2}', endColorstr='#${Button.backgroundColor}',GradientType=0);
+    background-color:#${Button.backgroundColor2};
+    behavior: url(PIE.htc);
+}
+
+.advButton span {
+    display: none;
+    behavior: url(PIE.htc);
+}
+.advButton:after {
+    {if Button['hide']}
         display: none;
-        behavior: url(PIE.htc);
-    }
+    {/if}
+    content: '${Button.content}';
+    behavior: url(PIE.htc);
+}
 
-    .advButton:after {
+.advRetButton, .advRetButton:link, .advRetButton:hover, .advRetButton:visited, .advRetButton:active {
+	position: relative;
+	top: ${RetButton.top}px;
+	left: ${RetButton.left}px;
+	width: ${RetButton.width};
+	height: ${RetButton.height};
+	border: ${RetButton.borderWidth}px solid #${RetButton.borderColor};
+    cursor:pointer;
+	text-align: ${RetButton.align || 'center'};
+{if RetButton['hide']}
+	display: none;
+{/if}
+    background-color: #${RetButton.backgroundColor};
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${RetButton.backgroundColor}), color-stop(1, #${RetButton.backgroundColor2}));
+    background:-moz-linear-gradient(top, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%);
+    background:-webkit-linear-gradient(top, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%);
+    background:-o-linear-gradient(top, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%);
+    background:-ms-linear-gradient(top, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%);
+    background:linear-gradient(to bottom, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#${RetButton.backgroundColor}', endColorstr='#${RetButton.backgroundColor2}',GradientType=0);
+    -webkit-border-top-left-radius: ${RetButton.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RetButton.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RetButton.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RetButton.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RetButton.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RetButton.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RetButton.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RetButton.border_bottom_left_radius}px;
+    border-top-left-radius: ${RetButton.border_top_left_radius}px;
+    border-top-right-radius: ${RetButton.border_top_right_radius}px;
+    border-bottom-right-radius: ${RetButton.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RetButton.border_bottom_left_radius}px;
+    border-radius: ${RetButton.border_top_left_radius}px ${RetButton.border_top_right_radius}px ${RetButton.border_bottom_right_radius}px ${RetButton.border_bottom_left_radius}px;
+	color: #${RetButton.fontColor};
+	font-size: ${RetButton.fontSize}px;
+	font-family:${RetButton.fontFamily};
+{if RetButton['fontBold']}
+	font-weight: bold;
+{/if}
+{if RetButton['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if RetButton['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${RetButton.line_height};
+    letter-spacing: ${RetButton.letter_spacing}px;
+    text-decoration:none;
+    z-index: expression(runtimeStyle.zIndex = 1, insertAdjacentHTML('beforeEnd', '${RetButton.content}'));
+    behavior: url(PIE.htc);
+}
 
-    {
-        if Button [ 'hide' ]
-    }
-    display: none
+.advRetButton:hover {
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${RetButton.backgroundColor2}), color-stop(1, #${RetButton.backgroundColor}));
+    background:-moz-linear-gradient(top, #${RetButton.backgroundColor2} 5%, #${RetButton.backgroundColor} 100%);
+    background:-webkit-linear-gradient(top, #${RetButton.backgroundColor2} 5%, #${RetButton.backgroundColor} 100%);
+    background:-o-linear-gradient(top, #${RetButton.backgroundColor2} 5%, #${RetButton.backgroundColor} 100%);
+    background:-ms-linear-gradient(top, #${RetButton.backgroundColor2} 5%, #${RetButton.backgroundColor} 100%);
+    background:linear-gradient(to bottom, #${RetButton.backgroundColor2} 5%, #${RetButton.backgroundColor} 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#${RetButton.backgroundColor2}', endColorstr='#${RetButton.backgroundColor}',GradientType=0);
+    background-color:#${RetButton.backgroundColor2};
+    behavior: url(PIE.htc);
+}
 
-    ;
-    {
-    /
-    if
-    }
-    content:
-
-    '${Button.content}'
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRetButton, .advRetButton:link, .advRetButton:hover, .advRetButton:visited, .advRetButton:active {
-        position: relative;
-        top: ${RetButton.top} px;
-        left: ${RetButton.left} px;
-        width: ${RetButton.width};
-        height: ${RetButton.height};
-        border: ${RetButton.borderWidth} px solid # ${RetButton.borderColor};
-        cursor: pointer;
-        text-align: ${RetButton.align || 'center'};
-
-    {
-        if RetButton [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    background-color:
-
-    #
-    ${RetButton.backgroundColor}
-
-    ;
-    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${RetButton.backgroundColor}),
-    color-stop
-
-    (
-    1
-    ,
-    #
-    ${RetButton.backgroundColor2}
-
-    )
-    )
-    ;
-    background:-moz-linear-gradient(top, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%)
-
-    ;
-    background:-webkit-linear-gradient(top, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%)
-
-    ;
-    background:-o-linear-gradient(top, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%)
-
-    ;
-    background:-ms-linear-gradient(top, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%)
-
-    ;
-    background:linear-gradient(to bottom, #${RetButton.backgroundColor} 5%, #${RetButton.backgroundColor2} 100%)
-
-    ;
-    filter:progid:DXImageTransform.Microsoft.
-
-    gradient
-
-    (
-    startColorstr
-
-    =
-    '#${RetButton.backgroundColor}'
-    ,
-    endColorstr
-
-    =
-    '#${RetButton.backgroundColor2}'
-    ,
-    GradientType
-
-    =
-    0
-    )
-    ;
-    -webkit-border-top-left-radius: ${RetButton.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${RetButton.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${RetButton.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${RetButton.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${RetButton.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${RetButton.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${RetButton.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${RetButton.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${RetButton.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${RetButton.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${RetButton.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${RetButton.border_bottom_left_radius} px
-
-    ;
-    border-radius: ${RetButton.border_top_left_radius} px ${RetButton.border_top_right_radius} px ${RetButton.border_bottom_right_radius} px ${RetButton.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${RetButton.fontColor}
-
-    ;
-    font-size: ${RetButton.fontSize} px
-
-    ;
-    font-family:${RetButton.fontFamily}
-
-    ;
-    {
-        if RetButton [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RetButton [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RetButton [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${RetButton.line_height}
-
-    ;
-    letter-spacing: ${RetButton.letter_spacing} px
-
-    ;
-    text-decoration:none
-
-    ;
-    z-index:
-    expression
-
-    (
-    runtimeStyle.zIndex
-
-    =
-    1
-    ,
-    insertAdjacentHTML
-
-    (
-    'beforeEnd'
-    ,
-    '${RetButton.content}'
-    )
-    )
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRetButton:hover {
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, # ${RetButton.backgroundColor2}), color-stop(1, # ${RetButton.backgroundColor}));
-        background: -moz-linear-gradient(top, # ${RetButton.backgroundColor2} 5%, # ${RetButton.backgroundColor} 100%);
-        background: -webkit-linear-gradient(top, # ${RetButton.backgroundColor2} 5%, # ${RetButton.backgroundColor} 100%);
-        background: -o-linear-gradient(top, # ${RetButton.backgroundColor2} 5%, # ${RetButton.backgroundColor} 100%);
-        background: -ms-linear-gradient(top, # ${RetButton.backgroundColor2} 5%, # ${RetButton.backgroundColor} 100%);
-        background: linear-gradient(to bottom, # ${RetButton.backgroundColor2} 5%, # ${RetButton.backgroundColor} 100%);
-        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#${RetButton.backgroundColor2}', endColorstr='#${RetButton.backgroundColor}', GradientType=0);
-        background-color: # ${RetButton.backgroundColor2};
-        behavior: url(PIE.htc);
-    }
-
-    .advRetButton span {
+.advRetButton span {
+    display: none;
+    behavior: url(PIE.htc);
+}
+.advRetButton:after {
+    {if RetButton['hide']}
         display: none;
-        behavior: url(PIE.htc);
-    }
+    {/if}
+    content: '${RetButton.content}';
+    behavior: url(PIE.htc);
+}
+.advRecButton, .advRecButton:link, .advRecButton:hover, .advRecButton:visited, .advRecButton:active {
+	position: relative;
+	top: ${RecButton.top}px;
+	left: ${RecButton.left}px;
+	width: ${RecButton.width};
+	height: ${RecButton.height};
+	border: ${RecButton.borderWidth}px solid #${RecButton.borderColor};
+    cursor:pointer;
+	text-align: ${RecButton.align || 'center'};
+{if RecButton['hide']}
+	display: none;
+{/if}
+    background-color: #${RecButton.backgroundColor};
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${RecButton.backgroundColor}), color-stop(1, #${RecButton.backgroundColor2}));
+    background:-moz-linear-gradient(top, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%);
+    background:-webkit-linear-gradient(top, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%);
+    background:-o-linear-gradient(top, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%);
+    background:-ms-linear-gradient(top, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%);
+    background:linear-gradient(to bottom, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#${RecButton.backgroundColor}', endColorstr='#${RecButton.backgroundColor2}',GradientType=0);
+    -webkit-border-top-left-radius: ${RecButton.border_top_left_radius}px;
+    -webkit-border-top-right-radius: ${RecButton.border_top_right_radius}px;
+    -webkit-border-bottom-right-radius: ${RecButton.border_bottom_right_radius}px;
+    -webkit-border-bottom-left-radius: ${RecButton.border_bottom_left_radius}px;
+    -moz-border-radius-topleft: ${RecButton.border_top_left_radius}px;
+    -moz-border-radius-topright: ${RecButton.border_top_right_radius}px;
+    -moz-border-radius-bottomright: ${RecButton.border_bottom_right_radius}px;
+    -moz-border-radius-bottomleft: ${RecButton.border_bottom_left_radius}px;
+    border-top-left-radius: ${RecButton.border_top_left_radius}px;
+    border-top-right-radius: ${RecButton.border_top_right_radius}px;
+    border-bottom-right-radius: ${RecButton.border_bottom_right_radius}px;
+    border-bottom-left-radius: ${RecButton.border_bottom_left_radius}px;
+	color: #${RecButton.fontColor};
+	font-size: ${RecButton.fontSize}px;
+	font-family:${RecButton.fontFamily};
+{if RecButton['fontBold']}
+	font-weight: bold;
+{/if}
+{if RecButton['fontUnderline']}
+	text-decoration: underline;
+{/if}
+{if RecButton['font_variant']}
+	font-variant: small-caps;
+{/if}
+    line-height: ${RecButton.line_height};
+    letter-spacing: ${RecButton.letter_spacing}px;
+    text-decoration:none;
+    z-index: expression(runtimeStyle.zIndex = 1, insertAdjacentHTML('beforeEnd', '${RecButton.content}'));
+    border-radius: ${RecButton.border_top_left_radius}px ${RecButton.border_top_right_radius}px ${RecButton.border_bottom_right_radius}px ${RecButton.border_bottom_left_radius}px;
+    behavior: url(PIE.htc);
+}
 
-    .advRetButton:after {
+.advRecButton:hover {
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${RecButton.backgroundColor2}), color-stop(1, #${RecButton.backgroundColor}));
+    background:-moz-linear-gradient(top, #${RecButton.backgroundColor2} 5%, #${RecButton.backgroundColor} 100%);
+    background:-webkit-linear-gradient(top, #${RecButton.backgroundColor2} 5%, #${RecButton.backgroundColor} 100%);
+    background:-o-linear-gradient(top, #${RecButton.backgroundColor2} 5%, #${RecButton.backgroundColor} 100%);
+    background:-ms-linear-gradient(top, #${RecButton.backgroundColor2} 5%, #${RecButton.backgroundColor} 100%);
+    background:linear-gradient(to bottom, #${RecButton.backgroundColor2} 5%, #${RecButton.backgroundColor} 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#${RecButton.backgroundColor2}', endColorstr='#${RecButton.backgroundColor}',GradientType=0);
+    background-color:#${RecButton.backgroundColor2};
+    behavior: url(PIE.htc);
+}
 
-    {
-        if RetButton [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    content:
-
-    '${RetButton.content}'
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-    .advRecButton, .advRecButton:link, .advRecButton:hover, .advRecButton:visited, .advRecButton:active {
-        position: relative;
-        top: ${RecButton.top} px;
-        left: ${RecButton.left} px;
-        width: ${RecButton.width};
-        height: ${RecButton.height};
-        border: ${RecButton.borderWidth} px solid # ${RecButton.borderColor};
-        cursor: pointer;
-        text-align: ${RecButton.align || 'center'};
-
-    {
-        if RecButton [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    background-color:
-
-    #
-    ${RecButton.backgroundColor}
-
-    ;
-    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #${RecButton.backgroundColor}),
-    color-stop
-
-    (
-    1
-    ,
-    #
-    ${RecButton.backgroundColor2}
-
-    )
-    )
-    ;
-    background:-moz-linear-gradient(top, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%)
-
-    ;
-    background:-webkit-linear-gradient(top, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%)
-
-    ;
-    background:-o-linear-gradient(top, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%)
-
-    ;
-    background:-ms-linear-gradient(top, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%)
-
-    ;
-    background:linear-gradient(to bottom, #${RecButton.backgroundColor} 5%, #${RecButton.backgroundColor2} 100%)
-
-    ;
-    filter:progid:DXImageTransform.Microsoft.
-
-    gradient
-
-    (
-    startColorstr
-
-    =
-    '#${RecButton.backgroundColor}'
-    ,
-    endColorstr
-
-    =
-    '#${RecButton.backgroundColor2}'
-    ,
-    GradientType
-
-    =
-    0
-    )
-    ;
-    -webkit-border-top-left-radius: ${RecButton.border_top_left_radius} px
-
-    ;
-    -webkit-border-top-right-radius: ${RecButton.border_top_right_radius} px
-
-    ;
-    -webkit-border-bottom-right-radius: ${RecButton.border_bottom_right_radius} px
-
-    ;
-    -webkit-border-bottom-left-radius: ${RecButton.border_bottom_left_radius} px
-
-    ;
-    -moz-border-radius-topleft: ${RecButton.border_top_left_radius} px
-
-    ;
-    -moz-border-radius-topright: ${RecButton.border_top_right_radius} px
-
-    ;
-    -moz-border-radius-bottomright: ${RecButton.border_bottom_right_radius} px
-
-    ;
-    -moz-border-radius-bottomleft: ${RecButton.border_bottom_left_radius} px
-
-    ;
-    border-top-left-radius: ${RecButton.border_top_left_radius} px
-
-    ;
-    border-top-right-radius: ${RecButton.border_top_right_radius} px
-
-    ;
-    border-bottom-right-radius: ${RecButton.border_bottom_right_radius} px
-
-    ;
-    border-bottom-left-radius: ${RecButton.border_bottom_left_radius} px
-
-    ;
-    color:
-
-    #
-    ${RecButton.fontColor}
-
-    ;
-    font-size: ${RecButton.fontSize} px
-
-    ;
-    font-family:${RecButton.fontFamily}
-
-    ;
-    {
-        if RecButton [ 'fontBold' ]
-    }
-    font-weight: bold
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RecButton [ 'fontUnderline' ]
-    }
-    text-decoration: underline
-
-    ;
-    {
-    /
-    if
-    }
-    {
-        if RecButton [ 'font_variant' ]
-    }
-    font-variant: small-caps
-
-    ;
-    {
-    /
-    if
-    }
-    line-height: ${RecButton.line_height}
-
-    ;
-    letter-spacing: ${RecButton.letter_spacing} px
-
-    ;
-    text-decoration:none
-
-    ;
-    z-index:
-    expression
-
-    (
-    runtimeStyle.zIndex
-
-    =
-    1
-    ,
-    insertAdjacentHTML
-
-    (
-    'beforeEnd'
-    ,
-    '${RecButton.content}'
-    )
-    )
-    ;
-    border-radius: ${RecButton.border_top_left_radius} px ${RecButton.border_top_right_radius} px ${RecButton.border_bottom_right_radius} px ${RecButton.border_bottom_left_radius} px
-
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
-
-    .advRecButton:hover {
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, # ${RecButton.backgroundColor2}), color-stop(1, # ${RecButton.backgroundColor}));
-        background: -moz-linear-gradient(top, # ${RecButton.backgroundColor2} 5%, # ${RecButton.backgroundColor} 100%);
-        background: -webkit-linear-gradient(top, # ${RecButton.backgroundColor2} 5%, # ${RecButton.backgroundColor} 100%);
-        background: -o-linear-gradient(top, # ${RecButton.backgroundColor2} 5%, # ${RecButton.backgroundColor} 100%);
-        background: -ms-linear-gradient(top, # ${RecButton.backgroundColor2} 5%, # ${RecButton.backgroundColor} 100%);
-        background: linear-gradient(to bottom, # ${RecButton.backgroundColor2} 5%, # ${RecButton.backgroundColor} 100%);
-        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#${RecButton.backgroundColor2}', endColorstr='#${RecButton.backgroundColor}', GradientType=0);
-        background-color: # ${RecButton.backgroundColor2};
-        behavior: url(PIE.htc);
-    }
-
-    .advRecButton span {
+.advRecButton span {
+    display: none;
+    behavior: url(PIE.htc);
+}
+.advRecButton:after {
+    {if RecButton['hide']}
         display: none;
-        behavior: url(PIE.htc);
-    }
-
-    .advRecButton:after {
-
-    {
-        if RecButton [ 'hide' ]
-    }
-    display: none
-
-    ;
-    {
-    /
-    if
-    }
-    content:
-
-    '${RecButton.content}'
-    ;
-    behavior:
-    url
-
-    (
-    PIE.htc
-
-    )
-    ;
-    }
+    {/if}
+    content: '${RecButton.content}';
+    behavior: url(PIE.htc);
+}
 </style>
 </%text>

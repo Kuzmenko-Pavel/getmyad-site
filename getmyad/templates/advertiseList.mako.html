@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-<%inherit file="/main.mako.html" />
+<%inherit file="/main.mako.html" />	
 <%def name="head()">
 <title>Создание выгрузки GetMyAd</title>
-<meta name="description"
-      content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+<meta name="description" content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
 </%def>
 
 <table id="data-table">
@@ -11,48 +10,36 @@
 <div id="data-table-pager">
 </div>
 <script>
-    var mydata = [
-            %
-    for item in data:
-    {
-        user:"${item['user']}",
-                domain
-    :
-        "${item['domain']}",
-                size
-    :
-        "${item['title']}",
-                invdate
-    :
-        "${item['lastModified']}",
-                edit
-    :
-        "<a target='_blank' style='width: 100%;display: block; color: blue;' href='${h.url_for(controller='advertise', action='maker', id=item.get('guid'))}'>Редактировать</a>"
-    }
-    ,
-    %
-    endfor
-    ]
-    ;
+var mydata = [
+% for item in data:
+{
+user:"${item['user']}",
+domain:"${item['domain']}",
+size:"${item['title']}",
+invdate:"${item['lastModified']}",
+edit:"<a target='_blank' style='width: 100%;display: block; color: blue;' href='${h.url_for(controller='advertise', action='maker', id=item.get('guid'))}'>Редактировать</a>"
+},
+% endfor
+        ];
 </script>
 <script>
-    $("#data-table").jqGrid({
-        datatype: "local",
-        data: mydata,
-        height: 250,
-        colNames: ['Аккаунт', 'Сайт', 'Размер', 'Последние редактировани', ''],
-        colModel: [
-            {name: 'user', index: 'user', width: 150},
-            {name: 'domain', index: 'domain', width: 150},
-            {name: 'size', index: 'size', width: 150},
-            {name: 'invdate', index: 'invdate', width: 150, sorttype: "date"},
-            {name: 'edit', index: 'edit', width: 150},
-        ],
-        caption: "Список существующих выгрузок",
-        loadonce: true,
-        height: "100%",
-        rowNum: 20,
-        rowList: [10, 20, 30],
-        pager: '#data-table-pager',
-    });
+$("#data-table").jqGrid({
+    datatype: "local",
+    data: mydata,
+    height: 250,
+    colNames:['Аккаунт','Сайт', 'Размер', 'Последние редактировани',''],
+    colModel:[
+        {name:'user',index:'user', width:150},
+        {name:'domain',index:'domain', width:150},
+        {name:'size',index:'size', width:150},
+        {name:'invdate',index:'invdate', width:150, sorttype:"date"},
+        {name:'edit',index:'edit', width:150},
+    ],
+    caption: "Список существующих выгрузок",
+    loadonce: true,
+    height: "100%",
+    rowNum:20,
+    rowList:[10,20,30],
+    pager: '#data-table-pager',
+});
 </script>

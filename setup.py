@@ -22,7 +22,8 @@ setup(
         "WebOb==1.3.1",
         "slimit==0.8.1",
         "Pillow==3.0.0",
-        "pylibmc==1.2.2"
+        "pylibmc==1.2.2",
+        "urlfetch==1.0.2"
     ],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),

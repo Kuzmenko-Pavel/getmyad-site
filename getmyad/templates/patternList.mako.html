@@ -1,41 +1,38 @@
 # -*- coding: utf-8 -*-
-<%inherit file="/main.mako.html" />
+<%inherit file="/main.mako.html" />	
 <%def name="head()">
 <title>Создание выгрузки GetMyAd</title>
-<meta name="description"
-      content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+<meta name="description" content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
 </%def>
 
 <h2>Список существующих выгрузок:</h2>
 <table id="data-table">
     <tr>
-        <th width='50px'>Популярность</th>
+        <th width='50px' >Популярность</th>
         <th width='100px'>Тип</th>
         <th width='100px'>Размер</th>
         <th></th>
     </tr>
-    <tbody>
-    % for item in data:
-    <tr>
-        <td>${item['popular']}</td>
-        <td>${item['orient']}</td>
-        <td>${item['title']}</td>
-        <td><a target="_blank" style="width: 100%;display: block; color: blue;"
-               href="${h.url_for(controller='advertise', action='pattern_maker', id=item.get('guid'))}">Редактировать</a>
-        </td>
-    </tr>
-    % endfor
-    </tbody>
+<tbody>
+% for item in data:
+<tr>
+    <td>${item['popular']}</td>
+    <td>${item['orient']}</td>
+    <td>${item['title']}</td>
+    <td><a target="_blank" style="width: 100%;display: block; color: blue;" href="${h.url_for(controller='advertise', action='pattern_maker', id=item.get('guid'))}">Редактировать</a></td>
+</tr>
+% endfor
+ </tbody>
 </table>
 <script>
     options = {
         datatype: "local",
         viewrecords: true,
         rownumbers: true,
-        rowNum: 1000,
+        rowNum:1000,
         loadonce: true,
         height: 'auto',
-        onSelectRow: function (id) {
+        onSelectRow: function(id){
             console.log($(this).getRowData(id))
         },
     };

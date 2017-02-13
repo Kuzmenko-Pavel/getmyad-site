@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 <%inherit file="/main.mako.html" />
 <%def name="head()">
-<title>Yottos GetMyAd</title>
-<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
-<style>
-    .message {
-        margin: 20px 20px 20px 20px;
-        width: 100%;
-        background-color: #fee;
-        height: 50px;
-        border: 1px dotted orange;
-        text-align: center;
-        vertical-align: middle;
-    }
-</style>
-
+	<title>Yottos GetMyAd</title>
+    <link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection" />	
+	<style>
+		.message {
+			margin: 20px 20px 20px 20px;
+			width: 100%;
+			background-color: #fee;
+			height: 50px;
+			border: 1px dotted orange;
+			text-align: center;
+			vertical-align: middle;
+		}
+	</style>
+	
 </%def>
 
 
@@ -22,7 +22,7 @@
 
 % if c.message:
 <div class="message">
-    <p>${c.message}</p>
+	<p>${c.message}</p>
 </div>
 % endif
 
@@ -30,198 +30,195 @@
 <h2>Обзор кампании ${c.campaign['title']}</h2>
 
 % if c.campaign.get('getmyad', False):
-<p>Кампания может рекламироваться в GetMyAd.
-    <br/>Если кампанию больше никогда не следует показывать в партнёрской сети, следует
-    <a href="${h.url_for(controller='adload', action='campaign_removeFromGetmyad', id=c.campaign['id'])}">
-        запретить рекламу в GetMyAd</a>. </p>
+	<p>Кампания может рекламироваться в GetMyAd.
+	<br/>Если кампанию больше никогда не следует показывать в партнёрской сети, следует
+		<a href="${h.url_for(controller='adload', action='campaign_removeFromGetmyad', id=c.campaign['id'])}">
+			запретить рекламу в GetMyAd</a>. </p>  
 % else:
-<p>Эта кампания не предназначена для рекламы в GetMyAd.
-    <br/>Если вы собираетесь рекламировать эту кампанию
-    в партнёрской сети GetMyAd, то сначала необходимо
-    <a href="${h.url_for(controller='adload', action='campaign_addToGetmyad', id=c.campaign['id'])}">
-        дать разрешение на рекламу в GetMyad.</a></p>
+	<p>Эта кампания не предназначена для рекламы в GetMyAd.
+	<br/>Если вы собираетесь рекламировать эту кампанию
+		в партнёрской сети GetMyAd, то сначала необходимо
+		<a href="${h.url_for(controller='adload', action='campaign_addToGetmyad', id=c.campaign['id'])}">
+			дать разрешение на рекламу в GetMyad.</a> </p>
 % endif
 
 % if c.campaign.get('getmyad') and ( c.getmyad_details['status'] == 'created'):
-<p>В данный момент кампания в GetMyAd не запушена</p>
-<p>Вам необходимо запустить компанию, настроить и включить рекламу в партнёрской сети</p>
-<p>
-<form action="${h.url_for(controller='adload', action='campaign_start', id=c.campaign['id'])}">
-    <button type="submit">Запустить сейчас!</button>
-</form>
-</p>
+	<p>В данный момент кампания в GetMyAd не запушена</p>
+	<p>Вам необходимо запустить компанию, настроить и включить рекламу в партнёрской сети</p>
+    <p>
+    <form action="${h.url_for(controller='adload', action='campaign_start', id=c.campaign['id'])}">
+          <button type="submit">Запустить сейчас!</button>
+    </form>
+    </p>
 
 % elif c.getmyad_details['status']  == 'started':
-<p>В данный момент кампания не настроена, вам необходимо произвести настройку компании</p>
-<p>
-<form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details['id'])}">
-    <button type="submit">Настройки</button>
-</form>
-</br>
-<!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details['id'])}">
-      <button type="submit">Настроики ключевых слов</button>
-</form-->
-</br>
-% if not c.getmyad_details['update']:
-<form action="${h.url_for(controller='adload', action='campaign_stop', id=c.campaign['id'])}">
-    <button type="submit">Остановить сейчас!</button>
-</form>
-% endif
-</p>
+    <p>В данный момент кампания не настроена, вам необходимо произвести настройку компании</p>
+    <p>
+    <form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details['id'])}">
+          <button type="submit">Настройки</button>
+    </form>
+    </br>
+    <!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details['id'])}">
+          <button type="submit">Настроики ключевых слов</button>
+    </form-->
+    </br>
+    % if not c.getmyad_details['update']:
+    <form action="${h.url_for(controller='adload', action='campaign_stop', id=c.campaign['id'])}">
+          <button type="submit">Остановить сейчас!</button>
+    </form>
+    % endif
+    </p>
 
 % elif c.getmyad_details['status'] == 'configured':
-<p>Кампания запущена и настроена в GetMyAd</p>
-<p>Время последней синхронизации с AdLoad: ${c.getmyad_details['lastUpdate']}</p>
-<p>Кампания содержит ${c.getmyad_details['offersCount']} рекламных предложений.</p>
-<p>С картинками ${c.getmyad_details['offersCountImage']} рекламных предложений.</p>
-% if not c.getmyad_details['update']:
-<p>Вам осталось только включить рекламу в партнёрской сети</p>
-<p>
-<form action="${h.url_for(controller='adload', action='campaign_work', id=c.campaign['id'])}">
-    <button type="submit">Включить рекламу в партнёрской сети</button>
-</form>
-% else:
-<h2>Происходит обнавление товаров в рекламной компании</h2>
-<h2>Страница автоматически обновиться через: <span id="timer_inp">60</span> сек.</h2>
-<script type="text/javascript">
-    function timer() {
-        var obj = document.getElementById('timer_inp');
+	<p>Кампания запущена и настроена в GetMyAd</p>
+	<p>Время последней синхронизации с AdLoad: ${c.getmyad_details['lastUpdate']}</p>
+	<p>Кампания содержит ${c.getmyad_details['offersCount']} рекламных предложений.</p>
+	<p>С картинками ${c.getmyad_details['offersCountImage']} рекламных предложений.</p>
+    % if not c.getmyad_details['update']:
+	<p>Вам осталось только включить рекламу в партнёрской сети</p>
+    <p>
+    <form action="${h.url_for(controller='adload', action='campaign_work', id=c.campaign['id'])}">
+          <button type="submit">Включить рекламу в партнёрской сети</button>
+      </form>
+    % else:
+    <h2>Происходит обнавление товаров в рекламной компании</h2>
+    <h2>Страница автоматически обновиться через: <span id="timer_inp">60</span> сек.</h2>
+    <script type="text/javascript">
+        function timer(){
+        var obj=document.getElementById('timer_inp');
         obj.innerHTML--;
-        if (obj.innerHTML == 0) {
-            setTimeout(function () {
-            }, 1000);
-            window.location.reload(1);
-        } else {
-            setTimeout(timer, 1000);
+            if (obj.innerHTML==0){
+                setTimeout(function(){},1000);
+                window.location.reload(1);
+            } else {
+                setTimeout(timer,1000);
+            }
         }
-    }
-    setTimeout(timer, 1000);
-</script>
-% endif
-</br>
-<form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details['id'])}">
-    <button type="submit">Настройки</button>
-</form>
-</br>
-<!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details['id'])}">
-      <button type="submit">Настроики ключевых слов</button>
-</form-->
-</p>
-<p>
+        setTimeout(timer,1000);
+   </script>
+    % endif
+    </br>
+    <form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details['id'])}">
+          <button type="submit">Настройки</button>
+    </form>
+    </br>
+    <!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details['id'])}">
+          <button type="submit">Настроики ключевых слов</button>
+    </form-->
+    </p>
+    <p>
     </br>
     % if not c.getmyad_details['update']:
-<p>Во время обнавления рекламной компании функционал по запуску, остановке и тп блокируеться</p>
-<p>Чем меньше РП в компании, тем быстрее она обновиться</p>
-<form action="${h.url_for(controller='adload', action='campaign_update', id=c.campaign['id'])}">
-    <button type="submit">Обновить рекламные предложения в компании</button>
-</form>
-</br>
-<form action="${h.url_for(controller='adload', action='campaign_stop', id=c.campaign['id'])}">
-    <button type="submit">Остановить сейчас!</button>
-</form>
-% endif
-</p>
+	<p>Во время обнавления рекламной компании функционал по запуску, остановке и тп блокируеться</p>
+	<p>Чем меньше РП в компании, тем быстрее она обновиться</p>
+    <form action="${h.url_for(controller='adload', action='campaign_update', id=c.campaign['id'])}">
+          <button type="submit">Обновить рекламные предложения в компании</button>
+    </form>
+    </br>
+    <form action="${h.url_for(controller='adload', action='campaign_stop', id=c.campaign['id'])}">
+          <button type="submit">Остановить сейчас!</button>
+      </form>
+    % endif
+    </p>
 % elif c.getmyad_details['status'] == 'working':
-<p>Кампания запущена и настроена в GetMyAd и рекламируеться в партнёрской сети </p>
-<p>Время последней синхронизации с AdLoad: ${c.getmyad_details['lastUpdate']}</p>
-<p>Кампания содержит ${c.getmyad_details['offersCount']} рекламных предложений.</p>
-<p>С картинками ${c.getmyad_details['offersCountImage']} рекламных предложений.</p>
-% if not c.getmyad_details['update']:
-<p>Вы можете остановить показы в партнёрской сети отправив компанию в Hold</p>
-<p>
-<form action="${h.url_for(controller='adload', action='campaign_hold', id=c.campaign['id'])}">
-    <button type="submit">Hold кампани (Выключить рекламу в партнёрской сети)</button>
-</form>
-% else:
-<h2>Происходит обнавление товаров в рекламной компании</h2>
-<h2>Страница автоматически обновиться через: <span id="timer_inp">60</span> сек.</h2>
-<script type="text/javascript">
-    function timer() {
-        var obj = document.getElementById('timer_inp');
+	<p>Кампания запущена и настроена в GetMyAd и рекламируеться в партнёрской сети </p>
+	<p>Время последней синхронизации с AdLoad: ${c.getmyad_details['lastUpdate']}</p>
+    <p>Кампания содержит ${c.getmyad_details['offersCount']} рекламных предложений.</p>
+	<p>С картинками ${c.getmyad_details['offersCountImage']} рекламных предложений.</p>
+    % if not c.getmyad_details['update']:
+	<p>Вы можете остановить показы в партнёрской сети отправив компанию в Hold</p>
+    <p>
+    <form action="${h.url_for(controller='adload', action='campaign_hold', id=c.campaign['id'])}">
+          <button type="submit">Hold кампани (Выключить рекламу в партнёрской сети)</button>
+    </form>
+    % else:
+    <h2>Происходит обнавление товаров в рекламной компании</h2>
+    <h2>Страница автоматически обновиться через: <span id="timer_inp">60</span> сек.</h2>
+    <script type="text/javascript">
+        function timer(){
+        var obj=document.getElementById('timer_inp');
         obj.innerHTML--;
-        if (obj.innerHTML == 0) {
-            setTimeout(function () {
-            }, 1000);
-            window.location.reload(1);
-        } else {
-            setTimeout(timer, 1000);
+            if (obj.innerHTML==0){
+                setTimeout(function(){},1000);
+                window.location.reload(1);
+            } else {
+                setTimeout(timer,1000);
+            }
         }
-    }
-    setTimeout(timer, 1000);
-</script>
-% endif
-</br>
-<form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details['id'])}">
-    <button type="submit">Настройки</button>
-</form>
-</br>
-<!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details['id'])}">
-      <button type="submit">Настроики ключевых слов</button>
-</form-->
-</p>
-% if not c.getmyad_details['update']:
-<p>
-<p>Во время обнавления рекламной компании функционал по запуску, остановке и тп блокируеться</p>
-<p>Чем меньше РП в компании, тем быстрее она обновиться</p>
-</br>
-<form action="${h.url_for(controller='adload', action='campaign_update', id=c.campaign['id'])}">
-    <button type="submit">Обновить рекламные предложения в компании</button>
-</form>
-</br>
-<form action="${h.url_for(controller='adload', action='campaign_stop', id=c.campaign['id'])}">
-    <button type="submit">Остановить сейчас!</button>
-</form>
-% endif
-</p>
+        setTimeout(timer,1000);
+   </script>
+    % endif
+    </br>
+    <form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details['id'])}">
+          <button type="submit">Настройки</button>
+    </form>
+    </br>
+    <!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details['id'])}">
+          <button type="submit">Настроики ключевых слов</button>
+    </form-->
+    </p>
+    % if not c.getmyad_details['update']:
+    <p>
+	<p>Во время обнавления рекламной компании функционал по запуску, остановке и тп блокируеться</p>
+	<p>Чем меньше РП в компании, тем быстрее она обновиться</p>
+    </br>
+    <form action="${h.url_for(controller='adload', action='campaign_update', id=c.campaign['id'])}">
+          <button type="submit">Обновить рекламные предложения в компании</button>
+    </form>
+    </br>
+    <form action="${h.url_for(controller='adload', action='campaign_stop', id=c.campaign['id'])}">
+          <button type="submit">Остановить сейчас!</button>
+      </form>
+      % endif
+    </p>
 % elif c.getmyad_details['status'] == 'hold':
-<p>Кампания запущена и настроена в GetMyAd но показы в партнёрской сети остановлены</p>
-<p>Время последней синхронизации с AdLoad: ${c.getmyad_details['lastUpdate']}</p>
-<p>Кампания содержит ${c.getmyad_details['offersCount']} рекламных предложений.</p>
-% if not c.getmyad_details['update']:
-<p>Вы можете включить рекламу в партнёрской сети</p>
-<p>
-<form action="${h.url_for(controller='adload', action='campaign_work', id=c.campaign['id'])}">
-    <button type="submit">Включить рекламу в партнёрской сети</button>
-</form>
-% else:
-<h2>Происходит обнавление товаров в рекламной компании</h2>
-<h2>Страница автоматически обновиться через: <span id="timer_inp">60</span> сек.</h2>
-<script type="text/javascript">
-    function timer() {
-        var obj = document.getElementById('timer_inp');
+	<p>Кампания запущена и настроена в GetMyAd но показы в партнёрской сети остановлены</p>
+	<p>Время последней синхронизации с AdLoad: ${c.getmyad_details['lastUpdate']}</p>
+	<p>Кампания содержит ${c.getmyad_details['offersCount']} рекламных предложений.</p>
+    % if not c.getmyad_details['update']:
+	<p>Вы можете включить рекламу в партнёрской сети</p>
+    <p>
+    <form action="${h.url_for(controller='adload', action='campaign_work', id=c.campaign['id'])}">
+          <button type="submit">Включить рекламу в партнёрской сети</button>
+    </form>
+    % else:
+    <h2>Происходит обнавление товаров в рекламной компании</h2>
+    <h2>Страница автоматически обновиться через: <span id="timer_inp">60</span> сек.</h2>
+    <script type="text/javascript">
+        function timer(){
+        var obj=document.getElementById('timer_inp');
         obj.innerHTML--;
-        if (obj.innerHTML == 0) {
-            setTimeout(function () {
-            }, 1000);
-            window.location.reload(1);
-        } else {
-            setTimeout(timer, 1000);
+            if (obj.innerHTML==0){
+                setTimeout(function(){},1000);
+                window.location.reload(1);
+            } else {
+                setTimeout(timer,1000);
+            }
         }
-    }
-    setTimeout(timer, 1000);
-</script>
-% endif
-</br>
-<form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details['id'])}">
-    <button type="submit">Настройки</button>
-</form>
-</br>
-<!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details['id'])}">
-      <button type="submit">Настроики ключевых слов</button>
-</form-->
-</p>
-<p>
+        setTimeout(timer,1000);
+   </script>
+    % endif
+    </br>
+    <form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details['id'])}">
+          <button type="submit">Настройки</button>
+    </form>
+    </br>
+    <!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details['id'])}">
+          <button type="submit">Настроики ключевых слов</button>
+    </form-->
+    </p>
+    <p>
     % if not c.getmyad_details['update']:
     </br>
-<p>Во время обнавления рекламной компании функционал по запуску, остановке и тп блокируеться</p>
-<p>Чем меньше РП в компании, тем быстрее она обновиться</p>
-<form action="${h.url_for(controller='adload', action='campaign_update', id=c.campaign['id'])}">
-    <button type="submit">Обновить рекламные предложения в компании</button>
-</form>
-</br>
-<form action="${h.url_for(controller='adload', action='campaign_stop', id=c.campaign['id'])}">
-    <button type="submit">Остановить сейчас!</button>
-</form>
-% endif
-</p>
+	<p>Во время обнавления рекламной компании функционал по запуску, остановке и тп блокируеться</p>
+	<p>Чем меньше РП в компании, тем быстрее она обновиться</p>
+    <form action="${h.url_for(controller='adload', action='campaign_update', id=c.campaign['id'])}">
+          <button type="submit">Обновить рекламные предложения в компании</button>
+    </form>
+    </br>
+    <form action="${h.url_for(controller='adload', action='campaign_stop', id=c.campaign['id'])}">
+          <button type="submit">Остановить сейчас!</button>
+      </form>
+    % endif
+    </p>
 % endif

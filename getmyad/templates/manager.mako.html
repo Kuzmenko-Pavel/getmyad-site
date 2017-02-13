@@ -1,189 +1,183 @@
 # -*- coding: utf-8 -*-
-<%inherit file="/main.mako.html" />
+<%inherit file="/main.mako.html" />	
 <%!
 from getmyad.model import Permission, Account, ManagerReports
 %>
 <%def name="head()">
-<title>Статистика GetMyAd</title>
-<meta name="description"
-      content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+        <title>Статистика GetMyAd</title>
+    <meta name="description" content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
 <script>
-    function CheckUser() {
-        if (document.cookie.indexOf('getmyad=') == -1)
-            window.location.replace('/');
-    }
-    CheckUser();
+function CheckUser() {
+    if (document.cookie.indexOf('getmyad=') == -1)
+        window.location.replace('/');
+}
+CheckUser();
 </script>
 </%def>
 
 <div id="loading" style="width: 100%; margin-top: 100px; text-align: center;">
-    <img src="/img/wait26trans.gif"/> <br/> Загрузка...
+	<img src="/img/wait26trans.gif" /> <br /> Загрузка...
 </div>
 
 <script type="text/javascript">
-    var dataDomainRequests = ${c.domainsRequests};
-    var notApprovedRequests = ${c.notApprovedRequests};
-    var permissionSetClickCost = ${'true' if c.permission.has(Permission.SET_CLICK_COST) else 'false'};
-    var permissionViewMoneyOut = ${'true' if c.permission.has(Permission.VIEW_MONEY_OUT) else 'false'};
-    var permissionViewAllUserStats = ${'true' if c.permission.has(Permission.VIEW_ALL_USERS_STATS) else 'false'};
-    var permissionRegisterUserAccount = ${h.JSON(True if c.permission.has(Permission.REGISTER_USERS_ACCOUNT) else False)};
-    var permissionEditUserAccount = ${h.JSON(True if c.permission.has(Permission.EDIT_USERS_ACCOUNT) else False)};
-    var moneyOutHistory = ${c.moneyOutHistory};
+	var dataDomainRequests = ${c.domainsRequests};
+	var notApprovedRequests = ${c.notApprovedRequests};	
+	var permissionSetClickCost = ${'true' if c.permission.has(Permission.SET_CLICK_COST) else 'false'};
+	var permissionViewMoneyOut = ${'true' if c.permission.has(Permission.VIEW_MONEY_OUT) else 'false'};
+	var permissionViewAllUserStats = ${'true' if c.permission.has(Permission.VIEW_ALL_USERS_STATS) else 'false'};
+	var permissionRegisterUserAccount = ${h.JSON(True if c.permission.has(Permission.REGISTER_USERS_ACCOUNT) else False)};
+	var permissionEditUserAccount = ${h.JSON(True if c.permission.has(Permission.EDIT_USERS_ACCOUNT) else False)};
+	var moneyOutHistory = ${c.moneyOutHistory};
     var token = ${h.JSON(c.token)};
-    $.extend($.jgrid.ajaxOptions, {async: true});
+    $.extend($.jgrid.ajaxOptions, { async: true });
 </script>
 <script type="text/javascript" src="/js/manager.js"></script>
 
-<div id="tabs" style="min-height: 500px; min-width: 1200px; visibility: hidden;">
-    <ul>
-        <li><a href="#main">Обзор</a></li>
-
-        % if c.permission.has(Permission.VIEW_MONEY_OUT):
-        <li><a href="#moneyOutRequests" id="href_moneyOutRequests" name="href_moneyOutRequests">Вывод средств</a></li>
-        %endif
-        % if c.permission.has(Permission.USER_DOMAINS_MODERATION):
-        <li><a href="#moderation" id="href_moderation" name="href_moderation">Модерация</a></li>
-        % endif
-        % if c.permission.has(Permission.USER_DOMAINS_MODERATION):
-        <li><a href="#rating" id="href_rating" name="href_rating">Рейтинг</a></li>
-        % endif
-        % if c.permission.has(Permission.USER_DOMAINS_MODERATION):
-        <li><a href="#workerStats" id="href_workerStats" name="href_workerStats">Статистика воркера</a></li>
-        % endif
-    </ul>
-    <div id="main">
+<div id="tabs" style="min-height: 500px; min-width: 1200px; visibility: hidden;" >
+<ul>
+	<li><a href="#main">Обзор</a></li>
+	
+% if c.permission.has(Permission.VIEW_MONEY_OUT):
+	<li><a href="#moneyOutRequests" id="href_moneyOutRequests" name="href_moneyOutRequests">Вывод средств</a></li>
+%endif
+% if c.permission.has(Permission.USER_DOMAINS_MODERATION):
+	<li><a href="#moderation" id="href_moderation" name="href_moderation">Модерация</a></li>
+% endif	
+% if c.permission.has(Permission.USER_DOMAINS_MODERATION):
+	<li><a href="#rating" id="href_rating" name="href_rating">Рейтинг</a></li>
+% endif	
+% if c.permission.has(Permission.USER_DOMAINS_MODERATION):
+	<li><a href="#workerStats" id="href_workerStats" name="href_workerStats">Статистика воркера</a></li>
+% endif	
+</ul>
+<div id="main">
         <div id="tabs2">
-            <ul>
-                <li><a href="#main1">Обзор главная</a></li>
-                <li><a href="#main2">Обзор предложения</a></li>
-                <li><a href="#ImpClick" id="href_ImpClick" name="href_ImpClick">Показы и клики по аккаунтам</a></li>
-                % if c.account.account_type == Account.Administrator:
-                <li><a href="#main4">Движение средств</a></li>
-                % endif
-            </ul>
-            <div id="main1">
-                <h2> Сегодня ${c.date}</h2>
+        <ul>
+        <li><a href="#main1">Обзор главная</a></li>
+        <li><a href="#main2">Обзор предложения</a></li>
+	    <li><a href="#ImpClick" id="href_ImpClick" name="href_ImpClick">Показы и клики по аккаунтам</a></li>
+% if c.account.account_type == Account.Administrator:
+        <li><a href="#main4">Движение средств</a></li>
+% endif
+    </ul>
+    <div id="main1">
+	<h2> Сегодня ${c.date}</h2>
+	
+<% 
+	service_links = []
+	if c.permission.has(Permission.REGISTER_USERS_ACCOUNT):
+		service_links.append(('/register_adv/index', u'Регистрация аккаунта пользователя GetMyAd'))
+		service_links.append(('/advertise/showList', u'Расширенная настройка информеров'))
+	if c.permission.has(Permission.MANAGE_USER_INFORMERS):   
+		service_links.append(('/advertise/patternList', u'Редактирование шаблонов'))
+	service_links.append(('/manager/checkInformers/UA', u'Проверка работоспособности информеров'))
+%>
+${' | '.join(['<a class="service_links" href="%s" target="_blank">%s</a>' % x for x in service_links]) }
 
-                <%
-                service_links = []
-                if c.permission.has(Permission.REGISTER_USERS_ACCOUNT):
-                service_links.append(('/register_adv/index', u'Регистрация аккаунта пользователя GetMyAd'))
-                service_links.append(('/advertise/showList', u'Расширенная настройка информеров'))
-                if c.permission.has(Permission.MANAGE_USER_INFORMERS):
-                service_links.append(('/advertise/patternList', u'Редактирование шаблонов'))
-                service_links.append(('/manager/checkInformers/UA', u'Проверка работоспособности информеров'))
-                %>
-                ${' | '.join(['<a class="service_links" href="%s" target="_blank">%s</a>' % x for x in service_links]) }
-
-                <h2>Общая статистика GetMyAd</h2>
-                Данные статистики актуальны на <b>${c.usersSummaryActualTime}</b>
-                % if c.account.account_type == Account.Administrator:
-                <p/>
-                <table id="tableOverallSummary"></table>
-                <div id="pagerOverallSummary"></div>
-                % endif
-                <p/>
-                <table id="tableUsersSummary"></table>
-                <p/>
-
-                <p/>
-                <table id="tableUsersImpressions"></table>
-                <p/>
-                % if c.account.account_type == Account.Manager:
-                <p/>
-                <table id="tableAccountProfit"></table>
-                <p/>
-                % endif
-                <h3>Текущие цены за уникального посетителя</h3>
-                <table id="tableClickCost"></table>
-                <table id="tableClickCost_pager"></table>
-                <br/><br/>
-            </div>
-
-            <div id="main2">
-                <h2>Cтатистика предложений GetMyAd</h2>
-                Данные статистики актуальны на <b>${c.usersSummaryActualTime}</b>
-                % if c.account.account_type == Account.Administrator:
-                <p/>
-                <table id="tableTeaserOverallSummary"></table>
-                <div id="pagerTeaserOverallSummary"></div>
-                % endif
-                <p/>
-                <table id="tableTeaserUsersSummary"></table>
-                <p/>
-
-                <p/>
-                <table id="tableTeaserUsersImpressions"></table>
-                <p/>
-            </div>
-            <div id="ImpClick">
-                <h2>Социальные показы и клики</h2>
-
-                <div style="margin:5px 5px 5px 5px">
-                    <input type="text" id="ImpClickCalendar1" value=""/>
-                </div>
-                <table id="tableUsersImpressionsClick"></table>
-                <div id="tableUsersImpressionsClick_pager"></div>
-            </div>
-            % if c.account.account_type == Account.Administrator:
-            <div id="main4">
-                <h2> Сводная информация по менеджерам</h2>
-                <table id="managersSummary"></table>
-                <table id="managersSummaryByDate"></table>
-                <h2> Сводная информация по отчеслениям</h2>
-                <table id="tableOverallSumSummary"></table>
-                <div id="pagerOverallSumSummary"></div>
-                <p/>
-            </div>
-            % endif
-        </div>
+	<h2>Общая статистика GetMyAd</h2>
+	Данные статистики актуальны на   <b>${c.usersSummaryActualTime}</b>
+% if c.account.account_type == Account.Administrator:
+    <p/>
+	<table id="tableOverallSummary"></table>
+	<div id="pagerOverallSummary"></div>
+% endif
+	<p/>
+	<table id="tableUsersSummary"></table>
+	<p/>
+	<p/>
+    <table id="tableUsersImpressions"> </table>
+	<p/>
+    % if c.account.account_type == Account.Manager:
+	<p/>
+            <table id="tableAccountProfit"> </table>
+	<p/>
+    % endif
+    <h3>Текущие цены за уникального посетителя</h3>
+    <table id="tableClickCost"></table>
+    <table id="tableClickCost_pager"></table>
+    <br/><br/>
     </div>
 
-    <div id="moneyOut" class="dialog">
-        <style type="text/css">           /* Форма вывода денег */
-        form label {
-            display: block;
-        }
+    <div id="main2">
+	<h2>Cтатистика предложений GetMyAd</h2>
+	Данные статистики актуальны на   <b>${c.usersSummaryActualTime}</b>
+% if c.account.account_type == Account.Administrator:
+    <p/>
+	<table id="tableTeaserOverallSummary"></table>
+	<div id="pagerTeaserOverallSummary"></div>
+% endif
+	<p/>
+	<table id="tableTeaserUsersSummary"></table>
+	<p/>
+	<p/>
+    <table id="tableTeaserUsersImpressions"> </table>
+	<p/>
+</div>
+<div id="ImpClick">
+	<h2>Социальные показы и клики</h2>
+	<div style="margin:5px 5px 5px 5px">
+	<input type="text" id="ImpClickCalendar1" value="" />
+	</div>
+    <table id="tableUsersImpressionsClick"></table>
+    <div id="tableUsersImpressionsClick_pager"></div>
+</div>
+% if c.account.account_type == Account.Administrator:
+<div id="main4">
+	<h2> Сводная информация по менеджерам</h2>
+	<table id="managersSummary"></table>
+	<table id="managersSummaryByDate"></table>
+	<h2> Сводная информация по отчеслениям</h2>
+	<table id="tableOverallSumSummary"></table>
+	<div id="pagerOverallSumSummary"></div>
+    <p/>
+</div>
+% endif
+</div>
+</div>
 
-        form input {
-            /*display: block;*/
-            margin-bottom: 10px;
-            /*  width: 200px; */
-        }
-        </style>
-        <form name="moneyOut_form" id="moneyOut_form" action="/manager/moneyOutSubmit" method="get">
-            <input type="hidden" name="token" id="token" value="${c.token}"/>
-
-            <h2>Заявка на вывод средств</h2>
-            <fieldset id="moneyOut">
-                <label for="moneyOut_summ">Сумма для разового вывода</label>
-                <input type="text" id="moneyOut_summ" name="moneyOut_summ"/>
-
-                <label for="moneyOut_comment">Примечания</label>
-                <textarea rows="4" cols="50" id="moneyOut_comment" name="moneyOut_comment"></textarea>
-            </fieldset>
-
+<div id="moneyOut" class="dialog">
+  <style type="text/css">           /* Форма вывода денег */
+    form label {    display: block; }
+    form input {  
+      /*display: block;*/
+      margin-bottom: 10px;
+    /*  width: 200px; */
+     }
+  </style>
+  <form name="moneyOut_form" id="moneyOut_form" action="/manager/moneyOutSubmit" method="get" >
+          <input type="hidden" name="token" id="token" value="${c.token}"/>
+          <h2>Заявка на вывод средств</h2>
+          <fieldset id="moneyOut">
+            <label for="moneyOut_summ">Сумма для разового вывода</label>
+            <input type="text" id="moneyOut_summ" name="moneyOut_summ" />
+            
+            <label for="moneyOut_comment">Примечания</label>
+            <textarea rows="4" cols="50" id="moneyOut_comment" name="moneyOut_comment"></textarea>
+          </fieldset>
+            
             <div id="moneyOut_errorMessage" class="errorMessage"></div>
-
-            <div id="moneyOut_wait" style="text-align: right; display: none;">
-                <img src="/img/wait26trans.gif"/>
+          
+            <div id="moneyOut_wait" style="text-align: right; display: none;" >
+              <img src="/img/wait26trans.gif" />
             </div>
+            
+   </form>      
+</div>
 
-        </form>
-    </div>
 
 
-    % if c.permission.has(Permission.VIEW_MONEY_OUT):
-    <div id="moneyOutRequests">
-        <table id="moneyInfo">
-            <tr>
-                <td>Количество активных заявок, ожидающих одобрения:</td>
-                <td><b id="notApprovedRequests" name="notApprovedRequests"> ${c.notApprovedRequests}</b></td>
 
-            </tr>
-            <tr>
-                <td>Сумма доступная к выводу на сегодня:</td>
-                <td><b> ${h.formatMoney(c.sum_out['total'])}</b>
+% if c.permission.has(Permission.VIEW_MONEY_OUT):
+<div id="moneyOutRequests">
+	<table id="moneyInfo">
+	<tr>
+	  <td>Количество активных заявок, ожидающих одобрения:</td>
+	  <td><b id="notApprovedRequests" name="notApprovedRequests"> ${c.notApprovedRequests}</b></td>
+	    
+	</tr>  
+	<tr>  
+	  	<td>Сумма доступная к выводу на сегодня: </td>
+		  <td><b> ${h.formatMoney(c.sum_out['total'])}</b>
 		  <span id="sumMoneyOutDetails" style="color: gray; margin-left: 2em;">
 		  		<b>(Webmoney Z:</b> ${h.formatMoney(c.sum_out['webmoney_z'])} | 
 		  		<b>(Webmoney R:</b> ${h.formatMoney(c.sum_out['webmoney_r'])} | 
@@ -196,151 +190,134 @@ from getmyad.model import Permission, Account, ManagerReports
 				<b>Счёт-фактура:</b> ${h.formatMoney(c.sum_out['factura'])} |
 				<b>Неопределено:</b> ${h.formatMoney(c.sum_out['unknown'])})
 		  </span>
-                    <br/>
-                </td>
-            </tr>
-            <tr>
-                <td> Прогноз суммы доступной к выводу к 10му числу:</td>
-                <td><b> ${c.prognoz_sum_out}</b></td>
-            </tr>
-        </table>
+		  <br />
+		  </td>
+	 </tr>
+	 <tr>
+  	 	<td> Прогноз суммы доступной к выводу к 10му числу:</td>
+  		<td><b> ${c.prognoz_sum_out}</b></td>
+	 </tr>
+	 </table>
+	
+	<h2>Заявки на вывод средств</h2>
+	
+	<div id="toolbarMoneyOutRequest"></div>
+	<table id="tableMoneyOutRequest"></table>
+	<div id="pagerMoneyOutRequest"></div>
+	
+</div>
+%endif
 
-        <h2>Заявки на вывод средств</h2>
+<div id="moderation">
+% if c.permission.has(Permission.USER_DOMAINS_MODERATION):
+	<h2>Ожидают модерации</h2>
+	<table id="tableDomainRegistration"></table>
+%endif
+</div>
+<div id="rating">
+% if c.permission.has(Permission.USER_DOMAINS_MODERATION):
+	<h2>Рейтинг рекламных предложений</h2>
+    <table id="tableOfferRating"></table>
+    <div id="tableOfferRating_pager"></div>
+    <table id="tableOfferRatingForInformers"></table>
+    <div id="tableOfferRatingForInformers_pager"></div>
+%endif
+</div>
+<div id="workerStats">
+% if c.permission.has(Permission.USER_DOMAINS_MODERATION):
+	<div style="margin:5px 5px 5px 5px">
+	<input type="text" id="workerStatsCalendar" value="" />
+	</div>
+    <h2>Статистика работы воркера</h2>
+    <table id="tableWorkerStats"></table>
+	<div style="margin:5px 5px 5px 5px">
+	<input type="text" id="workerNewStatsCalendar" value="" />
+	</div>
+    <h2>Статистика работы нового воркера</h2>
+    <table id="tableWorkerNewStats"></table>
+%endif
+</div>
 
-        <div id="toolbarMoneyOutRequest"></div>
-        <table id="tableMoneyOutRequest"></table>
-        <div id="pagerMoneyOutRequest"></div>
 
+
+
+<div id="dialogSetPercent" style="display: none;" title="Назначение процента">
+	Назначить процент пользователю <span id="dialogSetPercent_manager">%manager%</span>
+	<form>   
+		<fieldset>
+			<label for="dialogSetPercent_percent">Процент</label>
+			<input type="text" name="dialogSetPercent_percent" id="dialogSetPercent_percent" class="text ui-widget-content ui-corner-all"/>
+		</fieldset>
+	</form>
+</div>
+
+<div id="dialogBlockManager" style="display: none" title="Блокировка менеджера">
+    Вы действительно хотите заблокировать менеджера <span id="dialogBlockManager_manager" style="font-weight: bold;">%manager%</span>?
+    Менеджер потеряет доступ к своему аккаунту, у всех назначенных ему сайтах
+    сбросится поле "Ответственный менеджер".
+</div>
+
+<div id="dialogSetCost" style="display: none;" title="Назначение цены">
+	Назначить цену пользователю <span id="dialogSetCost_user">%username%</span>
+
+	<form>
+		<table>
+		<tr>
+			<td><label><input type="radio" id="costType1" name="costType" value="fixed" checked />Фиксированная</label></td>
+			<td><label><input type="radio" id="costType2" name="costType" value="percent" />Плавающая</label></td>
+		</tr>
+		</table>
+
+		<fieldset id="fieldsSetCost_FixedCost">
+			<label for="dialogSetCost_cost">Цена</label>
+			<input type="text" name="dialogSetCost_cost" id="dialogSetCost_cost" class="text ui-widget-content ui-corner-all"/>
+		</fieldset>
+
+		<fieldset id="fieldsSetCost_Percent" style="display:none" >
+			<label for="dialogSetCost_percent">Процент от цены рекламодателя</label>
+			<input type="text" name="dialogSetCost_percent" id="dialogSetCost_percent" class="text ui-widget-content ui-corner-all"/>%
+			
+			<label for="dialogSetCost_min">но не менее</label>
+			<input type="text" name="dialogSetCost_min" id="dialogSetCost_min" class="text ui-widget-content ui-corner-all"/>$
+
+			<label for="dialogSetCost_max">и не более</label>
+			<input type="text" name="dialogSetCost_max" id="dialogSetCost_max" class="text ui-widget-content ui-corner-all"/>$
+		</fieldset>
+			
+		<label for="dialogSetCost_date">Время применения:</label>
+		<input type="text" name="dialogSetCost_date" id="dialogSetCost_date" value="" readonly="true" class="text ui-widget-content ui-corner-all" />
+	</form>
+</div>
+
+
+<div id="dialogMoneyOutApprove" style="display: none;" title="Одобрение заявки на вывод средств">
+    Вы действительно хотите перевести <span id="dialogMoneyOutApprove_summ" style="font-weight: bold;"></span> на счёт пользователя <span id="dialogMoneyOutApprove_user" style="font-weight: bold;"></span>?<br/>
+    <br/>
+    <div id="information_money_approve">
     </div>
-    %endif
+    <br/>
+    <b class="protection_code_info">Пожалуйста, ведите код протекции</b><br/>
+    <span class="protection_code_info">код - количество дней</span><br/>
+    <input class="protection_code_info" name="protectionCode" type="text" size="6" maxlength="6"/><span class="protection_code_info">&nbsp;-&nbsp;</span><input class="protection_code_info" name="protectionPeriod" type="text" size="3" maxlength="3"/><br/>
+	<span id="dialogMoneyOutApprove_date" style="display:none;"></span>
+</div>
 
-    <div id="moderation">
-        % if c.permission.has(Permission.USER_DOMAINS_MODERATION):
-        <h2>Ожидают модерации</h2>
-        <table id="tableDomainRegistration"></table>
-        %endif
-    </div>
-    <div id="rating">
-        % if c.permission.has(Permission.USER_DOMAINS_MODERATION):
-        <h2>Рейтинг рекламных предложений</h2>
-        <table id="tableOfferRating"></table>
-        <div id="tableOfferRating_pager"></div>
-        <table id="tableOfferRatingForInformers"></table>
-        <div id="tableOfferRatingForInformers_pager"></div>
-        %endif
-    </div>
-    <div id="workerStats">
-        % if c.permission.has(Permission.USER_DOMAINS_MODERATION):
-        <div style="margin:5px 5px 5px 5px">
-            <input type="text" id="workerStatsCalendar" value=""/>
-        </div>
-        <h2>Статистика работы воркера</h2>
-        <table id="tableWorkerStats"></table>
-        <div style="margin:5px 5px 5px 5px">
-            <input type="text" id="workerNewStatsCalendar" value=""/>
-        </div>
-        <h2>Статистика работы нового воркера</h2>
-        <table id="tableWorkerNewStats"></table>
-        %endif
-    </div>
+<div id="dialogMoneyOutAgree" style="display: none;" title="Разрешение заявки на вывод средств">
+	Вы разрешаете вывести <span id="dialogMoneyOutAgree_summ" style="font-weight: bold;"></span> на счёт пользователя <span id="dialogMoneyOutAgree_user" style="font-weight: bold;"></span>?
+	<span id="dialogMoneyOutAgree_date" style="display:none;"></span>
+</div>
 
+<div id="dialogMoneyOutUpdateProtectionCode" style="display: none;" title="Обновить код протекции">
+    <b>Пожалуйста, ведите новый код протекции</b><br/>
+    код - количество дней<br/>
+    <input name="protectionCode" type="text" size="6" maxlength="6"/>&nbsp;-&nbsp;<input name="protectionPeriod" type="text" size="3" maxlength="3"/><br/>
+	Вы действительно хотите изменить код протекции заявки на сумму <span id="dialogMoneyOutUpdateProtectionCode_summ" style="font-weight: bold;"></span> пользователя <span id="dialogMoneyOutUpdateProtectionCode_user" style="font-weight: bold;"></span>?
+	<span id="dialogMoneyOutUpdateProtectionCode_date" style="display:none;"></span>
+</div>
 
-    <div id="dialogSetPercent" style="display: none;" title="Назначение процента">
-        Назначить процент пользователю <span id="dialogSetPercent_manager">%manager%</span>
-
-        <form>
-            <fieldset>
-                <label for="dialogSetPercent_percent">Процент</label>
-                <input type="text" name="dialogSetPercent_percent" id="dialogSetPercent_percent"
-                       class="text ui-widget-content ui-corner-all"/>
-            </fieldset>
-        </form>
-    </div>
-
-    <div id="dialogBlockManager" style="display: none" title="Блокировка менеджера">
-        Вы действительно хотите заблокировать менеджера <span id="dialogBlockManager_manager"
-                                                              style="font-weight: bold;">%manager%</span>?
-        Менеджер потеряет доступ к своему аккаунту, у всех назначенных ему сайтах
-        сбросится поле "Ответственный менеджер".
-    </div>
-
-    <div id="dialogSetCost" style="display: none;" title="Назначение цены">
-        Назначить цену пользователю <span id="dialogSetCost_user">%username%</span>
-
-        <form>
-            <table>
-                <tr>
-                    <td><label><input type="radio" id="costType1" name="costType" value="fixed"
-                                      checked/>Фиксированная</label></td>
-                    <td><label><input type="radio" id="costType2" name="costType" value="percent"/>Плавающая</label>
-                    </td>
-                </tr>
-            </table>
-
-            <fieldset id="fieldsSetCost_FixedCost">
-                <label for="dialogSetCost_cost">Цена</label>
-                <input type="text" name="dialogSetCost_cost" id="dialogSetCost_cost"
-                       class="text ui-widget-content ui-corner-all"/>
-            </fieldset>
-
-            <fieldset id="fieldsSetCost_Percent" style="display:none">
-                <label for="dialogSetCost_percent">Процент от цены рекламодателя</label>
-                <input type="text" name="dialogSetCost_percent" id="dialogSetCost_percent"
-                       class="text ui-widget-content ui-corner-all"/>%
-
-                <label for="dialogSetCost_min">но не менее</label>
-                <input type="text" name="dialogSetCost_min" id="dialogSetCost_min"
-                       class="text ui-widget-content ui-corner-all"/>$
-
-                <label for="dialogSetCost_max">и не более</label>
-                <input type="text" name="dialogSetCost_max" id="dialogSetCost_max"
-                       class="text ui-widget-content ui-corner-all"/>$
-            </fieldset>
-
-            <label for="dialogSetCost_date">Время применения:</label>
-            <input type="text" name="dialogSetCost_date" id="dialogSetCost_date" value="" readonly="true"
-                   class="text ui-widget-content ui-corner-all"/>
-        </form>
-    </div>
-
-
-    <div id="dialogMoneyOutApprove" style="display: none;" title="Одобрение заявки на вывод средств">
-        Вы действительно хотите перевести <span id="dialogMoneyOutApprove_summ" style="font-weight: bold;"></span> на
-        счёт пользователя <span id="dialogMoneyOutApprove_user" style="font-weight: bold;"></span>?<br/>
-        <br/>
-
-        <div id="information_money_approve">
-        </div>
-        <br/>
-        <b class="protection_code_info">Пожалуйста, ведите код протекции</b><br/>
-        <span class="protection_code_info">код - количество дней</span><br/>
-        <input class="protection_code_info" name="protectionCode" type="text" size="6" maxlength="6"/><span
-            class="protection_code_info">&nbsp;-&nbsp;</span><input class="protection_code_info" name="protectionPeriod"
-                                                                    type="text" size="3" maxlength="3"/><br/>
-        <span id="dialogMoneyOutApprove_date" style="display:none;"></span>
-    </div>
-
-    <div id="dialogMoneyOutAgree" style="display: none;" title="Разрешение заявки на вывод средств">
-        Вы разрешаете вывести <span id="dialogMoneyOutAgree_summ" style="font-weight: bold;"></span> на счёт
-        пользователя <span id="dialogMoneyOutAgree_user" style="font-weight: bold;"></span>?
-        <span id="dialogMoneyOutAgree_date" style="display:none;"></span>
-    </div>
-
-    <div id="dialogMoneyOutUpdateProtectionCode" style="display: none;" title="Обновить код протекции">
-        <b>Пожалуйста, ведите новый код протекции</b><br/>
-        код - количество дней<br/>
-        <input name="protectionCode" type="text" size="6" maxlength="6"/>&nbsp;-&nbsp;<input name="protectionPeriod"
-                                                                                             type="text" size="3"
-                                                                                             maxlength="3"/><br/>
-        Вы действительно хотите изменить код протекции заявки на сумму <span
-            id="dialogMoneyOutUpdateProtectionCode_summ" style="font-weight: bold;"></span> пользователя <span
-            id="dialogMoneyOutUpdateProtectionCode_user" style="font-weight: bold;"></span>?
-        <span id="dialogMoneyOutUpdateProtectionCode_date" style="display:none;"></span>
-    </div>
-
-</div>    <!-- end #tabs -->
+</div>	<!-- end #tabs -->
 
 
 <script type="text/javascript">
-    ManagerUI();
+	ManagerUI();
 </script>

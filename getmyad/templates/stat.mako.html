@@ -1,120 +1,136 @@
 # -*- coding: utf-8 -*-
-<%inherit file="/main.mako.html" />
+<%inherit file="/main.mako.html" />	
 <%!
-from datetime import datetime
+	from datetime import datetime
 %>
 
 <%def name="head()">
 <title>Статистика GetMyAd</title>
-<meta name="description"
-      content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+<meta name="description" content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
 </%def>
 
 <script type="text/javascript">
-    var x;
-    var gid = 0;
-    var all;
-    function prc() {
-        var id = gid;
-        i = 0;
-        $('#le_table').clearGridData();
-        $('#le_table_all').clearGridData();
-        domain_url = $('#table_user').getCell(id, 1);
-        domain = '/stat/get_data?site=' + domain_url +
-                '&start_date=' +
-                $('#calendar1').val() +
-                '&end_date=' +
-                $('#calendar2').val();
-        alert(domain);
-        $.getJSON(domain, {}, function (json) {
-            all = json;
-            var time3 = 0;
-            var time15 = 0;
-            var time30 = 0;
-            var time60 = 0;
-            var timeall = 0;
-            var gtime3 = 0;
-            var gtime15 = 0;
-            var gtime30 = 0;
-            var gtime60 = 0;
-            var gtimeall = 0;
-            var p3 = 0;
-            var p15 = 0;
-            var p30 = 0;
-            var p60 = 0;
-            if (document.getElementById('check_percent').checked) {
-                for (i = 0; i < json.length; i++) {
-                    if (json[i].site == "None" || json[i].site == "") {
-                        json[i].site = "Unknown";
-                    }
-                    total = json[i].time3 +
-                            json[i].time15 +
-                            json[i].time30 +
-                            json[i].time60;
-                    time3 += json[i].time3;
-                    time15 += json[i].time15;
-                    time30 += json[i].time30;
-                    time60 += json[i].time60;
-                    timeall += total;
-
-
-                    if (json[i].time3 == 0)
-                        p3 = "0";
-                    else
-                        p3 = Math.floor(json[i].time3 / total * 100);
-                    if (json[i].time15 == 0)
-                        p15 = "0";
-                    else
-                        p15 = Math.floor(json[i].time15 / total * 100);
-                    if (json[i].time30 == 0)
-                        p30 = "0";
-                    else
-                        p30 = Math.floor(json[i].time30 / total * 100);
-                    if (json[i].time60 == 0)
-                        p60 = "0";
-                    else
-                        p60 = Math.floor(json[i].time60 / total * 100);
-
-                    $('#le_table_all').addRowData(i, {
+var x;
+var gid = 0;
+var all;
+function prc(){
+    var id = gid;
+    i = 0;
+    $('#le_table').clearGridData();
+    $('#le_table_all').clearGridData();
+    domain_url = $('#table_user').getCell(id, 1);
+    domain = '/stat/get_data?site=' + domain_url +
+    '&start_date=' +
+    $('#calendar1').val() +
+    '&end_date=' +
+    $('#calendar2').val();
+    alert(domain);
+    $.getJSON(domain, {}, function(json){
+        all = json;
+        var time3 = 0;
+        var time15 = 0;
+        var time30 = 0;
+        var time60 = 0;
+        var timeall = 0;
+        var gtime3 = 0;
+        var gtime15 = 0;
+        var gtime30 = 0;
+        var gtime60 = 0;
+        var gtimeall = 0;
+        var p3 = 0;
+        var p15 = 0;
+        var p30 = 0;
+        var p60 = 0;
+        if (document.getElementById('check_percent').checked) {
+            for (i = 0; i < json.length; i++) {
+                 if (json[i].site == "None" || json[i].site == "") {
+                    json[i].site = "Unknown";
+                }
+                total = json[i].time3 +
+                json[i].time15 +
+                json[i].time30 +
+                json[i].time60;
+                time3 += json[i].time3;
+                time15 += json[i].time15;
+                time30 += json[i].time30;
+                time60 += json[i].time60;
+                timeall += total;
+                
+                
+                
+                if (json[i].time3 == 0) 
+                    p3 = "0";
+                else 
+                    p3 = Math.floor(json[i].time3 / total * 100);
+                if (json[i].time15 == 0) 
+                    p15 = "0";
+                else 
+                    p15 = Math.floor(json[i].time15 / total * 100);
+                if (json[i].time30 == 0) 
+                    p30 = "0";
+                else 
+                    p30 = Math.floor(json[i].time30 / total * 100);
+                if (json[i].time60 == 0) 
+                    p60 = "0";
+                else 
+                    p60 = Math.floor(json[i].time60 / total * 100);
+                
+                $('#le_table_all').addRowData(i, {
+                    'id': i + 1,
+                    'parther': json[i].site.replace(/_/g, "."),
+                    'time_percent_3': (p3 + ' %'),
+                    'time_percent_15': (p15 + ' %'),
+                    'time_percent_30': (p30 + ' %'),
+                    'time_percent_60': (p60 + '%'),
+                    'time_all': ("100 %")
+                });
+                if (json[i].from_getmyad == true) {
+                
+                
+                    $('#le_table').addRowData(i, {
                         'id': i + 1,
                         'parther': json[i].site.replace(/_/g, "."),
-                        'time_percent_3': (p3 + ' %'),
-                        'time_percent_15': (p15 + ' %'),
-                        'time_percent_30': (p30 + ' %'),
-                        'time_percent_60': (p60 + '%'),
+                        'time_percent_3': (time3 + ' %'),
+                        'time_percent_15': (Math.floor(json[i].time15 / total * 100) + ' %'),
+                        'time_percent_30': (Math.floor(json[i].time30 / total * 100) + ' %'),
+                        'time_percent_60': (Math.floor(json[i].time60 / total * 100) + '%'),
                         'time_all': ("100 %")
                     });
-                    if (json[i].from_getmyad == true) {
-
-
-                        $('#le_table').addRowData(i, {
-                            'id': i + 1,
-                            'parther': json[i].site.replace(/_/g, "."),
-                            'time_percent_3': (time3 + ' %'),
-                            'time_percent_15': (Math.floor(json[i].time15 / total * 100) + ' %'),
-                            'time_percent_30': (Math.floor(json[i].time30 / total * 100) + ' %'),
-                            'time_percent_60': (Math.floor(json[i].time60 / total * 100) + '%'),
-                            'time_all': ("100 %")
-                        });
-                    }
-
                 }
+                
             }
-            else {
-                for (i = 0; i < json.length; i++) {
-                    total = json[i].time3 +
-                            json[i].time15 +
-                            json[i].time30 +
-                            json[i].time60;
-                    time3 += json[i].time3;
-                    time15 += json[i].time15;
-                    time30 += json[i].time30;
-                    time60 += json[i].time60;
-                    timeall += total;
-                    if (json[i].site == "None" || json[i].site == "") {
-                        json[i].site = "Unknown";
-                    }
-                    $('#le_table_all').addRowData(i, {
+        }
+        else {
+            for (i = 0; i < json.length; i++) {
+                total = json[i].time3 +
+                json[i].time15 +
+                json[i].time30 +
+                json[i].time60;
+                time3 += json[i].time3;
+                time15 += json[i].time15;
+                time30 += json[i].time30;
+                time60 += json[i].time60;
+                timeall += total;
+                if (json[i].site == "None" || json[i].site == "") {
+                    json[i].site = "Unknown";
+                }
+                $('#le_table_all').addRowData(i, {
+                    'id': i + 1,
+                    'parther': json[i].site.replace(/_/g, "."),
+                    'time_percent_3': json[i].time3,
+                    'time_percent_15': json[i].time15,
+                    'time_percent_30': json[i].time30,
+                    'time_percent_60': json[i].time60,
+                    'time_all': total
+                });
+                
+                if (json[i].from_getmyad == true) {
+                    gtime3 += json[i].time3;
+                    gtime15 += json[i].time15;
+                    gtime30 += json[i].time30;
+                    gtime60 += json[i].time60;
+                    gtimeall += total;
+                    $('#le_table').addRowData(i, {
                         'id': i + 1,
                         'parther': json[i].site.replace(/_/g, "."),
                         'time_percent_3': json[i].time3,
@@ -123,216 +139,193 @@ from datetime import datetime
                         'time_percent_60': json[i].time60,
                         'time_all': total
                     });
-
-                    if (json[i].from_getmyad == true) {
-                        gtime3 += json[i].time3;
-                        gtime15 += json[i].time15;
-                        gtime30 += json[i].time30;
-                        gtime60 += json[i].time60;
-                        gtimeall += total;
-                        $('#le_table').addRowData(i, {
-                            'id': i + 1,
-                            'parther': json[i].site.replace(/_/g, "."),
-                            'time_percent_3': json[i].time3,
-                            'time_percent_15': json[i].time15,
-                            'time_percent_30': json[i].time30,
-                            'time_percent_60': json[i].time60,
-                            'time_all': total
-                        });
-                    }
                 }
             }
-            $("#le_table_all").footerData('set', {
-                'parther': "ИТОГО:",
-                'time_percent_3': time3,
-                'time_percent_15': time15,
-                'time_percent_30': time30,
-                'time_percent_60': time60,
-                'time_all': timeall
-            }, true);
-            $("#le_table").footerData('set', {
-                'parther': "ИТОГО:",
-                'time_percent_3': gtime3,
-                'time_percent_15': gtime15,
-                'time_percent_30': gtime30,
-                'time_percent_60': gtime60,
-                'time_all': gtimeall
-            }, true);
-            //				$('#le_table_all').addRowData((i++)-1, {
-            //					'id': i,
-            //					'parther': "ИТОГО: ",
-            //					'time_percent_3': time3,
-            //					'time_percent_15': time15,
-            //					'time_percent_30': time30,
-            //					'time_percent_60': time60,
-            //					'time_all': timeall
-            //				});
-
-        });
-    }
-    ;
-    $(function () {
-        var domain_url;
-        var i = 0;
-        var currentTime = new Date()
-        var month = currentTime.getMonth() + 1
-        var month1 = currentTime.getMonth()
-        var day = currentTime.getDate()
-        var year = currentTime.getFullYear()
-        $("#calendar1").attr("value", day + "." + month1 + "." + year);
-        $("#calendar2").attr("value", day + "." + month + "." + year);
-        $("#calendar1").datepicker();
-        $("#calendar2").datepicker();
-        $('#le_table').jqGrid({
-            datatype: 'local',
-            colNames: ['ID', 'Партнер', '<3', '3-15', '15-30', 'Больше минуты', 'Всего'],
-            colModel: [{
-                name: 'id',
-                index: 'id',
-                width: 20
-            }, {
-                name: 'parther',
-                index: 'parther',
-                width: 250
-            }, {
-                name: 'time_percent_3',
-                index: 'time_percent_3',
-                width: 60,
-                sorttype: "int"
-            }, {
-                name: 'time_percent_15',
-                index: 'time_percent_15',
-                width: 60,
-                sorttype: "int"
-            }, {
-                name: 'time_percent_30',
-                index: 'time_percent_30',
-                width: 60,
-                sorttype: "int"
-            }, {
-                name: 'time_percent_60',
-                index: 'time_percent_60',
-                width: 120,
-                sorttype: "int"
-            }, {
-                name: 'time_all',
-                index: 'time_all',
-                width: 160,
-                sorttype: "int"
-            }],
-            footerrow: true,
-            userDataOnFooter: true,
-            caption: 'Количество переходов с сайтов партнеров GetMyAd'
-        });
-        $('#table_user').jqGrid({
-            datatype: 'local',
-            colNames: ['ID', 'Пользователи'],
-            colModel: [{
-                name: 'id',
-                index: 'id',
-                width: 20
-            }, {
-                name: 'user',
-                index: 'parther',
-                width: 250
-            }],
-            caption: 'Сайты рекламодателей',
-            onSelectRow: function (id) {
-                gid = id;
-                prc();
-            }
-        });
-        $('#le_table_all').jqGrid({
-            datatype: 'local',
-            colNames: ['ID', 'Сайт', '<3', '3-15', '15-30', 'Больше минуты', 'Всего'],
-            colModel: [{
-                name: 'id',
-                index: 'id',
-                width: 20
-            }, {
-                name: 'parther',
-                index: 'parther',
-                width: 250
-            }, {
-                name: 'time_percent_3',
-                index: 'time_percent_3',
-                width: 60,
-                sorttype: "int"
-            }, {
-                name: 'time_percent_15',
-                index: 'time_percent_15',
-                width: 60,
-                sorttype: "int"
-            }, {
-                name: 'time_percent_30',
-                index: 'time_percent_30',
-                width: 60,
-                sorttype: "int"
-            }, {
-                name: 'time_percent_60',
-                index: 'time_percent_60',
-                width: 120,
-                sorttype: "int"
-            }, {
-                name: 'time_all',
-                index: 'time_all',
-                width: 160,
-                sorttype: "int"
-            }],
-            footerrow: true,
-            userDataOnFooter: true,
-            caption: 'Количество трафика с всех сайтов на рекламодателя'
-        });
-        $.getJSON('/stat/domains', {}, function (json) {
-
-            for (i = 0; i < json.length; i++) {
-                $('#selectsite').append('<option>' + json[i] + '</option>');
-                $('#table_user').addRowData(i, {
-                    'id': i + 1,
-                    'user': json[i],
-                });
-            }
-        });
-        $('#check_percent').click(function () {
-            prc();
-        });
+        }
+        $("#le_table_all").footerData('set', {
+            'parther': "ИТОГО:",
+            'time_percent_3': time3,
+            'time_percent_15': time15,
+            'time_percent_30': time30,
+            'time_percent_60': time60,
+            'time_all': timeall
+        }, true);
+        $("#le_table").footerData('set', {
+            'parther': "ИТОГО:",
+            'time_percent_3': gtime3,
+            'time_percent_15': gtime15,
+            'time_percent_30': gtime30,
+            'time_percent_60': gtime60,
+            'time_all': gtimeall
+        }, true);
+        //				$('#le_table_all').addRowData((i++)-1, {
+        //					'id': i,
+        //					'parther': "ИТОГО: ",
+        //					'time_percent_3': time3,
+        //					'time_percent_15': time15,
+        //					'time_percent_30': time30,
+        //					'time_percent_60': time60,
+        //					'time_all': timeall
+        //				});
+    
     });
+};
+$(function(){
+    var domain_url;
+    var i = 0;
+    var currentTime = new Date()
+    var month = currentTime.getMonth() + 1
+    var month1 = currentTime.getMonth()
+    var day = currentTime.getDate()
+    var year = currentTime.getFullYear()
+    $("#calendar1").attr("value", day + "." + month1 + "." + year);
+    $("#calendar2").attr("value", day + "." + month + "." + year);
+    $("#calendar1").datepicker();
+    $("#calendar2").datepicker();
+    $('#le_table').jqGrid({
+        datatype: 'local',
+        colNames: ['ID', 'Партнер', '<3', '3-15', '15-30', 'Больше минуты', 'Всего'],
+        colModel: [{
+            name: 'id',
+            index: 'id',
+            width: 20
+        }, {
+            name: 'parther',
+            index: 'parther',
+            width: 250
+        }, {
+            name: 'time_percent_3',
+            index: 'time_percent_3',
+            width: 60,
+            sorttype: "int"
+        }, {
+            name: 'time_percent_15',
+            index: 'time_percent_15',
+            width: 60,
+            sorttype: "int"
+        }, {
+            name: 'time_percent_30',
+            index: 'time_percent_30',
+            width: 60,
+            sorttype: "int"
+        }, {
+            name: 'time_percent_60',
+            index: 'time_percent_60',
+            width: 120,
+            sorttype: "int"
+        }, {
+            name: 'time_all',
+            index: 'time_all',
+            width: 160,
+            sorttype: "int"
+        }],
+        footerrow: true,
+        userDataOnFooter: true,
+        caption: 'Количество переходов с сайтов партнеров GetMyAd'
+    });
+    $('#table_user').jqGrid({
+        datatype: 'local',
+        colNames: ['ID', 'Пользователи'],
+        colModel: [{
+            name: 'id',
+            index: 'id',
+            width: 20
+        }, {
+            name: 'user',
+            index: 'parther',
+            width: 250
+        }],
+        caption: 'Сайты рекламодателей',
+        onSelectRow: function(id){
+            gid = id;
+            prc();
+        }
+    });
+    $('#le_table_all').jqGrid({
+        datatype: 'local',
+        colNames: ['ID', 'Сайт', '<3', '3-15', '15-30', 'Больше минуты', 'Всего'],
+        colModel: [{
+            name: 'id',
+            index: 'id',
+            width: 20
+        }, {
+            name: 'parther',
+            index: 'parther',
+            width: 250
+        }, {
+            name: 'time_percent_3',
+            index: 'time_percent_3',
+            width: 60,
+            sorttype: "int"
+        }, {
+            name: 'time_percent_15',
+            index: 'time_percent_15',
+            width: 60,
+            sorttype: "int"
+        }, {
+            name: 'time_percent_30',
+            index: 'time_percent_30',
+            width: 60,
+            sorttype: "int"
+        }, {
+            name: 'time_percent_60',
+            index: 'time_percent_60',
+            width: 120,
+            sorttype: "int"
+        }, {
+            name: 'time_all',
+            index: 'time_all',
+            width: 160,
+            sorttype: "int"
+        }],
+        footerrow: true,
+        userDataOnFooter: true,
+        caption: 'Количество трафика с всех сайтов на рекламодателя'
+    });
+    $.getJSON('/stat/domains', {}, function(json){
+    
+        for (i = 0; i < json.length; i++) {
+            $('#selectsite').append('<option>' + json[i] + '</option>');
+            $('#table_user').addRowData(i, {
+                'id': i + 1,
+                'user': json[i],
+            });
+        }
+    });
+    $('#check_percent').click(function(){
+        prc();
+    });
+});
 </script>
-<H3>Статистика эффективности партнерских каналов: </H3>
-<table>
-    <tr valign="top">
-        <td>
-            <div style="margin:5px 5px 5px 5px">C
-                <input type="text" id="calendar1" value=""/>
-                По
-                <input type="text" id="calendar2" value=""/>
+	<H3>Статистика эффективности партнерских каналов: </H3>
+<table >
+	<tr valign="top">
+		<td >
+				<div style="margin:5px 5px 5px 5px">C					
+				<input type="text" id="calendar1" value="" />
+				По 
+				<input type="text" id="calendar2" value="" />
+			<div/>
+		</td>
+		<td>
+			<div><p><input type="checkbox" id="check_percent" title="Показывать в процентах показы в процентном соотношении"/>Показывать в процентах(%)</p></div>
+		</td>
+	</tr>
+	</table><table>
+	<tr valign="top">
+	<td><table id="table_user" style="margin:5px 5px 5px 5px" ></table>
 
-                <div/>
-        </td>
-        <td>
-            <div><p><input type="checkbox" id="check_percent"
-                           title="Показывать в процентах показы в процентном соотношении"/>Показывать в процентах(%)</p>
-            </div>
-        </td>
-    </tr>
+</td>
+	<td>
+	<table id="le_table" style="margin:5px 5px 5px 5px" ></table>
+	</td>
+</tr>
 </table>
 <table>
-    <tr valign="top">
-        <td>
-            <table id="table_user" style="margin:5px 5px 5px 5px"></table>
-
-        </td>
-        <td>
-            <table id="le_table" style="margin:5px 5px 5px 5px"></table>
-        </td>
-    </tr>
-</table>
-<table>
-    <tr><br/>
-        <td>
-            <table id="le_table_all" style="margin:5px 5px 5px 5px"></table>
-        </td>
-    </tr>
+<tr><br />
+	<td>
+	<table id="le_table_all" style="margin:5px 5px 5px 5px" ></table>
+</td></tr>
 </table>	
 	
 

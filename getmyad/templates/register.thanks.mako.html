@@ -1,33 +1,31 @@
 <%inherit file="/main.mako.html" />
 <%def name="head()">
-<title>Yottos GetMyAd</title>
-<meta name="description"
-      content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+	<title>Yottos GetMyAd</title>
+    <meta name="description" content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
 </%def>
 ##%>
 
 
 <style type="text/css">
-    #confirm_user, #confirm_manager {
-        margin-left: 100px;
-        min-height: 500px;
-    }
+#confirm_user, #confirm_manager {
+	margin-left: 100px;
+	min-height: 500px;	
+}
 
-    #regbutton_div {
-        margin-top: 20px
-    }
-
-    #confirm_user td, #confirm_manager td {
-        height: 24px;
-        width: 16em;
-    }
+#regbutton_div{
+	margin-top:20px
+}
+#confirm_user td, #confirm_manager td {
+	height: 24px;
+	width: 16em;    
+}
 
 </style>
 
 
 %if not c.save_res:
-<h2>Ошибка создания аккаунта!</h2>
-<p>Возможно, пользователь с таким именем уже существует.</p>
+	<h2>Ошибка создания аккаунта!</h2>
+	<p>Возможно, пользователь с таким именем уже существует.</p>
 %endif
 
 
@@ -35,61 +33,52 @@
 
 % if c.account_type == 'user':
 <div id='confirm_user'>
-    <h2>Параметры созданного пользовательского аккаунта</h2>
-    <table>
-        <tr>
-            <td><b>Логин:</b></td>
-            <td>${c.siteUrl}</td>
-        </tr>
+	<h2>Параметры созданного пользовательского аккаунта</h2>
+	<table>
+	<tr>
+		<td><b>Логин:</b></td> <td>${c.siteUrl}</td>
+	</tr>
+	
+	<tr>	
+		<td><b>Пароль:</b></td> <td>${c.password}</td>
+	</tr>
+	
+	<tr>	
+		<td><b>ФИО:</b></td>    <td>${c.name}</td>
+	</tr>
+	
+	<tr>
+		<td><b>E-mail:</b></td> <td>${c.email}</td>
+	</tr>
+	
+	<tr>
+		<td><b>Телефон:</b></td> <td>${c.phone}</td>
+	</tr>
+	<tr>
+	  <td><b>Цена за клик:</b></td>
+      <td>плавающая, ${c.click_percent}% от цены рекламодателя,
+          но не менее ${c.click_cost_min}грн и не более ${c.click_cost_max}грн.</td>
+	</tr>  
+	<tr>
+	  <td><b>Цена за 1000 показов:</b></td>
+      <td>плавающая, ${c.imp_percent}% от цены рекламодателя,
+          но не менее ${c.imp_cost_min}грн и не более ${c.imp_cost_max}грн.</td>
+	</tr>  
+	
+	<tr>
+		<td><b>Минимальная сумма для вывода средств:</b></td><td>${c.minsum} грн</td> 
+	</tr>
+	<tr>
+		<td><b>Способ вывода средств:</b></td>
+		<td>${c.money_out}</td> 
+	</tr>		
+	<tr>
+		<td><b></>Менеджер:</b></td><td>${c.manager_get}</td>
+	</tr>	
+	</table>
+	
 
-        <tr>
-            <td><b>Пароль:</b></td>
-            <td>${c.password}</td>
-        </tr>
-
-        <tr>
-            <td><b>ФИО:</b></td>
-            <td>${c.name}</td>
-        </tr>
-
-        <tr>
-            <td><b>E-mail:</b></td>
-            <td>${c.email}</td>
-        </tr>
-
-        <tr>
-            <td><b>Телефон:</b></td>
-            <td>${c.phone}</td>
-        </tr>
-        <tr>
-            <td><b>Цена за клик:</b></td>
-            <td>плавающая, ${c.click_percent}% от цены рекламодателя,
-                но не менее ${c.click_cost_min}грн и не более ${c.click_cost_max}грн.
-            </td>
-        </tr>
-        <tr>
-            <td><b>Цена за 1000 показов:</b></td>
-            <td>плавающая, ${c.imp_percent}% от цены рекламодателя,
-                но не менее ${c.imp_cost_min}грн и не более ${c.imp_cost_max}грн.
-            </td>
-        </tr>
-
-        <tr>
-            <td><b>Минимальная сумма для вывода средств:</b></td>
-            <td>${c.minsum} грн</td>
-        </tr>
-        <tr>
-            <td><b>Способ вывода средств:</b></td>
-            <td>${c.money_out}</td>
-        </tr>
-        <tr>
-            <td><b></>Менеджер:</b></td>
-            <td>${c.manager_get}</td>
-        </tr>
-    </table>
-
-
-    <h2>Аккаунт успешно создан!</h2>
+	<h2>Аккаунт успешно создан!</h2>
 
 </div>
 %endif
@@ -97,39 +86,34 @@
 
 % if c.account_type <> 'user':
 <div id='confirm_manager'>
-    % if c.account_type == 'manager':
-    <h2>Параметры созданного менеджерского аккаунта</h2>
-    % endif
-
-    % if c.account_type == 'admin':
-    <h2>Параметры созданного аккаунта администратора</h2>
-    % endif
-    <table>
-        <tr>
-            <td><b>Логин:</b></td>
-            <td>${c.manager_login}</td>
-        </tr>
-
-        <tr>
-            <td><b>Пароль:</b></td>
-            <td>${c.password}</td>
-        </tr>
-
-        <tr>
-            <td><b>ФИО:</b></td>
-            <td>${c.manager_name}</td>
-        </tr>
-
-        <tr>
-            <td><b>E-mail:</b></td>
-            <td>${c.manager_email}</td>
-        </tr>
-
-        <tr>
-            <td><b>Телефон:</b></td>
-            <td>${c.manager_phone}</td>
-        </tr>
-</div>
+	% if c.account_type == 'manager':
+	<h2>Параметры созданного менеджерского аккаунта</h2>
+	% endif
+	
+	% if c.account_type == 'admin':
+	<h2>Параметры созданного аккаунта администратора</h2>
+	% endif
+	<table>
+	<tr>
+		<td><b>Логин:</b></td> <td>${c.manager_login}</td>
+	</tr>
+	
+	<tr>	
+		<td><b>Пароль:</b></td> <td>${c.password}</td>
+	</tr>
+	
+	<tr>	
+		<td><b>ФИО:</b></td>    <td>${c.manager_name}</td>
+	</tr>
+	
+	<tr>
+		<td><b>E-mail:</b></td> <td>${c.manager_email}</td>
+	</tr>
+	
+	<tr>	
+		<td><b>Телефон:</b></td>  <td>${c.manager_phone}</td>
+	</tr>
+</div>	
 %endif
 
 %endif

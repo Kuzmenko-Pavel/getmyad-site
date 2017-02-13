@@ -2,7 +2,7 @@
 <%inherit file="/main.mako.html" />
 <%def name="head()">
 <title>Yottos GetMyAd</title>
-<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection" />
 </%def>
 <h2>Рейтинг рекламных предложений</h2>
 <table id="tableOfferRating"></table>
@@ -12,55 +12,31 @@
 <script text="text/javascript">
     // Таблица рейтинга рекламных предложений
     $("#tableOfferRating").jqGrid({
-        url: '/manager/rating',
+        url:'/manager/rating',
         datatype: 'json',
         mtype: 'GET',
-        colNames: ['РП', 'РК', 'Показы', 'Клики', 'CTR', 'Цена', 'Рейтинг', 'Время обнавления</br>Рейтинга', 'Показы<br/>до<br/>пересчета', 'Клики<br/>до<br/>пересчета', 'Старый<br/>CTR', 'Все<br/>показы', 'Все<br/>клики', 'Обший<br/>рейтинг', 'Время обнавления</br> Общего Рейтинга', 'Обший<br/>CTR'],
+        colNames: ['РП', 'РК', 'Показы', 'Клики', 'CTR', 'Цена', 'Рейтинг', 'Время обнавления</br>Рейтинга', 'Показы<br/>до<br/>пересчета', 'Клики<br/>до<br/>пересчета', 'Старый<br/>CTR', 'Все<br/>показы', 'Все<br/>клики', 'Обший<br/>рейтинг','Время обнавления</br> Общего Рейтинга', 'Обший<br/>CTR'],
         colModel: [
-            {name: 'title', index: 'title', align: 'center'},
-            {name: 'campaignTitle', index: 'campaignTitle', align: 'center'},
-            {name: 'impressions', index: 'impressions', align: 'center', width: '70px', search: false},
-            {name: 'clicks', index: 'clicks', align: 'center', width: '70px', search: false},
-            {
-                name: 'ctr',
-                index: 'ctr',
-                align: 'center',
-                width: '80px',
-                formatter: 'number',
-                formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4},
-                search: false
-            },
-            {name: 'cost', index: 'cost', align: 'center', width: '70px', search: false},
-            {name: 'rating', index: 'rating', align: 'center', width: '85px', search: false},
-            {name: 'last_rating_update', index: 'rating', align: 'center', width: '85px', search: false},
-            {name: 'old_impressions', index: 'old_impressions', align: 'center', width: '85px', search: false},
-            {name: 'old_clicks', index: 'old_clicks', align: 'center', width: '85px', search: false},
-            {
-                name: 'old_ctr',
-                index: 'old_ctr',
-                align: 'center',
-                width: '80px',
-                formatter: 'number',
-                formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4},
-                search: false
-            },
-            {name: 'full_impressions', index: 'full_impressions', align: 'center', width: '90px', search: false},
-            {name: 'full_clicks', index: 'full_clicks', align: 'center', width: '90px', search: false},
-            {name: 'full_rating', index: 'full_rating', align: 'center', width: '85px', search: false},
-            {name: 'last_full_rating_update', index: 'rating', align: 'center', width: '85px', search: false},
-            {
-                name: 'full_ctr',
-                index: 'full_ctr',
-                align: 'center',
-                width: '80px',
-                formatter: 'number',
-                formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4},
-                search: false
-            }],
+          { name: 'title', index: 'title', align: 'center' },
+          { name: 'campaignTitle', index: 'campaignTitle', align: 'center'},
+          { name: 'impressions', index: 'impressions', align: 'center', width: '70px', search:false },
+          { name: 'clicks', index: 'clicks', align: 'center', width: '70px', search:false},
+          { name: 'ctr', index: 'ctr', align: 'center', width: '80px', formatter:'number', formatoptions:{decimalSeparator:",", thousandsSeparator: ",", decimalPlaces: 4}, search:false},
+          { name: 'cost', index: 'cost', align: 'center', width: '70px', search:false},
+          { name: 'rating', index: 'rating', align: 'center', width: '85px', search:false},
+          { name: 'last_rating_update', index: 'rating', align: 'center', width: '85px', search:false},
+          { name: 'old_impressions', index: 'old_impressions', align: 'center', width: '85px', search:false },
+          { name: 'old_clicks', index: 'old_clicks', align: 'center', width: '85px', search:false},
+          { name: 'old_ctr', index: 'old_ctr', align: 'center', width: '80px', formatter:'number', formatoptions:{decimalSeparator:",", thousandsSeparator: ",", decimalPlaces: 4}, search:false},
+          { name: 'full_impressions', index: 'full_impressions', align: 'center' , width: '90px', search:false},
+          { name: 'full_clicks', index: 'full_clicks', align: 'center', width: '90px', search:false},
+          { name: 'full_rating', index: 'full_rating', align: 'center', width: '85px', search:false},
+          { name: 'last_full_rating_update', index: 'rating', align: 'center', width: '85px', search:false},
+          { name: 'full_ctr', index: 'full_ctr', align: 'center', width: '80px', formatter:'number', formatoptions:{decimalSeparator:",", thousandsSeparator: ",", decimalPlaces: 4}, search:false}],
         caption: "Обший рейтинг рекламных предложений",
         height: 'auto',
-        rowNum: 10,
-        rowList: [10, 20, 30, 100],
+        rowNum:10,
+        rowList:[10,20,30,100],
         sortname: 'title',
         sortorder: 'asc',
         rownumbers: true,
@@ -69,141 +45,53 @@
         hiddengrid: true,
         pager: '#tableOfferRating_pager'
     });
-    $("#tableOfferRating").jqGrid('filterToolbar', {searchOperators: true});
-    $("#tableOfferRating").jqGrid('navGrid', '#tableOfferRating_pager', {
-        del: false,
-        add: false,
-        edit: false,
-        search: false
-    }, {}, {}, {}, {});
+    $("#tableOfferRating").jqGrid('filterToolbar',{searchOperators : true});
+    $("#tableOfferRating").jqGrid('navGrid', '#tableOfferRating_pager',{del:false,add:false,edit:false,search:false},{},{},{},{});
 
     // Таблица рейтинга рекламных предложений по рекламным блокам
     $("#tableOfferRatingForInformers").jqGrid({
-        url: '/manager/ratingForInformers',
+        url:'/manager/ratingForInformers',
         datatype: 'json',
         mtype: 'GET',
         colNames: ['', 'Рекламный блок'],
         colModel: [
-            {name: 'adv', index: 'adv', align: 'center', key: true, hidden: true},
-            {name: 'title', index: 'title', align: 'center', width: '1184px'}],
+          { name: 'adv', index: 'adv', align: 'center', key:true, hidden: true },
+          { name: 'title', index: 'title', align: 'center', width: '1184px' }],
         caption: "Pейтинг рекламных предложений по рекламным блокам",
         rownumbers: false,
         sortable: true,
         hiddengrid: true,
         autowidth: true,
         rowNum: 10,
-        rowList: [10, 20, 30, 100],
+        rowList:[10,20,30,100],
         height: '100%',
         subGrid: true,
-        subGridRowExpanded: function (subgrid_id, row_id) {
+        subGridRowExpanded: function(subgrid_id, row_id) {
             var subgrid_table_id, pager_id;
-            subgrid_table_id = subgrid_id + "_t";
-            pager_id = "p_" + subgrid_table_id;
-            $("#" + subgrid_id).html("<table id='" + subgrid_table_id + "' class='scroll'></table><div id='" + pager_id + "' class='scroll'></div>");
-            jQuery("#" + subgrid_table_id).jqGrid({
-                url: '/manager/ratingForInformers?subgrid=' + row_id,
+            subgrid_table_id = subgrid_id+"_t";
+            pager_id = "p_"+subgrid_table_id;
+            $("#"+subgrid_id).html("<table id='"+subgrid_table_id+"' class='scroll'></table><div id='"+pager_id+"' class='scroll'></div>");
+            jQuery("#"+subgrid_table_id).jqGrid({
+                url:'/manager/ratingForInformers?subgrid='+ row_id ,
                 datatype: "json",
                 colNames: ['РП', 'РК', 'Показы', 'Клики', 'CTR', 'Цена', 'Рейтинг', 'Время обнавления</br>Рейтинга', 'Показы<br/>до<br/>пересчета', 'Клики<br/>до<br/>пересчета', 'Старый<br/>CTR', 'Все<br/>показы', 'Все<br/>клики', 'Обший<br/>Рейтинг', 'Время обнавления</br> Общего Рейтинга', 'Обший<br/>CTR'],
                 colModel: [
-                    {name: 'title', index: 'title', align: 'center', sortable: true, sorttype: 'text'},
-                    {name: 'campaignTitle', index: 'campaignTitle', align: 'text'},
-                    {
-                        name: 'impressions',
-                        index: 'impressions',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '70px'
-                    },
-                    {
-                        name: 'clicks',
-                        index: 'clicks',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '70px'
-                    },
-                    {
-                        name: 'ctr',
-                        index: 'ctr',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '70px',
-                        formatter: 'number',
-                        formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4}
-                    },
-                    {name: 'cost', index: 'cost', align: 'center', sortable: true, sorttype: 'integer', width: '70px'},
-                    {
-                        name: 'rating',
-                        index: 'rating',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '85px'
-                    },
-                    {name: 'last_rating_update', index: 'rating', align: 'center', width: '85px', search: false},
-                    {
-                        name: 'old_impressions',
-                        index: 'old_impressions',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '85px'
-                    },
-                    {
-                        name: 'old_clicks',
-                        index: 'old_clicks',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '85px'
-                    },
-                    {
-                        name: 'old_ctr',
-                        index: 'old_ctr',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '70px',
-                        formatter: 'number',
-                        formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4}
-                    },
-                    {
-                        name: 'full_impressions',
-                        index: 'full_impressions',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '90px'
-                    },
-                    {
-                        name: 'full_clicks',
-                        index: 'full_clicks',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '90px'
-                    },
-                    {
-                        name: 'full_rating',
-                        index: 'full_rating',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '85px'
-                    },
-                    {name: 'last_full_rating_update', index: 'rating', align: 'center', width: '85px', search: false},
-                    {
-                        name: 'full_ctr',
-                        index: 'full_ctr',
-                        align: 'center',
-                        sortable: true,
-                        sorttype: 'integer',
-                        width: '70px',
-                        formatter: 'number',
-                        formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4}
-                    }],
+                  { name: 'title', index: 'title', align: 'center', sortable:true, sorttype: 'text' },
+                  { name: 'campaignTitle', index: 'campaignTitle', align: 'text'},
+                  { name: 'impressions', index: 'impressions', align: 'center', sortable:true, sorttype: 'integer', width: '70px' },
+                  { name: 'clicks', index: 'clicks', align: 'center', sortable:true, sorttype: 'integer', width: '70px'},
+                  { name: 'ctr', index: 'ctr', align: 'center', sortable:true, sorttype: 'integer', width: '70px', formatter:'number', formatoptions:{decimalSeparator:",", thousandsSeparator: ",", decimalPlaces: 4}},
+                  { name: 'cost', index: 'cost', align: 'center', sortable:true, sorttype: 'integer', width: '70px'},
+                  { name: 'rating', index: 'rating', align: 'center', sortable:true, sorttype: 'integer', width: '85px'},
+                  { name: 'last_rating_update', index: 'rating', align: 'center', width: '85px', search:false},
+                  { name: 'old_impressions', index: 'old_impressions', align: 'center', sortable:true, sorttype: 'integer', width: '85px' },
+                  { name: 'old_clicks', index: 'old_clicks', align: 'center', sortable:true, sorttype: 'integer', width: '85px'},
+                  { name: 'old_ctr', index: 'old_ctr', align: 'center', sortable:true, sorttype: 'integer', width: '70px', formatter:'number', formatoptions:{decimalSeparator:",", thousandsSeparator: ",", decimalPlaces: 4}},
+                  { name: 'full_impressions', index: 'full_impressions', align: 'center', sortable:true, sorttype: 'integer', width: '90px' },
+                  { name: 'full_clicks', index: 'full_clicks', align: 'center', sortable:true, sorttype: 'integer', width: '90px'},
+                  { name: 'full_rating', index: 'full_rating', align: 'center', sortable:true, sorttype: 'integer', width: '85px'},
+                  { name: 'last_full_rating_update', index: 'rating', align: 'center', width: '85px', search:false},
+                  { name: 'full_ctr', index: 'full_ctr', align: 'center', sortable:true, sorttype: 'integer', width: '70px', formatter:'number', formatoptions:{decimalSeparator:",", thousandsSeparator: ",", decimalPlaces: 4}}],
                 rownumbers: false,
                 loadonce: true,
                 sortable: true,
@@ -215,5 +103,5 @@
         },
         pager: '#tableOfferRatingForInformers_pager'
     });
-    $("#tableOfferRatingForInformers").jqGrid('filterToolbar', {searchOperators: true});
+    $("#tableOfferRatingForInformers").jqGrid('filterToolbar',{searchOperators : true});
 </script>

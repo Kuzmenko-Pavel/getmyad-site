@@ -1,173 +1,153 @@
 # -*- coding: utf-8 -*-
-<%inherit file="/main.mako.html" />
+<%inherit file="/main.mako.html" />	
 <%!
-from datetime import datetime
+	from datetime import datetime
 %>
 
 <%def name="head()">
-<title>GetMyAd | Регистрация</title>
-<meta name="description"
-      content="Рекламная партнерская сеть Yottos GetMyAd. Добро пожаловать в программу, для регистрации необходимо заполнить и отправить заявку. "/>
+        <title>GetMyAd | Регистрация</title>
+    <meta name="description" content="Рекламная партнерская сеть Yottos GetMyAd. Добро пожаловать в программу, для регистрации необходимо заполнить и отправить заявку. "/>
 </%def>
-##%>    4parser
+##%>	4parser
 
 
 <div id="contentPosition">
-    <form name="RegisterForm" method="post" action="/register_user/send">
+<form name="RegisterForm" method="post" action="/register_user/send" >
 
 
-        <script type="text/javascript">
-            $(document).ready(function () {
-                function validate() {
-                    var site_re = /^(https?:\/\/)?([\w\.а-яА-ЯёЁ-]+)\.([\wа-яА-ЯёЁ-]{2,}\.?)(\/[\w\.]*)*\/?$/;
-                    var phone_re = /^(((\+?)\s?(\d?\s?)(\d?\s?)(\d?\s?))?\(?(\d{2,3})\)?\s?(\d\d\d)(\s|-)?(\d\d)(\s|-)?(\d\d))\s*$/;
-                    var email_re = /^ *([A-Za-z0-9_\.-]+)@([A-Za-z0-9_\.-]+)\.([A-Za-z\.]{2,6}) *$/;
+<script type="text/javascript">
+$(document).ready(function() {
+	function validate()
+	{
+		var site_re = /^(https?:\/\/)?([\w\.а-яА-ЯёЁ-]+)\.([\wа-яА-ЯёЁ-]{2,}\.?)(\/[\w\.]*)*\/?$/;
+        var phone_re = /^(((\+?)\s?(\d?\s?)(\d?\s?)(\d?\s?))?\(?(\d{2,3})\)?\s?(\d\d\d)(\s|-)?(\d\d)(\s|-)?(\d\d))\s*$/;
+		var email_re = /^ *([A-Za-z0-9_\.-]+)@([A-Za-z0-9_\.-]+)\.([A-Za-z\.]{2,6}) *$/;
 
-                    var valid_name = $("#UserNameText").val().length > 0;
-                    var valid_url = site_re.test($("#SiteUrl").val().toLowerCase());
-                    var valid_phone = phone_re.test($("#PhoneNumber").val());
-                    var valid_email = email_re.test($("#Email").val());
-                    var agreed = document.getElementById('AgreeCheckBox').checked;
-                    var view = document.getElementById('ViewCheckBox').checked;
-                    var all_valid = valid_email && valid_phone && valid_url && valid_name && agreed && view;
+		var valid_name = $("#UserNameText").val().length > 0;
+		var valid_url = site_re.test($("#SiteUrl").val().toLowerCase());
+		var valid_phone = phone_re.test($("#PhoneNumber").val());
+		var valid_email = email_re.test($("#Email").val());
+		var agreed = document.getElementById('AgreeCheckBox').checked;
+		var view = document.getElementById('ViewCheckBox').checked;
+		var all_valid = valid_email && valid_phone && valid_url && valid_name && agreed && view;
 
-                    document.getElementById('reqUserName').style.visibility = valid_name ? "hidden" : "visible";
-                    document.getElementById('reqUrl').style.visibility = valid_url ? "hidden" : "visible";
-                    document.getElementById('reqPhoneNumber').style.visibility = valid_phone ? "hidden" : "visible";
-                    document.getElementById('reqEmail').style.visibility = valid_email ? "hidden" : "visible";
-                    document.getElementById('SubmitButton').disabled = !all_valid;
+		document.getElementById('reqUserName').style.visibility = valid_name? "hidden" : "visible";
+		document.getElementById('reqUrl').style.visibility = valid_url? "hidden" : "visible";
+		document.getElementById('reqPhoneNumber').style.visibility = valid_phone? "hidden" : "visible";
+		document.getElementById('reqEmail').style.visibility = valid_email? "hidden" : "visible";
+		document.getElementById('SubmitButton').disabled = !all_valid;
+		
+		return all_valid;
+	};
 
-                    return all_valid;
-                };
-
-                $("#UserNameText, #SiteUrl, " +
-                        "#PhoneNumber, #Email").change(validate);
-                $("#ViewCheckBox").change(validate);
-                $("#AgreeCheckBox").change(validate);
-            });
-        </script>
-
-
-        <div id="registerUserMain">
-
-            <div style="">
-                <h2>Добро пожаловать в программу GetMyAd! </h2>
-
-                <p>Заполните, пожалуйста, требуемые данные. Ваша заявка будет расмотрена модератором в течении трех
-                    рабочих дней.</p>
-
-                <table cellpadding="6">
-
-                    <tr>
-                        <td>Ваше имя*:</td>
-                        <td><input name="UserNameText" type="text" id="UserNameText" value="${c.user_name}"/>
-                            <span id="reqUserName" style="color:Red;visibility:hidden;">Введите Ваше имя</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>URL главной страницы сайта*:</td>
-                        <td><input name="SiteUrl" type="text" id="SiteUrl" value="${c.user_url}"/>
-                            <span id="reqUrl"
-                                  style="color:Red;visibility:hidden;">Введите URL главной страницы  сайта</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Номер телефона*: <br/>(<i style="color: #777;">+380 (44) 123-45-67</i>)</td>
-                        <td><input name="PhoneNumber" type="text" id="PhoneNumber" value="${c.user_phone}"/>
-                            <span id="reqPhoneNumber" style="color:Red;visibility:hidden;">Введите номер телефона</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Эл. почта*:</td>
-                        <td><input name="Email" type="text" id="Email" value="${c.user_email}"/>
-                            <span id="reqEmail" style="color:Red;visibility:hidden;">Заполните поле e-mail</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Введите символы*:</td>
-                        <td>
-                            <div>
-                                <span style='margin:5px 100px 5px 0;float:left;'><img src="/register_user/capcha"
-                                                                                      border='0' width=180
-                                                                                      height=50></span>
-                                <span style='margin:5px 5px 5px 0;float:left;'><input name="Capcha"
-                                                                                      style="width: 180px;" type=text
-                                                                                      size=10 maxlength=10
-                                                                                      value=''></span>
-                                <br clear='all'></div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td><span id="reqCapcha" style="color:Red;">${c.capcha_error}</span></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input id="ViewCheckBox" type="checkbox" name="ViewCheckBox" style="width: 10px;"/>
-                        </td>
-                        <td>
-                            <label for="ViewCheckBox" style="position: relative; right: 160px;">Посещаемость моего сайта
-                                более 2000 уникальных посетителей в день.</label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input id="AgreeCheckBox" type="checkbox" name="AgreeCheckBox" style="width: 10px;"/>
-                        </td>
-                        <td>
-                            <label for="AgreeCheckBox" style="position: relative; right: 160px;">Я ознакомлен и согласен
-                                с <a href='/info/rules' target='_blank'>Правилами программы GetMyAd</a>.</label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <span style="font-size: 10px; display: block; width: 460px;">*Вся введенная Вами информация конфиденциальна и не передается третьим лицам.</br>
-                                &nbsp;Yottos гарантирует неразглашение информации.</span>
-                        </td>
-                    </tr>
+	$("#UserNameText, #SiteUrl, " +
+	  "#PhoneNumber, #Email").change(validate);
+	$("#ViewCheckBox").change(validate);
+	$("#AgreeCheckBox").change(validate);
+});
+</script>
 
 
-                    <tr>
-                        <td colspan="2">
-                            <div id="ValidationSummary1" style="color:Red;display:none;"></div>
-                        </td>
-                    </tr>
 
-                    <tr>
-                        <td colspan="2">
-                            <br/>
+<div id="registerUserMain">
+	
+<div style="">
+<h2>Добро пожаловать в программу GetMyAd! </h2>
+<p>Заполните, пожалуйста, требуемые данные. Ваша заявка будет расмотрена модератором в течении трех рабочих дней.</p>
 
-                            <p style="text-align: center;">
+<table cellpadding="6">
 
-                                <input type="submit" name="SubmitButton" value="Отправить" id="SubmitButton"
-                                       disabled="disabled" style="height:3em;width:200px;"/></p>
-                        </td>
-                    </tr>
+<tr>
+    <td>Ваше имя*: </td>
+    <td><input name="UserNameText" type="text" id="UserNameText" value = "${c.user_name}" />
+    <span id="reqUserName" style="color:Red;visibility:hidden;">Введите Ваше имя</span>
+    </td>
+</tr>
+<tr>
+    <td>URL главной страницы  сайта*:</td>
+    <td><input name="SiteUrl" type="text" id="SiteUrl"  value ="${c.user_url}" />
+    <span id="reqUrl" style="color:Red;visibility:hidden;">Введите URL главной страницы  сайта</span>
+    </td>
+</tr>    
+<tr>
+    <td>Номер телефона*: <br />(<i style="color: #777;">+380 (44) 123-45-67</i>) </td>
+    <td><input name="PhoneNumber" type="text" id="PhoneNumber"  value = "${c.user_phone}" />
+    <span id="reqPhoneNumber" style="color:Red;visibility:hidden;">Введите номер телефона</span>
+    </td>
+</tr>
+<tr>
+    <td>Эл. почта*: </td>
+    <td><input name="Email" type="text" id="Email" value = "${c.user_email}" />
+    <span id="reqEmail" style="color:Red;visibility:hidden;">Заполните поле e-mail</span>
+    </td>
+</tr>
+<tr>
+    <td>Введите символы*:</td>
+    <td>
+        <div>
+            <span style='margin:5px 100px 5px 0;float:left;'><img src="/register_user/capcha" border='0' width=180 height=50></span>
+            <span style='margin:5px 5px 5px 0;float:left;'><input name="Capcha" style="width: 180px;" type=text size=10 maxlength=10 value=''></span>
+            <br clear='all'></div>
+    </td>
+</tr>
+<tr>
+	<td></td>
+	<td><span id="reqCapcha" style="color:Red;">${c.capcha_error}</span></td>
+</tr>
+<tr>
+<td>
+    <input id="ViewCheckBox" type="checkbox" name="ViewCheckBox" style="width: 10px;" />
+</td>
+<td>
+	<label for="ViewCheckBox" style="position: relative; right: 160px;">Посещаемость моего сайта более 2000 уникальных посетителей в день.</label>
+</td>
+</tr>
+<tr>
+<td>
+    <input id="AgreeCheckBox" type="checkbox" name="AgreeCheckBox" style="width: 10px;" />
+</td>
+<td>
+	<label for="AgreeCheckBox" style="position: relative; right: 160px;">Я ознакомлен и согласен с <a href='/info/rules' target='_blank'>Правилами программы GetMyAd</a>.</label>
+</td>
+</tr>
+<tr>
+    <td colspan="2">
+        <span style="font-size: 10px; display: block; width: 460px;">*Вся введенная Вами информация конфиденциальна и не передается третьим лицам.</br>&nbsp;Yottos гарантирует неразглашение информации.</span>
+    </td>
+</tr>
 
-                </table>
-            </div>
-        </div>
 
-    </form>
+<tr>
+<td colspan="2">
+        <div id="ValidationSummary1" style="color:Red;display:none;"></div>
+</td>
+</tr>
+
+<tr>
+<td colspan="2">
+<br /><p style="text-align: center;">
+
+<input type="submit" name="SubmitButton" value="Отправить" id="SubmitButton" disabled="disabled" style="height:3em;width:200px;" /></p>
+</td>
+</tr>
+
+</table>
+</div>
+</div>
+  
+</form>
 </div>
 <script>
-    (function (i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r;
-        i[r] = i[r] || function () {
-                    (i[r].q = i[r].q || []).push(arguments)
-                }, i[r].l = 1 * new Date();
-        a = s.createElement(o),
-                m = s.getElementsByTagName(o)[0];
-        a.async = 1;
-        a.src = g;
-        m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-39710056-2', 'auto', {'allowLinker': true});
-    ga('require', 'displayfeatures');
-    ga('require', 'linker');
-    ga('linker:autoLink', ['blog.yottos.com', 'yottos.com', 'adload.yottos.com']);
-    ga('send', 'pageview');
+  ga('create', 'UA-39710056-2', 'auto', {'allowLinker': true});
+  ga('require', 'displayfeatures');
+  ga('require', 'linker');
+  ga('linker:autoLink', ['blog.yottos.com','yottos.com','adload.yottos.com'] );
+  ga('send', 'pageview');
 
 </script>
 <script type="text/javascript">
@@ -181,7 +161,6 @@ from datetime import datetime
 </script>
 <noscript>
     <div style="display:inline;">
-        <img height="1" width="1" style="border-style:none;" alt=""
-             src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/1044799191/?value=0&amp;guid=ON&amp;script=0"/>
+        <img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/1044799191/?value=0&amp;guid=ON&amp;script=0"/>
     </div>
 </noscript>

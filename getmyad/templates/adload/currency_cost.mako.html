@@ -1,13 +1,13 @@
 <%inherit file="/main.mako.html" />
 <%def name="head()">
-<title>Yottos GetMyAd</title>
-<link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection"/>
+	<title>Yottos GetMyAd</title>
+    <link rel="stylesheet" href="/css/main.css" type="text/css" media="screen, projection" />	
 </%def>
 
 <h1> Курсы валют </h1>
 
 <form action="/adload/save_currency_cost" method="POST">
     <p>Курс пересчёта цен из AdLoad:
-        <input type="text" id="dollar_cost" name="dollar_cost" value="${c.dollar_cost}"/> грн. за 1 $</p>
-    <input type="submit" value="Сохранить"/>
+    <input type="text" id="dollar_cost" name="dollar_cost" value="${c.dollar_cost}" /> грн. за 1 $</p>
+    <input type="submit" value="Сохранить" />
 </form>

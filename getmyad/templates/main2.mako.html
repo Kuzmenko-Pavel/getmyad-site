@@ -4,173 +4,145 @@ c.Comment = False
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
-    <title>YOTTOS </title>
-    <link href="/css/main.css" type="text/css" rel="stylesheet"/>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <script type='text/javascript' src='/js/SearchQueryBuilder.js'></script>
+<title>YOTTOS </title>
+<link href="/css/main.css" type="text/css" rel="stylesheet" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<script type='text/javascript' src='/js/SearchQueryBuilder.js'></script>	
     <script src="/lib/jquery/jquery-1.9.1.min.js"></script>
     <script src="/lib/jquery/jquery-migrate-1.1.1.min.js"></script>
     <script type="text/javascript" src="/lib/plugins/jquery.tools.min.js"></script>
-    <script type="text/javascript" src="/lib/plugins/jquery.form.js"></script>
-    <script type="text/javascript" src="/lib/plugins/jquery.tooltip.min.js"></script>
-    <script type="text/javascript" src="/lib/flot/jquery.flot.min.js"></script>
+	<script type="text/javascript" src="/lib/plugins/jquery.form.js"></script>
+	<script type="text/javascript" src="/lib/plugins/jquery.tooltip.min.js"></script>
+	<script type="text/javascript" src="/lib/flot/jquery.flot.min.js"></script>
     <script type="text/javascript" src="/lib/ui/i18n/ui.datepicker-ru.js"></script>
-    <script type="text/javascript" src="/lib/ui/jquery-ui-1.8.1.custom.min.js"></script>
+	<script type="text/javascript" src="/lib/ui/jquery-ui-1.8.1.custom.min.js"></script>
     <script type="text/javascript" src="/lib/colorpicker/colorpicker.js"></script>
     <script type="text/javascript" src="/lib/plugins/template.js"></script>
     <script type="text/javascript" src="/lib/plugins/json2.js"></script>
-    <script type="text/javascript" src="/lib/grid/js/i18n/grid.locale-ru.js"></script>
-    <script type="text/javascript" src="/lib/grid/js/jquery.jqGrid.min.js"></script>
+	<script type="text/javascript" src="/lib/grid/js/i18n/grid.locale-ru.js" ></script>		
+	<script type="text/javascript" src="/lib/grid/js/jquery.jqGrid.min.js" ></script>		
     <script type="text/javascript" src="/lib/plugins/swfobject.js"></script>
-    ${self.head()}
+	${self.head()}
 </head>
 <body>
 
-<div id="divHeader" style="min-width: 1160px;">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
+    <div id="divHeader" style="min-width: 1160px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" >
+            <tr>
+        
+                    <td align="left" rowspan="6" style="width: 138px; min-width: 138px; padding-bottom:1px; padding-top:0; margin-top:0;">
+                         <a href="http://adload.yottos.com/">
+                        <div id="divLogoImageButton">
+                            <img id="ctl00_LogoImageButton" src="http://adload.yottos.com/Images/Logo_en.gif" style="width:125px;border-width:0px;" />
+                         </div>
+                         </a> </td>
 
-            <td align="left" rowspan="6"
-                style="width: 138px; min-width: 138px; padding-bottom:1px; padding-top:0; margin-top:0;">
-                <a href="http://adload.yottos.com/">
-                    <div id="divLogoImageButton">
-                        <img id="ctl00_LogoImageButton" src="http://adload.yottos.com/Images/Logo_en.gif"
-                             style="width:125px;border-width:0px;"/>
-                    </div>
-                </a></td>
-
-
-            <td align="left" valign="top" style="text-align:left ;">
-                <table cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                        <td align="right" valign="middle" style="width:30px; height: 32px;">
-                            <a id="ctl00_WebImageHyperLink" href="http://yottos.ru"
-                               onmouseover="buildSearchUrl(this)"><img src="/img/Logos/SmallWeb.gif" alt=""
-                                                                       style="border-width:0px;"/></a></td>
-                        <td align="left" valign="middle" style="width:70px; height: 32px;">
-                            <a id="ctl00_WebHyperLink" class="refer" href="http://yottos.ru"
-                               onmouseover="buildSearchUrl(this)">Веб</a></td>
-                        <td align="right" valign="middle" style="width:30px; height: 32px;">
-                            <a id="ctl00_ZeroImageHyperLink" onmouseover="buildSearchUrl(this)"
-                               href="http://zero.yottos.ru/"><img id="ctl00_ZeroImage" src="/img/Logos/SmallZero.gif"
-                                                                  style="border-width:0px;"/></a></td>
-                        <td align="left" valign="middle" style="width:70px; height: 32px;">
-                            <a id="ctl00_ZeroHyperLink" class="refer" onmouseover="buildSearchUrl(this)"
-                               href="http://zero.yottos.ru/">Zero</a></td>
-                        <td align="right" valign="middle" style="width:30px; height: 32px;">
-                            <a href="http://news.yottos.ru" id="ctl00_NewsImageHyperLink"
-                               onmouseover="buildSearchUrl(this)"><img id="ctl00_NewsImage"
-                                                                       src="/img/Logos/SmallNews.gif"
-                                                                       style="border-width:0px;"/></a></td>
-                        <td align="left" valign="middle" style="width:70px; height: 32px;">
-                            <a href="http://news.yottos.ru" id="ctl00_NewsHyperLink" class="refer"
-                               onmouseover="buildSearchUrl(this)">Новости</a></td>
-                        <td align="right" valign="middle" style="width:30px; height: 32px;">
-                            <a id="ctl00_CatalogImageHyperLink" onmouseover="buildSearchUrl(this)"
-                               href="http://catalog.yottos.com"><img id="ctl00_CatalogImage"
-                                                                     src="/img/Logos/SmallCatalog.gif"
-                                                                     style="border-width:0px;"/></a></td>
-                        <td align="left" valign="middle" style="width:70px; height: 32px;">
-                            <a id="ctl00_CatalogHyperLink" class="refer" onmouseover="buildSearchUrl(this)"
-                               href="http://catalog.yottos.com/CatalogSearch.aspx">Каталог</a></td>
-                        <td align="right" valign="middle" style="width:30px; height: 32px;">
-                            <a href="http://rynok.yottos.ru" id="ctl00_RynokImageHyperLink"
-                               onmouseover="buildSearchUrl(this)"><img id="ctl00_RynokImage"
-                                                                       src="/img/Logos/SmallRynok.gif"
-                                                                       style="width:20px;border-width:0px;"/></a></td>
-                        <td align="left" valign="middle" style="width:70px; height: 32px;">
-                            <a href="http://rynok.yottos.ru" id="ctl00_RynokHyperLink" class="refer"
-                               onmouseover="buildSearchUrl(this)">Рынок</a></td>
-
-                    </tr>
-
-                    <tr>
-                        ${h.form(h.url_for(controller='main', action='search'), method='post')}
-                        <td align="left" valign="top" colspan="10" style="width: 500px">
-                            <div id="divQueryBox">
-                                ${h.text('QueryText', style='width:98%')}
-                            </div>
+             
+                <td align="left" valign="top" style="text-align:left ;" >
+                    <table cellpadding="0" cellspacing="0" border="0" >
+                        <tr>
+                            <td align="right" valign="middle" style="width:30px; height: 32px;">
+                                <a id="ctl00_WebImageHyperLink" href="http://yottos.ru"  onmouseover="buildSearchUrl(this)"><img src="/img/Logos/SmallWeb.gif" alt="" style="border-width:0px;" /></a></td>
+                            <td align="left" valign="middle" style="width:70px; height: 32px;">
+                                <a id="ctl00_WebHyperLink" class="refer" href="http://yottos.ru" onmouseover="buildSearchUrl(this)">Веб</a></td>
+                            <td align="right" valign="middle" style="width:30px; height: 32px;">
+                                <a id="ctl00_ZeroImageHyperLink" onmouseover="buildSearchUrl(this)" href="http://zero.yottos.ru/"><img id="ctl00_ZeroImage" src="/img/Logos/SmallZero.gif" style="border-width:0px;" /></a></td>
+                            <td align="left" valign="middle" style="width:70px; height: 32px;">
+                                 <a id="ctl00_ZeroHyperLink" class="refer" onmouseover="buildSearchUrl(this)" href="http://zero.yottos.ru/">Zero</a></td>
+                            <td align="right" valign="middle" style="width:30px; height: 32px;">
+                                <a href="http://news.yottos.ru" id="ctl00_NewsImageHyperLink" onmouseover="buildSearchUrl(this)"><img id="ctl00_NewsImage" src="/img/Logos/SmallNews.gif" style="border-width:0px;" /></a></td>
+                            <td align="left" valign="middle" style="width:70px; height: 32px;">
+                                 <a href="http://news.yottos.ru" id="ctl00_NewsHyperLink" class="refer" onmouseover="buildSearchUrl(this)">Новости</a></td>
+                            <td align="right" valign="middle" style="width:30px; height: 32px;">
+                                <a id="ctl00_CatalogImageHyperLink" onmouseover="buildSearchUrl(this)" href="http://catalog.yottos.com"><img id="ctl00_CatalogImage" src="/img/Logos/SmallCatalog.gif" style="border-width:0px;" /></a></td>
+                            <td align="left" valign="middle" style="width:70px; height: 32px;">
+                                <a id="ctl00_CatalogHyperLink" class="refer" onmouseover="buildSearchUrl(this)" href="http://catalog.yottos.com/CatalogSearch.aspx">Каталог</a></td>
+                            <td align="right" valign="middle" style="width:30px; height: 32px;">
+                                <a href="http://rynok.yottos.ru" id="ctl00_RynokImageHyperLink" onmouseover="buildSearchUrl(this)"><img id="ctl00_RynokImage" src="/img/Logos/SmallRynok.gif" style="width:20px;border-width:0px;" /></a></td>
+                            <td align="left" valign="middle" style="width:70px; height: 32px;">
+                               <a href="http://rynok.yottos.ru" id="ctl00_RynokHyperLink" class="refer" onmouseover="buildSearchUrl(this)">Рынок</a></td>
+                            
+                        </tr>
+                        
+                        <tr>
+${h.form(h.url_for(controller='main', action='search'), method='post')}
+                         <td align="left" valign="top" colspan="10" style="width: 500px">
+                		<div id="divQueryBox">
+${h.text('QueryText', style='width:98%')}
+                         </div>
+						</td>
+                         <td align="center" valign="top" style="width: 122px; height: 27px;">
+${h.submit('searchButton', u'Поиск в Yottos', onclick="javascript:cleanQueryBox();", style="width: 122px;")}
                         </td>
-                        <td align="center" valign="top" style="width: 122px; height: 27px;">
-                            ${h.submit('searchButton', u'Поиск в Yottos', onclick="javascript:cleanQueryBox();",
-                            style="width: 122px;")}
-                        </td>
-                        ${h.end_form()}
-                    </tr>
-
-                </table>
-            </td>
-        </tr>
+${h.end_form()}
+                        </tr>
+                        
+                  </table>
+               </td>
+              </tr>            
     </table>
 
     <div id="consultant" style="position: absolute; right: 5px; top: 30px">
-        <!-- button --><a
-            onclick="if(navigator.userAgent.toLowerCase().indexOf('opera') != -1 &amp;&amp; window.event.preventDefault) window.event.preventDefault();this.newWindow = window.open('http://online-consultant.yottos.com/client.php?locale=ru&amp;style=adload&amp;group=1&amp;url='+escape(document.location.href)+'&amp;referrer='+escape(document.referrer), 'webim', 'toolbar,scrollbars,location,status=1,menubar,width=640,height=480,resizable=1');this.newWindow.focus();this.newWindow.opener=window;return false;"
-            target="_blank"
-            href="http://online-consultant.yottos.com/client.php?locale=ru&amp;style=adload&amp;group=1"><img border="0"
-                                                                                                              alt=""
-                                                                                                              src="http://online-consultant.yottos.com/button.php?i=adload1&amp;lang=ru&amp;group=1"></a><!-- / button -->
+        <!-- button --><a onclick="if(navigator.userAgent.toLowerCase().indexOf('opera') != -1 &amp;&amp; window.event.preventDefault) window.event.preventDefault();this.newWindow = window.open('http://online-consultant.yottos.com/client.php?locale=ru&amp;style=adload&amp;group=1&amp;url='+escape(document.location.href)+'&amp;referrer='+escape(document.referrer), 'webim', 'toolbar,scrollbars,location,status=1,menubar,width=640,height=480,resizable=1');this.newWindow.focus();this.newWindow.opener=window;return false;" target="_blank" href="http://online-consultant.yottos.com/client.php?locale=ru&amp;style=adload&amp;group=1"><img border="0" alt="" src="http://online-consultant.yottos.com/button.php?i=adload1&amp;lang=ru&amp;group=1"></a><!-- / button -->
     </div>
-    <div id="welcomeBack" style="position: absolute; right: 5px; top: 5px">
-        % if request.environ.get('CURRENT_USER'):
-        <b>${request.environ.get('CURRENT_USER')}</b>
-        &nbsp;&nbsp;&nbsp;
-        <a href="javascript:location.replace('${url(controller='main', action='signOut')}')" class="pers">Выйти</a>
-        % endif
+ <div id="welcomeBack" style="position: absolute; right: 5px; top: 5px">
+% if request.environ.get('CURRENT_USER'):
+ 	<b>${request.environ.get('CURRENT_USER')}</b>
+	&nbsp;&nbsp;&nbsp;
+    <a href="javascript:location.replace('${url(controller='main', action='signOut')}')" class="pers">Выйти</a>
+% endif
+ </div>
+        
+        <div style="width:100%; height: 18px; border: solid 1px #ffcd45; border-right: 0; border-top: 0; "></div>
+        <div style="width:100%; height: 18px; border-right: solid 1px #ffcd45;  "></div>
     </div>
-
-    <div style="width:100%; height: 18px; border: solid 1px #ffcd45; border-right: 0; border-top: 0; "></div>
-    <div style="width:100%; height: 18px; border-right: solid 1px #ffcd45;  "></div>
-</div>
-
-
+ 
+ 
 <div style="min-height: 400px;">
-    ${self.body()}
+		${self.body()}
 </div>
 
 
-<table width="100%" cellpadding="0" cellspacing="0" border="0">
-    <tr>
-        <td style="border-top: 0px; border-left: #ffcd45 1px solid; height:18px;">
-            &nbsp;
-        </td>
-        <td style="width: 240px;">
-            &nbsp;
-        </td>
-    </tr>
-    <tr>
-        <td style="height:40px; border-right: #ffcd45 1px solid; border-top: #ffcd45 1px solid; text-align:center ; border-bottom: #ffcd45 1px solid; width:100%"
-            valign="middle">
 
 
-            <a id="ctl00_HeaderDefaultHyperLink" class="mainlink" href="http://yottos.ru" target="_self">Главная
-                страница</a>
-            &nbsp;
-            <span id="ctl00_Label3" class="Line">|</span>
-            &nbsp;
-            <a id="ctl00_HeaderAboutHyperLink" class="mainlink" href="http://yottos.ru/%d0%9e_%d0%9d%d0%b0%d1%81"
-               target="_self">Всё о Yottos</a>
-            &nbsp;
 
-        </td>
-        <td style="width:240px;">
-            &nbsp;
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <font color="#808080">&copy;<span id="ctl00_CurentYearLabel" style="font-size:12px;">2010</span></font>&nbsp;<font
-                color="#fe7300" style="font-size:12px; ">Yot</font><font color="#4c6bdf"
-                                                                         style="font-size:12px; ">tos</font>
-        </td>
-        <td style="width: 240px; height: 18px;">
-            &nbsp;
-        </td>
-    </tr>
-</table>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" >
+            <tr>
+                <td style="border-top: 0px; border-left: #ffcd45 1px solid; height:18px;">
+                    &nbsp;
+                </td>
+               <td style="width: 240px;">
+                    &nbsp;
+                </td>
+            </tr>
+             <tr>
+                <td style="height:40px; border-right: #ffcd45 1px solid; border-top: #ffcd45 1px solid; text-align:center ; border-bottom: #ffcd45 1px solid; width:100%" valign="middle">
+				
 
+                        <a id="ctl00_HeaderDefaultHyperLink" class="mainlink" href="http://yottos.ru" target="_self">Главная страница</a>
+                         &nbsp;
+                        <span id="ctl00_Label3" class="Line">|</span>
+                         &nbsp;
+                        <a id="ctl00_HeaderAboutHyperLink" class="mainlink" href="http://yottos.ru/%d0%9e_%d0%9d%d0%b0%d1%81" target="_self">Всё о Yottos</a>
+                         &nbsp;
+                    
+                </td>
+              <td style="width:240px;">
+                    &nbsp;
+                </td>  
+            </tr>
+            <tr>
+                <td >
+                    <font color="#808080" >&copy;<span id="ctl00_CurentYearLabel" style="font-size:12px;">2010</span></font>&nbsp;<font color="#fe7300" style="font-size:12px; ">Yot</font><font color="#4c6bdf" style="font-size:12px; ">tos</font>
+                </td>
+             <td style="width: 240px; height: 18px;">
+                    &nbsp;
+                </td>  
+            </tr>
+    </table>
+        
 </body>
 
 </html>
