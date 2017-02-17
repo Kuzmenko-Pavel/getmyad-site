@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
+from __future__ import absolute_import
 """Routes configuration
 
 The more specific and detailed routes should be defined first so they
