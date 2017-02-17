@@ -7,7 +7,7 @@ except ImportError:
     from setuptools import setup, find_packages
 
 setup(
-    name='getmyad-site',
+    name='getmyad',
     version='0.1',
     description='',
     author='',
@@ -22,7 +22,7 @@ setup(
         "WebOb==1.3.1",
         "slimit==0.8.1",
         "Pillow==3.0.0",
-        "pylibmc==1.2.2",
+        "pylibmc==1.5.1",
         "urlfetch==1.0.2"
     ],
     setup_requires=["PasteScript>=1.6.3"],
