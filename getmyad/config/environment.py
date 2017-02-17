@@ -7,7 +7,7 @@ from mako.lookup import TemplateLookup
 from pylons.configuration import PylonsConfig
 from pylons.error import handle_mako_error
 
-import getmyad.lib.app_globals as app_globals
+from getmyad.lib import app_globals
 import getmyad.lib.helpers
 from getmyad.config.routing import make_map
 
