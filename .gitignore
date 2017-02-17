@@ -72,8 +72,8 @@ __pycache__/
 .Python
 env/
 .eggs/
-lib/
-lib64/
+#lib/
+#lib64/
 sdist/
 *.egg-info/
 .installed.cfg
