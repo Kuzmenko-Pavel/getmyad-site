@@ -18,7 +18,7 @@ setup(
         "pymongo==2.8",
         "amqplib==1.0.2",
         "pymssql==2.0.1",
-        "celery==3.0.25",
+        "celery==3.1.7",
         "WebOb==1.3.1",
         "slimit==0.8.1",
         "Pillow==3.0.0",
