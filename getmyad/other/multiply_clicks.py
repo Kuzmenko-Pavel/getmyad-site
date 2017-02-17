@@ -86,9 +86,9 @@ if __name__ == '__main__':
     d = datetime.datetime.today()
     today = datetime.datetime(d.year, d.month, d.day)
     print today
-    diff_total = 0  # Разница в расчитанных и реальных кликах
+    diff_total = 0        # Разница в расчитанных и реальных кликах
     cursor = db.stats_daily.find({'date': today,
-                                  # 'adv': {'$in': informers},
+                                  #'adv': {'$in': informers},
                                   'adv': 'edab4030-ac9c-11e2-888a-00e081bad46b',
                                   'clicksUnique': {'$gt': 0}})
     cost = 0
@@ -104,10 +104,10 @@ if __name__ == '__main__':
         x['clicksUnique'] = clicks
         if x['clicks'] < clicks:
             x['clicks'] = clicks
-            # db.stats_daily.save(x)
-            # print x['totalCost']
-            # print clicks_old
-            # print clicks
+        #db.stats_daily.save(x)
+        #print x['totalCost']
+        #print clicks_old
+        #print clicks
     print cost
     # Выводим разницу в кликах
     if diff_total > 0:
@@ -116,7 +116,7 @@ if __name__ == '__main__':
         print u"Удалено %d кликов" % -diff_total
     else:
         print u"Ничего не изменилось"
-
+        
     # Считаем полученный CTR
     impressions = clicks = 0
     for x in db.stats_daily.find({'date': today, 'adv': {'$in': informers}}):
@@ -127,3 +127,4 @@ if __name__ == '__main__':
     except ZeroDivisionError:
         ctr = 0.
     print u"Полученный CTR: %s %%" % round(ctr, 4)
+

@@ -22,17 +22,17 @@ def _generate_informer_loader_ssl(informer_id):
     try:
         guid = adv['guid']
         width = int(re.match('[0-9]+',
-                             adv['admaker']['Main']['width']).group(0))
+                    adv['admaker']['Main']['width']).group(0))
         height = int(re.match('[0-9]+',
-                              adv['admaker']['Main']['height']).group(0))
+                    adv['admaker']['Main']['height']).group(0))
     except:
         raise Exception("Incorrect size dimensions for informer %s" % informer_id)
     try:
         border = int(re.match('[0-9]+',
-                              adv['admaker']['Main']['borderWidth']).group(0))
+                    adv['admaker']['Main']['borderWidth']).group(0))
     except:
         border = 1
-
+        
     width += border * 2
     height += border * 2
     lastModified = adv.get('lastModified')
@@ -266,10 +266,10 @@ def _generate_informer_loader_ssl(informer_id):
             };
         })(name_el, el, adv);
     }
-    """) % {'guid': guid, 'width': width, 'height': height, 'lastModified': lastModified}
+    """) % {'guid':guid, 'width':width, 'height':height, 'lastModified':lastModified}
 
     return """//<![CDATA[\n""" + minifier.minify(script.encode('utf-8'), mangle=False) + """\n//]]>"""
-    # eturn """//<![CDATA[\n""" + script.encode('utf-8') + """\n//]]>"""
+    #eturn """//<![CDATA[\n""" + script.encode('utf-8') + """\n//]]>"""
 
 
 def upload_all():
@@ -279,14 +279,14 @@ def upload_all():
     informer_loader_ftp_password = '$www-app$'
     informer_loader_ftp_path = 'httpdocs/getmyad'
     db = pymongo.Connection(host='srv-5.yottos.com:27018,srv-8.yottos.com:27018,srv-9.yottos.com:27018').getmyad_db
-
-    # users = []
-    # for x in db.stats_user_summary.find({"impressions_block":{"$lte":150000,"$gt":0}},{"user":1,"_id":0}):
+    
+    #users = []
+    #for x in db.stats_user_summary.find({"impressions_block":{"$lte":150000,"$gt":0}},{"user":1,"_id":0}):
     #    users.append(x['user'])
-    # informers = [x['guid'] for x in db.informer.find({"user":{"$in":users}}, ['guid']).sort("lastModified", -1)]
+    #informers = [x['guid'] for x in db.informer.find({"user":{"$in":users}}, ['guid']).sort("lastModified", -1)]
     informers = [x['guid'] for x in db.informer.find({}, ['guid']).sort("lastModified", -1)]
-    informers += map(lambda x: x.upper(), informers)  # Для тех, кому выдавался upper-case GUID
-
+    informers += map(lambda x: x.upper(), informers)        # Для тех, кому выдавался upper-case GUID
+    
     for informer in informers:
         ftp = FTP(host=informer_loader_ftp,
                   user=informer_loader_ftp_user,
@@ -299,9 +299,9 @@ def upload_all():
         ftp.storlines('STOR %s.js' % informer, loader)
         ftp.quit()
         loader.close()
-
+    
 
 if __name__ == '__main__':
     upload_all()
     print "Finished!"
-    exit()
+    exit() 

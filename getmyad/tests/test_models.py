@@ -4,13 +4,15 @@ from getmyad import model
 from pymongo import Connection
 
 
+
 class TestAccount:
+    
     def setUp(self):
         self.mongo = Connection()
         self.mongo.drop_database('getmyad_tests')
         self.db = self.mongo['getmyad_tests']
         model.Options.db = self.db
-
+    
     def tearDown(self):
         self.mongo.disconnect()
 
@@ -35,10 +37,9 @@ class TestAccount:
         assert acc1.password == acc2.password == '123qwe'
         assert acc1.phone == acc2.phone == '+38(050) 123-123-12'
         assert acc1.account_type == Account.User
-
+        
         assert acc1.exists(), 'Проверка на существование не работает для зарегистрированных аккаунтов'
-        assert not Account(
-            login='blablabla').exists(), 'Проверка на существование не работает для не существующих аккаунтов'
+        assert not Account(login='blablabla').exists(), 'Проверка на существование не работает для не существующих аккаунтов'
 
     def test_register_account_duplicate(self):
         ''' Повторная регистрация '''
@@ -51,53 +52,54 @@ class TestAccount:
             pass
         except:
             raise
-
+    
     def test_register_account_invalid_chars(self):
         ''' Регистрация аккаунтов с недопустимыми символами '''
         acc1 = Account('login_ends_with_space ')
         acc1.register()
 
-        acc2 = Account(login='login_ends_with_space')
+        acc2 = Account(login = 'login_ends_with_space')
         try:
             acc2.load()
         except Account.NotFoundError:
             raise AssertionError('Space at the end of login wasn\'t trimmed')
-
+        
     def test_account_lazy_load(self):
         ''' Ленивая загрузка аккаунтов '''
         acc0 = Account('test_login')
         acc0.account_type = Account.Manager
         acc0.register()
-
+        
         acc1 = Account('test_login')
         assert acc1.account_type == acc0.account_type == Account.Manager, \
             'Аккаунт автоматически не загружается при запросе свойства account_type'
+        
 
     def test_account_domains(self):
         ''' Домены пользователя '''
         acc = Account('test_login')
         acc.register()
         assert len(acc.domains.list()) == 0
-
+        
         acc.domains.add('http://yottos.com')
         acc.domains.add('http://www.yottos.com.ua')
         acc.domains.add('yottos.ru')
         domains = acc.domains.list()
         assert len(domains) == 3 and \
-               'yottos.com' in domains and \
-               'yottos.com.ua' in domains and \
-               'yottos.ru' in domains, \
-            'Не работает добавление доменов domains, или не обрезается "http://"'
-
+                'yottos.com' in domains and \
+                'yottos.com.ua' in domains and \
+                'yottos.ru' in domains, \
+                'Не работает добавление доменов domains, или не обрезается "http://"'
+        
         acc2 = Account('test_login')
-        acc2.load()
+        acc2.load()         
         domains = acc2.domains.list()
         assert len(domains) == 3 and \
-               'yottos.com' in domains and \
-               'yottos.com.ua' in domains and \
-               'yottos.ru' in domains, \
-            'domains not loaded'
-
+                'yottos.com' in domains and \
+                'yottos.com.ua' in domains and \
+                'yottos.ru' in domains, \
+                'domains not loaded'
+        
         acc3 = Account('test_login2')
         acc3.register()
         acc3.domains.add('http://first.com')
@@ -105,7 +107,7 @@ class TestAccount:
         acc3.domains.add('www.duplicate.com')
         domains = acc3.domains.list()
         assert len(domains) == 2, "Duplicate domains shouldn't be added"
-
+        
     def test_account_domains_requests(self):
         ''' Заявки на регистрацию домена '''
         acc1 = Account('test_login1')
@@ -119,11 +121,11 @@ class TestAccount:
         acc1.domains.approve_request('http://yottos.com')
         assert len(acc1.domains.list()) == 1 and \
                'yottos.com' in acc1.domains.list(), \
-            'Одобренные заявки не сохраняются'
+               'Одобренные заявки не сохраняются'
         assert len(acc1.domains.list_requests()) == 1 and \
                'yottos.com' not in acc1.domains.list_requests(), \
-            'Заявки на регистрацию домена не убираются при одобрении'
-
+               'Заявки на регистрацию домена не убираются при одобрении'
+        
     def test_permissions(self):
         ''' Права (разрешения) пользователей '''
         manager = Account('manager')
@@ -138,17 +140,18 @@ class TestAccount:
         assert manager.account_type == Account.Manager, 'Не сохранился тип регистрируемого аккаунта'
         assert admin.account_type == Account.Administrator, 'Не сохранился тип регистрируемого аккаунта'
         assert Permission(manager).has(Permission.VIEW_ALL_USERS_STATS) == False, \
-            "По умолчанию должен создаваться менеджер с минимальными правами"
+                    "По умолчанию должен создаваться менеджер с минимальными правами"
         assert Permission(admin).has(Permission.VIEW_ALL_USERS_STATS) == True and \
                Permission(admin).has(Permission.USER_DOMAINS_MODERATION) == True, \
-            "У администратора должны быть все права"
-
+                    "У администратора должны быть все права"
+        
         try:
             Permission(manager).grant_to(manager, Permission.VIEW_ALL_USERS_STATS)
         except Permission.InsufficientRightsError:
             pass
         else:
             raise AssertionError('Нельзя передавать права от имени аккаунта, который не обладает этими правами')
-
+            
         Permission(admin).grant_to(manager, Permission.VIEW_ALL_USERS_STATS)
         assert Permission(manager).has(Permission.VIEW_ALL_USERS_STATS), 'Разрешение от администратора не передалось'
+        

@@ -4,7 +4,9 @@ from getmyad.lib.admaker_validator import *
 
 
 class TestAdmakerValidator(unittest.TestCase):
+
     def setUp(self):
+
         self.Description = {
             "borderColor": "ff6666",
             "fontUnderline": False,
@@ -123,6 +125,7 @@ class TestAdmakerValidator(unittest.TestCase):
         c2 = "ffffff"
         self.assertEquals(_mix_colors(c1, c2), "a3b47f")
 
+        
 
 if __name__ == '__main__':
     unittest.main()

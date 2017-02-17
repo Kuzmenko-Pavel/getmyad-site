@@ -3,9 +3,8 @@ import datetime
 import GeoIP
 import sys
 import csv
-
 gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
-gc = GeoIP.open("/usr/share/GeoIP/GeoLiteCity.dat", GeoIP.GEOIP_STANDARD)
+gc = GeoIP.open("/usr/share/GeoIP/GeoLiteCity.dat",GeoIP.GEOIP_STANDARD)
 
 
 def geo_access():
@@ -17,7 +16,7 @@ def geo_access():
         processed_records += 1
 
     geo_country = {}
-    for key, value in ip_buffer.items():
+    for key,value in ip_buffer.items():
         country = gi.country_name_by_addr(key)
         if country == None:
             country = 'None'
@@ -25,7 +24,7 @@ def geo_access():
         geo_country[key] = geo_country.get(key, 0) + value
 
     geo_buffer = {}
-    for key, value in ip_buffer.items():
+    for key,value in ip_buffer.items():
         country = gi.country_name_by_addr(key)
         if country == None:
             country = 'None'
@@ -39,21 +38,23 @@ def geo_access():
 
     outfile = open('Country_city_geo_access.csv', 'w')
     writer = csv.writer(outfile, delimiter=';', quoting=csv.QUOTE_MINIMAL, quotechar='`')
-    for key, value in sorted(geo_buffer.items()):
+    for key,value in sorted(geo_buffer.items()):
         data = []
         data.append(' '.join(key))
-        data.append(str(round((float(value) / float(processed_records)) * 100, 7)).replace('.', ','))
+        data.append(str(round((float(value)/float(processed_records))*100, 7)).replace('.', ','))
         writer.writerow(data)
     outfile.close()
 
     outfile = open('Country_geo_access.csv', 'w')
     writer = csv.writer(outfile, delimiter=';', quoting=csv.QUOTE_MINIMAL, quotechar='`')
-    for key, value in sorted(geo_country.items()):
+    for key,value in sorted(geo_country.items()):
         data = []
         data.append(key)
-        data.append(str(round((float(value) / float(processed_records)) * 100, 7)).replace('.', ','))
+        data.append(str(round((float(value)/float(processed_records))*100, 7)).replace('.', ','))
         writer.writerow(data)
     outfile.close()
+
+
 
 
 if __name__ == '__main__':

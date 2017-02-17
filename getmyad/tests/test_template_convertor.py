@@ -1,15 +1,15 @@
 import unittest
 from getmyad.lib.template_convertor import js2mako
 
-
 class TestTemplateConvertor(unittest.TestCase):
+
     def cmp(self, js_template, mako_template):
         converted = js2mako(js_template).splitlines()
         original = mako_template.splitlines()
         lines = zip(converted, original, xrange(1, len(original) + 1))
-        for l1, l2, i in lines:
-            self.assertEquals(l1, l2,
-                              'Lines #%d are not equal:\n%s\n%s' % (i, l1, l2))
+        for l1, l2, i in lines: 
+            self.assertEquals(l1, l2, 
+                            'Lines #%d are not equal:\n%s\n%s' % (i, l1, l2))
 
     def test_variable_substitution(self):
         self.cmp('''Hello ${who}''',
@@ -35,7 +35,7 @@ class TestTemplateConvertor(unittest.TestCase):
                  '''    display: inline; \n'''
                  '''% else:\n'''
                  '''    display: block; \n'''
-                 '''% endif''')
+                 '''% endif''') 
 
     def test_logical_operators(self):
         self.cmp('''{if var1 || var2 && var3} \n'''
@@ -44,7 +44,6 @@ class TestTemplateConvertor(unittest.TestCase):
                  '''% if var1 or var2 and var3:\n'''
                  '''    doit(); \n'''
                  '''% endif''')
-
 
 if __name__ == '__main__':
     unittest.main()

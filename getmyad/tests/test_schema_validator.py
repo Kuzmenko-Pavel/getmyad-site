@@ -4,6 +4,7 @@ from getmyad.lib.schema_validator import *
 
 
 class TestAdmakerValidator(unittest.TestCase):
+
     def should_be(self, obj, schema):
         validate(obj, schema)
 
@@ -81,29 +82,29 @@ class TestAdmakerValidator(unittest.TestCase):
                         'other': lambda x: 42
                         },
                        Dictionary({
-                           'str': String,
-                           'int': Integer,
-                           'list': List(item=Integer),
-                           'other': Nevermind
-                       }))
+                        'str': String,
+                        'int': Integer,
+                        'list': List(item=Integer),
+                        'other': Nevermind
+                        }))
         self.should_not_be({
-            'str': 'Hello world!',
-            'int': 42,
-            'list': [1, 2, 3],
-            'other': lambda x: 42
-        },
-            Dictionary({
-                'str': Integer,
-                'int': String,
-                'list': Dictionary,
-                'other': Nevermind
-            }))
+                        'str': 'Hello world!',
+                        'int': 42,
+                        'list': [1, 2, 3],
+                        'other': lambda x: 42
+                        },
+                       Dictionary({
+                        'str': Integer,
+                        'int': String,
+                        'list': Dictionary,
+                        'other': Nevermind
+                        }))
         self.should_not_be({}, Dictionary({'int': Integer}))
         # Если ключ отсутствует, берём значение по умолчанию
         self.assertEquals({'k': 'default'}, validate(
-            {}, Dictionary({'k': String(default='default')})))
+                          {}, Dictionary({'k': String(default='default')})))
         self.assertEquals({'k': False}, validate(
-            {}, Dictionary({'k': Boolean(default=False)})))
+                          {}, Dictionary({'k': Boolean(default=False)})))
 
     def test_dict_update(self):
         schema = Dictionary({'first': Integer})
@@ -124,7 +125,7 @@ class TestAdmakerValidator(unittest.TestCase):
         schema1 = Dictionary({'first': Integer})
         schema2 = schema1
         schema1['second'] = Nevermind
-        self.assertTrue(schema2['second'] == Nevermind)  # aliasing
+        self.assertTrue(schema2['second'] == Nevermind)        # aliasing
 
         schema2 = schema1.copy()
         schema1['third'] = Nevermind
@@ -151,11 +152,11 @@ class TestAdmakerValidator(unittest.TestCase):
             {'id': Integer,
              'sizes': List(Regex(r'\d+px')),
              'font': Dictionary(
-                 {'bold': Boolean,
-                  'name': String(one_of=('Arial', 'Times', 'Verdana')),
-                  'size': Integer
-                  })
-             }))
+                {'bold': Boolean,
+                 'name': String(one_of=('Arial', 'Times', 'Verdana')),
+                 'size': Integer
+                })
+            }))
 
         valid_object = \
             [{'id': 0,
@@ -163,13 +164,13 @@ class TestAdmakerValidator(unittest.TestCase):
               'font': {'bold': False,
                        'name': 'Arial',
                        'size': 12}
-              },
+             },
              {'id': 1,
               'sizes': ['200px', '100px', '150px', '300px'],
               'font': {'bold': True,
                        'name': 'Times',
                        'size': 14}
-              }]
+             }]
 
         from copy import deepcopy
         broken_object = deepcopy(valid_object)
@@ -188,6 +189,7 @@ class TestAdmakerValidator(unittest.TestCase):
 
 
 class TestValidationErrorMessage(unittest.TestCase):
+
     def check_message(self, broken_object, schema, message, where):
         ''' Проверяет, что сообщение во время проверки некорректного объекта
             ``broken_object`` схемой ``schema`` возникло исключение,

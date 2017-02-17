@@ -7,7 +7,7 @@ import pymongo
 import xmlrpclib
 
 PYLONS_CONFIG = "deploy.ini"
-# PYLONS_CONFIG = "development.ini"
+#PYLONS_CONFIG = "development.ini"
 
 config_file = '%s./../%s' % (os.path.dirname(__file__), PYLONS_CONFIG)
 print config_file
@@ -31,31 +31,30 @@ def _mongo_connection():
         connection = pymongo.Connection(host=MONGO_HOST)
     return connection
 
-
 def _mongo_main_db():
     ''' Возвращает подключение к базе данных MongoDB '''
     return _mongo_connection()[MONGO_DATABASE]
 
 
 if __name__ == '__main__':
-    db = pymongo.Connection(host=MONGO_HOST).getmyad_db
-    dbr = pymongo.Connection(host="srv-4.yottos.com").getmyad_db
+    db = pymongo.Connection(host=MONGO_HOST).getmyad_db 
+    dbr = pymongo.Connection(host="srv-4.yottos.com").getmyad_db 
     clicks = dbr.stats_daily.rating.find({})
     print clicks.count()
     buffer = {}
     for x in clicks:
-        key = (x['adv'], x['guid'], x['campaignTitle'], x['title'], x['campaignId'])
-        buffer[key] = x.get('full_clicks', 0)
+        key = (x['adv'],x['guid'],x['campaignTitle'],x['title'],x['campaignId'])
+        buffer[key] = x.get('full_clicks',0)
 
-    for key, value in buffer.items():
+    for key,value in buffer.items():
         db.stats_daily.rating.update({'adv': key[0],
                                       'guid': key[1],
                                       'campaignTitle': key[2],
                                       'title': key[3],
                                       'campaignId': key[4]},
-                                     {'$set': {'full_clicks': value}}, upsert=False, w=0)
+                                      {'$set':{'full_clicks':value}},  upsert=False, w=0)
 
-# u = db.stats_daily.update({'guid': key[0],
+#        u = db.stats_daily.update({'guid': key[0],
 #                               'title': key[1],
 #                               'campaignId': key[2],
 #                               'adv': key[3],

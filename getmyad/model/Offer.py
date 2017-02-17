@@ -7,7 +7,7 @@ from binascii import crc32
 
 class Offer(object):
     'Класс описывает рекламное предложение'
-
+    
     def __init__(self, id, db=None):
         if db is None:
             self.db = app_globals.db_m
@@ -64,89 +64,87 @@ class Offer(object):
 
         offerHash = str(h.md5(str(offerHash)).hexdigest())
         return offerHash
-
+    
     def save(self):
         'Сохраняет предложение в базу данных'
         try:
             self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int)},
-                                 {'$set': {'title': self._trim_by_words(self.title, 35),
-                                           'price': self.price,
-                                           'url': self.url,
-                                           'image': self.image,
-                                           'swf': self.swf,
-                                           'html': self.html,
-                                           'description': self._trim_by_words(self.description, 70),
-                                           'dateAdded': self.date_added,
-                                           'campaignId': self.campaign,
-                                           'campaignId_int': long(self.campaign_int),
-                                           'campaignTitle': self.campaignTitle,
-                                           'uniqueHits': self.uniqueHits,
-                                           'contextOnly': self.contextOnly,
-                                           'retargeting': self.retargeting,
-                                           'keywords': self.keywords,
-                                           'phrases': self.phrases,
-                                           'exactly_phrases': self.exactly_phrases,
-                                           'minus_words': self.minus_words,
-                                           'listAds': self.listAds,
-                                           'category': long(self.category),
-                                           'isOnClick': self.isOnClick,
-                                           'type': self.type,
-                                           'width': self.width,
-                                           'height': self.height,
-                                           'rating': self.rating,
-                                           'full_rating': self.full_rating,
-                                           'hash': self.hash,
-                                           'cost': self.cost,
-                                           'accountId': self.accountId,
-                                           'RetargetingID': self.RetargetingID,
-                                           'Recommended': self.Recommended
-                                           }},
-                                 upsert=True, safe=False)
+                                        {'$set': {'title': self._trim_by_words(self.title, 35),
+                                                  'price': self.price,
+                                                  'url': self.url,
+                                                  'image': self.image,
+                                                  'swf': self.swf,
+                                                  'html': self.html,
+                                                  'description': self._trim_by_words(self.description, 70),
+                                                  'dateAdded': self.date_added,
+                                                  'campaignId': self.campaign,
+                                                  'campaignId_int': long(self.campaign_int),
+                                                  'campaignTitle': self.campaignTitle,
+                                                  'uniqueHits': self.uniqueHits,
+                                                  'contextOnly': self.contextOnly,
+                                                  'retargeting': self.retargeting,
+                                                  'keywords': self.keywords,
+                                                  'phrases': self.phrases,
+                                                  'exactly_phrases': self.exactly_phrases,
+                                                  'minus_words': self.minus_words,
+                                                  'listAds': self.listAds,
+                                                  'category': long(self.category),
+                                                  'isOnClick': self.isOnClick,
+                                                  'type': self.type,
+                                                  'width': self.width,
+                                                  'height': self.height,
+                                                  'rating': self.rating,
+                                                  'full_rating': self.full_rating,
+                                                  'hash': self.hash,
+                                                  'cost': self.cost,
+                                                  'accountId': self.accountId,
+                                                  'RetargetingID': self.RetargetingID,
+                                                  'Recommended': self.Recommended
+                                                  }},
+                                        upsert=True, safe=False)
         except Exception as e:
             print e
 
     def update(self):
         'Обнавляет предложение в базу данных'
         try:
-            if self.image == "":
-                self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
-                                      'campaignId_int': long(self.campaign_int)},
-                                     {'$set': {'swf': self.swf,
-                                               'html': self.html,
-                                               'uniqueHits': self.uniqueHits,
-                                               'contextOnly': self.contextOnly,
-                                               'retargeting': self.retargeting,
-                                               'listAds': self.listAds,
-                                               'isOnClick': self.isOnClick,
-                                               'type': self.type,
-                                               'width': self.width,
-                                               'height': self.height,
-                                               'cost': self.cost,
-                                               'accountId': self.accountId,
-                                               'RetargetingID': self.RetargetingID,
-                                               'Recommended': self.Recommended
-                                               }},
-                                     False)
+            if self.image == "": 
+                self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign, 'campaignId_int': long(self.campaign_int)},
+                                            {'$set': {'swf': self.swf,
+                                                      'html': self.html,
+                                                      'uniqueHits': self.uniqueHits,
+                                                      'contextOnly': self.contextOnly,
+                                                      'retargeting': self.retargeting,
+                                                      'listAds': self.listAds,
+                                                      'isOnClick': self.isOnClick,
+                                                      'type': self.type,
+                                                      'width': self.width,
+                                                      'height': self.height,
+                                                      'cost': self.cost,
+                                                      'accountId': self.accountId,
+                                                      'RetargetingID': self.RetargetingID,
+                                                      'Recommended': self.Recommended
+                                                      }},
+                                            False)
             else:
-                self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
-                                      'campaignId_int': long(self.campaign_int)},
-                                     {'$set': {'image': self.image,
-                                               'swf': self.swf,
-                                               'html': self.html,
-                                               'uniqueHits': self.uniqueHits,
-                                               'contextOnly': self.contextOnly,
-                                               'retargeting': self.retargeting,
-                                               'listAds': self.listAds,
-                                               'isOnClick': self.isOnClick,
-                                               'type': self.type,
-                                               'width': self.width,
-                                               'height': self.height,
-                                               'cost': self.cost,
-                                               'accountId': self.accountId,
-                                               'RetargetingID': self.RetargetingID,
-                                               'Recommended': self.Recommended
-                                               }},
-                                     False)
+                self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign, 'campaignId_int': long(self.campaign_int)},
+                                            {'$set': {'image': self.image,
+                                                      'swf': self.swf,
+                                                      'html': self.html,
+                                                      'uniqueHits': self.uniqueHits,
+                                                      'contextOnly': self.contextOnly,
+                                                      'retargeting': self.retargeting,
+                                                      'listAds': self.listAds,
+                                                      'isOnClick': self.isOnClick,
+                                                      'type': self.type,
+                                                      'width': self.width,
+                                                      'height': self.height,
+                                                      'cost': self.cost,
+                                                      'accountId': self.accountId,
+                                                      'RetargetingID': self.RetargetingID,
+                                                      'Recommended': self.Recommended
+                                                      }},
+                                            False)
 
         except Exception as e:
             print e

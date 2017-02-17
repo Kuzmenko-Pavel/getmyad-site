@@ -6,7 +6,7 @@ import pymongo
 import xmlrpclib
 
 PYLONS_CONFIG = "deploy.ini"
-# PYLONS_CONFIG = "development.ini"
+#PYLONS_CONFIG = "development.ini"
 
 config_file = '%s../../%s' % (os.path.dirname(__file__), PYLONS_CONFIG)
 print config_file
@@ -31,11 +31,9 @@ def _mongo_connection():
         connection = pymongo.Connection(host=MONGO_HOST)
     return connection
 
-
 def _mongo_main_db():
     ''' Возвращает подключение к базе данных MongoDB '''
     return _mongo_connection()[MONGO_DATABASE]
-
 
 def process_click(url, ip, click_datetime, offer_id, informer_id, token, server, city, country, campaignId):
     ''' Обработка клика пользователя по рекламному предложению.
@@ -74,23 +72,21 @@ def process_click(url, ip, click_datetime, offer_id, informer_id, token, server,
     print "process click %s \t %s" % (ip, click_datetime)
     db = _mongo_main_db()
     title = ""
-
+    
     def log_error(reason, campaign_id=None):
-        print "error: ", reason
-
-    #        db.clicks.error.insert({'ip': ip, 'offer': offer_id, 'dt': click_datetime,
-    #                                'title': title, 'token': token, 'server': server,
-    #                                'inf': informer_id, 'url': url, 'reason': reason,
-    #                                'campaignId': campaign_id},
-    #                                safe=True)
+        print "error: ", reason 
+#        db.clicks.error.insert({'ip': ip, 'offer': offer_id, 'dt': click_datetime,
+#                                'title': title, 'token': token, 'server': server,
+#                                'inf': informer_id, 'url': url, 'reason': reason,
+#                                'campaignId': campaign_id},
+#                                safe=True)
     def log_reject(reason, campaign_id=None):
         print 'reject:', reason
-
-    #        db.clicks.rejected.insert({'ip': ip, 'offer': offer_id, 'dt': click_datetime,
-    #                                   'title': title,  'token': token, 'server': server,
-    #                                   'inf': informer_id, 'url': url, 'reason': reason,
-    #                                   'campaignId': campaign_id},
-    #                                   safe=True)
+#        db.clicks.rejected.insert({'ip': ip, 'offer': offer_id, 'dt': click_datetime,
+#                                   'title': title,  'token': token, 'server': server,
+#                                   'inf': informer_id, 'url': url, 'reason': reason,
+#                                   'campaignId': campaign_id},
+#                                   safe=True)
 
     def _partner_click_cost(informer_id, adload_cost):
         ''' Возвращает цену клика для сайта-партнёра.
@@ -106,10 +102,10 @@ def process_click(url, ip, click_datetime, offer_id, informer_id, token, server,
             user = db.informer.find_one({'guid': informer_id}, ['user'])['user']
             cursor = db.click_cost.find({'user.login': user,
                                          'date': {'$lte': click_datetime}}) \
-                .sort('date', pymongo.DESCENDING) \
-                .limit(1)
+                                  .sort('date', pymongo.DESCENDING) \
+                                  .limit(1)
             x = cursor[0]
-            payment_type = x.get('type', 'fixed')
+            payment_type = x.get('type', 'fixed') 
             if payment_type == 'floating':
                 # Плавающая цена за клик
                 percent = x['percent']
@@ -127,24 +123,25 @@ def process_click(url, ip, click_datetime, offer_id, informer_id, token, server,
         except:
             cost = 0
         return cost
+    
 
     # С тестовыми кликами ничего не делаем
     if token == "test":
         print "Processed test click from ip %s" % ip
         return
-
+    
     # Ищём IP в чёрном списке
     if db.blacklist.ip.find_one({'ip': ip}):
         print "Blacklisted ip:", ip
         log_reject("Blacklisted ip")
         return
-
+    
     social = db.campaign.find_one({'guid': campaignId}).get('social')
-
+    
     if social:
-        print "social"
-
-        # Определяем кампанию, к которой относится предложение
+        print "social" 
+    
+    # Определяем кампанию, к которой относится предложение
     try:
         campaign = db.offer.find_one({'guid': offer_id}, {'campaignId': True, 'campaignTitle': True, '_id': False})
         campaign_id = campaign['campaignId']
@@ -164,17 +161,15 @@ def process_click(url, ip, click_datetime, offer_id, informer_id, token, server,
     MAX_CLICKS_FOR_ONE_WEEK = 10
     MAX_CLICKS_FOR_ONE_WEEK_ALL = 10
     unique = True
-    # Проверяе по рекламному блоку за день и неделю
+    #Проверяе по рекламному блоку за день и неделю
     today_clicks = 0
     toweek_clicks = 0
-    for click in db.clicks.find({'ip': ip, 'inf': informer_id, 'dt': {'$lte': click_datetime, '$gte': (
-                click_datetime - datetime.timedelta(weeks=1))}}).limit(
-                MAX_CLICKS_FOR_ONE_DAY + MAX_CLICKS_FOR_ONE_WEEK):
+    for click in db.clicks.find({'ip': ip, 'inf': informer_id, 'dt': {'$lte': click_datetime, '$gte': (click_datetime - datetime.timedelta(weeks=1))}}).limit(MAX_CLICKS_FOR_ONE_DAY + MAX_CLICKS_FOR_ONE_WEEK):
         if (click_datetime - click['dt']).days == 0:
             today_clicks += 1
             toweek_clicks += 1
         else:
-            toweek_clicks += 1
+            toweek_clicks +=1
 
         if click['offer'] == offer_id:
             unique = False
@@ -200,17 +195,15 @@ def process_click(url, ip, click_datetime, offer_id, informer_id, token, server,
         db.blacklist.ip.update({'ip': ip},
                                {'$set': {'dt': datetime.datetime.now()}},
                                upsert=True)
-    # Проверяе по ПС за день и неделю
+    #Проверяе по ПС за день и неделю
     today_clicks_all = 0
     toweek_clicks_all = 0
-    for click in db.clicks.find(
-            {'ip': ip, 'dt': {'$lte': click_datetime, '$gte': (click_datetime - datetime.timedelta(weeks=1))}}).limit(
-                MAX_CLICKS_FOR_ONE_WEEK_ALL + MAX_CLICKS_FOR_ONE_DAY_ALL):
+    for click in db.clicks.find({'ip': ip, 'dt': {'$lte': click_datetime, '$gte': (click_datetime - datetime.timedelta(weeks=1))}}).limit(MAX_CLICKS_FOR_ONE_WEEK_ALL + MAX_CLICKS_FOR_ONE_DAY_ALL):
         if (click_datetime - click['dt']).days == 0:
             today_clicks_all += 1
             toweek_clicks_all += 1
         else:
-            toweek_clicks_all += 1
+            toweek_clicks_all +=1
 
         if click['offer'] == offer_id:
             unique = False
@@ -237,7 +230,7 @@ def process_click(url, ip, click_datetime, offer_id, informer_id, token, server,
                                {'$set': {'dt': datetime.datetime.now()}},
                                upsert=True)
 
-
+        
     # Сохраняем клик в AdLoad
     adload_ok = True
     try:
@@ -273,8 +266,8 @@ def process_click(url, ip, click_datetime, offer_id, informer_id, token, server,
                           "cost": cost,
                           "url": url,
                           "type": 'teaser',
-                          "social": False},
-                         safe=True)
+                          "social":False},
+                          safe=True)
         print "Payable click at the price of %s" % cost
     if social and adload_ok:
         cost = 0
@@ -291,32 +284,27 @@ def process_click(url, ip, click_datetime, offer_id, informer_id, token, server,
                           "cost": cost,
                           "url": url,
                           "type": 'teaser',
-                          "social": True},
-                         safe=True)
+                          "social":True},
+                          safe=True)
         print "Social click"
 
     print "Click complite"
     print "/----------------------------------------------------------------------/"
 
-
 if __name__ == '__main__':
-    db = pymongo.Connection(host=MONGO_HOST).getmyad_db
+    db = pymongo.Connection(host=MONGO_HOST).getmyad_db 
     date = datetime.datetime(2012, 06, 28)
     clicks = db.clicks.error.find({'dt': {'$gte': date}})
-    for c in clicks:
+    for c in clicks:    
         try:
-            print c['url'], c['ip'], c['dt'], c['offer'], c['inf'], c['token'], c['server'], c['city'], c['country'], c[
-                'campaignId']
-            process_click('url', c['ip'], c['dt'], c['offer'], c['inf'], c['token'], c['server'], c['city'],
-                          c['country'], c['campaignId'])
+            print c['url'], c['ip'], c['dt'], c['offer'], c['inf'], c['token'], c['server'], c['city'], c['country'], c['campaignId'] 
+            process_click('url', c['ip'], c['dt'], c['offer'], c['inf'], c['token'], c['server'], c['city'], c['country'], c['campaignId'])
         except Exception as ex:
             print "Exception:", ex
     clicks = db.clicks.rejected.find({'dt': {'$gte': date}})
-    for c in clicks:
+    for c in clicks:    
         try:
-            print c['url'], c['ip'], c['dt'], c['offer'], c['inf'], c['token'], c['server'], c['city'], c['country'], c[
-                'campaignId']
-            process_click('url', c['ip'], c['dt'], c['offer'], c['inf'], c['token'], c['server'], c['city'],
-                          c['country'], c['campaignId'])
+            print c['url'], c['ip'], c['dt'], c['offer'], c['inf'], c['token'], c['server'], c['city'], c['country'], c['campaignId'] 
+            process_click('url', c['ip'], c['dt'], c['offer'], c['inf'], c['token'], c['server'], c['city'], c['country'], c['campaignId'])
         except Exception as ex:
             print "Exception:", ex

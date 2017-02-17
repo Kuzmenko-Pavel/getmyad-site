@@ -15,14 +15,13 @@ import mq
 import pymongo
 import re
 
-from MoneyOutRequest import MoneyOutRequest, WebmoneyMoneyOutRequest, CardMoneyOutRequest, YandexMoneyOutRequest, \
-    InvoiceMoneyOutRequest, CashMoneyOutRequest, CardMoneyOutRequest_pb_ua, CardMoneyOutRequest_pb_us, \
-    WebmoneyMoneyOutRequest_r, WebmoneyMoneyOutRequest_u
+from MoneyOutRequest import  MoneyOutRequest, WebmoneyMoneyOutRequest, CardMoneyOutRequest,YandexMoneyOutRequest, InvoiceMoneyOutRequest, CashMoneyOutRequest , CardMoneyOutRequest_pb_ua, CardMoneyOutRequest_pb_us, WebmoneyMoneyOutRequest_r, WebmoneyMoneyOutRequest_u
 from Account import Account, AccountReports, ManagerReports, Permission
 from Informer import Informer, InformerFtpUploader, InformerPattern
 from StatisticReports import StatisticReport
 
 log = logging.getLogger(__name__)
+
 
 try:
     db = app_globals.create_mongo_connection()
@@ -42,18 +41,19 @@ def updateTime():
 def users():
     """Возвращает список пользователей GetMyAd"""
     return [{
-                'guid': x.get('guid'),
-                'login': x['login'],
-                'title': x.get('title'),
-                'registrationDate': x['registrationDate'],
-                'manager': x.get('manager', False)
+             'guid': x.get('guid'),
+             'login': x['login'],
+             'title': x.get('title'),
+             'registrationDate': x['registrationDate'],
+             'manager': x.get('manager', False)
             }
-            for x in app_globals.db.users.find().sort('registrationDate')]
+             for x in app_globals.db.users.find().sort('registrationDate')]
+
 
 
 def accountPeriodSumm(dateCond, user_login):
     ''' Возвращает сумму аккаунта за период заданный в dateCond'''
-    ads = [x['guid'] for x in db.informer.find({'user': user_login})]
+    ads = [x['guid'] for x in db.informer.find({'user': user_login})]                                       
     income = db.stats_daily_adv.group([],
                                       {'adv': {'$in': ads}, 'date': dateCond},
                                       {'sum': 0},
@@ -65,7 +65,11 @@ def accountPeriodSumm(dateCond, user_login):
     return income
 
 
+
+
 def moneyOutApproved(user_login):
     """Возвращает список одобренных заявок"""
     return db.money_out_request.find({'user.login': user_login,
                                       'approved': True}).sort('date', ASCENDING)
+    
+    

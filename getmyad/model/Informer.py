@@ -55,6 +55,7 @@ class Informer:
         self.rating_division = 1000
         self.db = app_globals.db
 
+
     def save(self):
         """ Сохраняет информер, при необходимости создаёт """
         update = {}
@@ -80,7 +81,7 @@ class Informer:
             self.range_retargeting = float(record.get('range_retargeting', (100 / 100.0)))
             update['retargeting_capacity'] = self.range_retargeting
         else:
-            self.range_short_term = (100 / 100.0)
+            self.range_short_term = (100 / 100.0) 
             self.range_long_term = (0 / 100.0)
             self.range_context = (0 / 100.0)
             self.range_search = (100 / 100.0)
@@ -91,7 +92,7 @@ class Informer:
             update['range_context'] = self.range_context
             update['range_search'] = self.range_search
             update['retargeting_capacity'] = self.range_retargeting
-
+            
         if self.title:
             update['title'] = self.title
         if self.admaker:
@@ -163,16 +164,16 @@ class Informer:
         update['lastModified'] = datetime.datetime.now()
 
         self.db.informer.update({'guid': self.guid, 'guid_int': long(self.guid_int)},
-                                {'$set': update},
-                                upsert=True,
-                                safe=True)
+                                       {'$set': update},
+                                       upsert=True,
+                                       safe=True)
         InformerFtpUploader(self.guid).upload()
         mq.MQ().informer_update(self.guid)
 
     def load(self, id):
         raise NotImplementedError
 
-    def loadGuid(self, id):
+    def loadGuid (self, id):
         """ Загружает информер из MongoDB """
         if id is not None:
             mongo_record = self.db.informer.find_one({'guid': id})
@@ -263,13 +264,12 @@ class Informer:
                 return re.findall("\\d+", value)[0]
             except IndexError:
                 return 0
-
         options = validate_admaker(options)
         template_name = '/advertise_style_template.mako.html'
-        src = app_globals.mako_lookup.get_template(template_name) \
-            .source.replace('<%text>', '').replace('</%text>', '')
+        src = app_globals.mako_lookup.get_template(template_name)\
+                .source.replace('<%text>', '').replace('</%text>', '')
         template = mako.template.Template(
-            text=js2mako(src),
+            text=js2mako(src), 
             format_exceptions=True)
         return template.render_unicode(parseInt=parseInt, **options)
 
@@ -287,15 +287,13 @@ class Informer:
 
         options = validate_admaker(options)
         template_name = '/advertise_style_template_banner.mako.html'
-        src = app_globals.mako_lookup.get_template(template_name) \
-            .source.replace('<%text>', '').replace('</%text>', '')
+        src = app_globals.mako_lookup.get_template(template_name)\
+                .source.replace('<%text>', '').replace('</%text>', '')
         template = mako.template.Template(
-            text=js2mako(src),
+            text=js2mako(src), 
             format_exceptions=True)
         return template.render_unicode(parseInt=parseInt, **options)
-
-
-# return minify_css( template.render_unicode(parseInt=h.parseInt, **opt) )
+#        return minify_css( template.render_unicode(parseInt=h.parseInt, **opt) )
 
 class InformerFtpUploader:
     """ Заливает необходимое для работы информера файлы на сервер раздачи
@@ -377,15 +375,15 @@ class InformerFtpUploader:
         try:
             guid = adv['guid']
             width = int(re.match('[0-9]+',
-                                 adv['admaker']['Main']['width']).group(0))
+                        adv['admaker']['Main']['width']).group(0))
             height = int(re.match('[0-9]+',
-                                  adv['admaker']['Main']['height']).group(0))
+                         adv['admaker']['Main']['height']).group(0))
         except:
             raise Exception("Incorrect size dimensions for informer %s" %
-                            self.informer_id)
+                             self.informer_id)
         try:
             border = int(re.match('[0-9]+',
-                                  adv['admaker']['Main']['borderWidth']).group(0))
+                         adv['admaker']['Main']['borderWidth']).group(0))
         except:
             border = 1
         width += border * 2
@@ -621,11 +619,13 @@ class InformerFtpUploader:
                 };
             })(name_el, el, adv);
         }
-        """) % {'guid': guid, 'width': width, 'height': height, 'lastModified': lastModified}
+        """) % {'guid':guid, 'width':width, 'height':height, 'lastModified':lastModified}
+        
+        return """//<![CDATA[\n""" +  minifier.minify(script.encode('utf-8') , mangle=False) + """\n//]]>"""
+        #return """//<![CDATA[\n""" + script.encode('utf-8') + """\n//]]>"""
+        #eturn script.encode('utf-8')
 
-        return """//<![CDATA[\n""" + minifier.minify(script.encode('utf-8'), mangle=False) + """\n//]]>"""
-        # return """//<![CDATA[\n""" + script.encode('utf-8') + """\n//]]>"""
-        # eturn script.encode('utf-8')
+
 
     def _generate_social_ads(self):
         ''' Возвращает HTML-код заглушки с социальной рекламой,
@@ -648,8 +648,7 @@ class InformerFtpUploader:
                        '''%(title)s</a><a class="advDescription" href="%(url)s" target="_blank">''' +
                        '''%(description)s</a><a class="advCost" href="%(url)s" target="_blank"></a>''' +
                        '''<a href="%(url)s" target="_blank"><img class="advImage" src="%(img)s" alt="%(title)s"/></a></div>'''
-                       ) % {'url': adv['url'], 'title': adv['title'], 'description': adv['description'],
-                            'img': adv['image']}
+                       ) % {'url': adv['url'], 'title': adv['title'], 'description': adv['description'], 'img': adv['image']}
         return '''
 <html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="robots" content="nofollow" /><style type="text/css">html, body { padding: 0; margin: 0; border: 0; }</style><!--[if lte IE 6]><script type="text/javascript" src="//cdn.yottos.com/getmyad/supersleight-min.js"></script><![endif]-->
 %(css)s
@@ -662,44 +661,46 @@ class InformerFtpUploader:
 </html>''' % {'css': inf.get('css'), 'offers': offers}
 
 
+
+
+
 def minify_css(css):
     # remove comments - this will break a lot of hacks :-P
-    css = re.sub(r'\s*/\*\s*\*/', "$$HACK1$$", css)  # preserve IE<6 comment hack
-    css = re.sub(r'/\*[\s\S]*?\*/', "", css)
-    css = css.replace("$$HACK1$$", '/**/')  # preserve IE<6 comment hack
-
+    css = re.sub( r'\s*/\*\s*\*/', "$$HACK1$$", css ) # preserve IE<6 comment hack
+    css = re.sub( r'/\*[\s\S]*?\*/', "", css )
+    css = css.replace( "$$HACK1$$", '/**/' ) # preserve IE<6 comment hack
+    
     # url() doesn't need quotes
-    css = re.sub(r'url\((["\'])([^)]*)\1\)', r'url(\2)', css)
-
+    css = re.sub( r'url\((["\'])([^)]*)\1\)', r'url(\2)', css )
+    
     # spaces may be safely collapsed as generated content will collapse them anyway
-    css = re.sub(r'\s+', ' ', css)
-
+    css = re.sub( r'\s+', ' ', css )
+    
     # shorten collapsable colors: #aabbcc to #abc
-    css = re.sub(r'#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3(\s|;)', r'#\1\2\3\4', css)
-
+    css = re.sub( r'#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3(\s|;)', r'#\1\2\3\4', css )
+    
     # fragment values can loose zeros
-    css = re.sub(r':\s*0(\.\d+([cm]m|e[mx]|in|p[ctx]))\s*;', r':\1;', css)
-
+    css = re.sub( r':\s*0(\.\d+([cm]m|e[mx]|in|p[ctx]))\s*;', r':\1;', css )
+    
     result = []
-    for rule in re.findall(r'([^{]+){([^}]*)}', css):
-
+    for rule in re.findall( r'([^{]+){([^}]*)}', css ):
+    
         # we don't need spaces around operators
-        selectors = [re.sub(r'(?<=[\[\(>+=])\s+|\s+(?=[=~^$*|>+\]\)])', r'', selector.strip()) for selector in
-                     rule[0].split(',')]
-
+        selectors = [re.sub( r'(?<=[\[\(>+=])\s+|\s+(?=[=~^$*|>+\]\)])', r'', selector.strip() ) for selector in rule[0].split( ',' )]
+    
         # order is important, but we still want to discard repetitions
         properties = {}
         porder = []
-        for prop in re.findall('(.*?):(.*?)(;|$)', rule[1]):
+        for prop in re.findall( '(.*?):(.*?)(;|$)', rule[1] ):
             key = prop[0].strip().lower()
-            if key not in porder: porder.append(key)
-            properties[key] = prop[1].strip()
-
+            if key not in porder: porder.append( key )
+            properties[ key ] = prop[1].strip()
+    
         # output rule if it contains any declarations
         if properties:
-            result.append(
-                "%s{%s}" % (','.join(selectors), ''.join(['%s:%s;' % (key, properties[key]) for key in porder])[:-1]))
+            result.append( "%s{%s}" % ( ','.join( selectors ), ''.join(['%s:%s;' % (key, properties[key]) for key in porder])[:-1] ))
     return "\n".join(result)
+
 
 
 class InformerPattern:
@@ -710,6 +711,7 @@ class InformerPattern:
         self.admaker = None
         self.db = app_globals.db
 
+
     def save(self):
         """ Сохраняет информер, при необходимости создаёт """
         update = {}
@@ -717,19 +719,19 @@ class InformerPattern:
             pass
         else:
             self.guid = str(uuid1()).lower()
-
+            
         if self.admaker:
             update['admaker'] = self.admaker
 
         self.db.informer.patterns.update({'guid': self.guid},
-                                         {'$set': update},
-                                         upsert=True,
-                                         safe=True)
+                                       {'$set': update},
+                                       upsert=True,
+                                       safe=True)
 
     def load(self, id):
         raise NotImplementedError
 
-    def loadGuid(self, id):
+    def loadGuid (self, id):
         """ Загружает информер из MongoDB """
         mongo_record = self.db.informer.patterns.find_one({'guid': id})
         self.guid = mongo_record['guid']

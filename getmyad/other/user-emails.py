@@ -8,4 +8,4 @@ conn = pymongo.Connection('yottos.com')
 db = conn.getmyad_db
 for user in db.users.find():
     if user.get('email') and user.get('ownerName'):
-        print '"%s" <%s>,' % (user['ownerName'], user['email']),
+        print '"%s" <%s>,' % (user['ownerName'], user['email']), 

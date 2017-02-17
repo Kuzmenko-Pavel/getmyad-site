@@ -24,11 +24,11 @@ TEMPLATES_DIRS = [os.getcwdu()]
 TEMPLATES_CACHE_DIR = os.getcwdu()
 COMMASPACE_SEPARATOR = ', '
 
-
-# TODO сделать свой класс исключений
-# email.Charset.add_charset('utf-8', email.Charset.SHORTEST, None, None)
+#TODO сделать свой класс исключений
+#email.Charset.add_charset('utf-8', email.Charset.SHORTEST, None, None)
 
 class Letter(object):
+
     _subject = None
     _sender = None
     _sender_name = None
@@ -96,14 +96,15 @@ class Letter(object):
 
     @template.setter
     def template(self, template_file):
-        templates_lookup = TemplateLookup(directories=TEMPLATES_DIRS, input_encoding='utf-8', output_encoding='utf-8',
-                                          encoding_errors='replace', default_filters=['decode.utf8'])
+        templates_lookup = TemplateLookup(directories=TEMPLATES_DIRS, input_encoding='utf-8', output_encoding='utf-8', encoding_errors='replace', default_filters=['decode.utf8'])
         self._template = templates_lookup.get_template(template_file)
         if self._message_props:
             self.set_message(self._message_props)
 
+
     def __init__(self):
         pass
+
 
     def send(self, server, port, login='', password=''):
         self._outer['Subject'] = self.subject
@@ -119,6 +120,7 @@ class Letter(object):
         s.ehlo()
         s.login(login, password)
         s.sendmail(self.sender, self.recipients, self._outer.as_string())
+
 
     def set_message(self, *args, **kwargs):
         if 'type' not in kwargs:
@@ -140,12 +142,14 @@ class Letter(object):
                 self._outer.attach(msg)
         else:
             self._outer = msg
+            
 
     def attach(self, file_name):
         """
         if not self._outer:
         """
         raise NotImplementedError('attach not implemented')
+
 
     def _email_is_valid(self, address):
         qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]'

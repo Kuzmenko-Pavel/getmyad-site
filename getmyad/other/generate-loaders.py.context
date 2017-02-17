@@ -12,7 +12,6 @@ from urlparse import urlparse
 
 from slimit import minifier
 
-
 def _generate_informer_loader(informer_id):
     ''' Возвращает код javascript-загрузчика информера '''
     db = pymongo.Connection(host='yottos.ru,213.186.121.76:27018,213.186.121.199:27018').getmyad_db
@@ -22,14 +21,14 @@ def _generate_informer_loader(informer_id):
     try:
         guid = adv['guid']
         width = int(re.match('[0-9]+',
-                             adv['admaker']['Main']['width']).group(0))
+                    adv['admaker']['Main']['width']).group(0))
         height = int(re.match('[0-9]+',
-                              adv['admaker']['Main']['height']).group(0))
+                    adv['admaker']['Main']['height']).group(0))
     except:
         raise Exception("Incorrect size dimensions for informer %s" % informer_id)
     try:
         border = int(re.match('[0-9]+',
-                              adv['admaker']['Main']['borderWidth']).group(0))
+                    adv['admaker']['Main']['borderWidth']).group(0))
     except:
         border = 1
     partner = adv.get('domain', 'other').replace('.', '-').replace('/', '')
@@ -1243,8 +1242,7 @@ def _generate_informer_loader(informer_id):
         catch(e){
             ;eval("var "+timer_id+" = setInterval(function(){window['checkIframe']('"+iframe_id+"',window['el'+'"+rand+"'],'"+yottos_src()+"')}, 1000);");
         };
-        """) % {'partner': partner, 'guid': guid, 'width': width, 'height': height,
-                'auto_reload': (int(auto_reload) * 1000)}
+        """) % {'partner':partner, 'guid':guid, 'width':width, 'height':height, 'auto_reload':(int(auto_reload) * 1000)}
 
     site_id = False
     if site_id:
@@ -1267,11 +1265,10 @@ if(ba){bc=d(bc);aV(bc,ba)}}}}function a8(ba){var bb,bc;ba=ba||x.event;bb=ba.whic
 }if(bc==="page"||bc===3){ba=ax[bb]}else{if(bc==="visit"||bc===2){M();ba=Q[bb]}}if(!r(ba)||(ba&&ba[0]==="")){return false}return ba},deleteCustomVariable:function(ba,bb){if(this.getCustomVariable(ba,bb)){this.setCustomVariable(ba,"","",bb)}},setLinkTrackingTimer:function(ba){aC=ba},setDownloadExtensions:function(ba){ak=ba},addDownloadExtensions:function(ba){ak+="|"+ba},setDomains:function(ba){aD=j(ba)?[ba]:ba;aD.push(aT)},setIgnoreClasses:function(ba){R=j(ba)?[ba]:ba},setRequestMethod:function(ba){aF=ba||"GET"},setReferrerUrl:function(ba){aH=ba},setCustomUrl:function(ba){ar=aS(a7,ba)},setDocumentTitle:function(ba){ai=ba},setDownloadClasses:function(ba){aw=j(ba)?[ba]:ba},setLinkClasses:function(ba){ac=j(ba)?[ba]:ba},setCampaignNameKey:function(ba){am=j(ba)?[ba]:ba},setCampaignKeywordKey:function(ba){ah=j(ba)?[ba]:ba},discardHashTag:function(ba){T=ba},setCookieNamePrefix:function(ba){a5=ba;Q=Y()},setCookieDomain:function(ba){W=t(ba);az()},setCookiePath:function(ba){a6=ba;az()},setVisitorCookieTimeout:function(ba){aa=ba*1000
 },setSessionCookieTimeout:function(ba){ab=ba*1000},setReferralCookieTimeout:function(ba){at=ba*1000},setConversionAttributionFirstReferrer:function(ba){aq=ba},setDoNotTrack:function(bb){var ba=c.doNotTrack||c.msDoNotTrack;a0=bb&&(ba==="yes"||ba==="1")},addListener:function(bb,ba){aL(bb,ba)},enableLinkTracking:function(ba){if(m){au(ba)}else{v.push(function(){au(ba)})}},setHeartBeatTimer:function(bc,bb){var ba=new Date();S=ba.getTime()+bc*1000;ae=bb*1000},killFrame:function(){if(x.location!==x.top.location){x.top.location=x.location}},redirectFile:function(ba){if(x.location.protocol==="file:"){x.location=ba}},setCountPreRendered:function(ba){ao=ba},trackGoal:function(ba,bc,bb){ag(function(){aA(ba,bc,bb)})},trackLink:function(bb,ba,bc){ag(function(){aV(bb,ba,bc)})},trackPageView:function(ba,bb){ag(function(){av(ba,bb)})},setEcommerceView:function(bd,ba,bc,bb){if(!r(bc)||!bc.length){bc=""}else{if(bc instanceof Array){bc=JSON2.stringify(bc)}}ax[5]=["_pkc",bc];if(r(bb)&&String(bb).length){ax[2]=["_pkp",bb]
 }if((!r(bd)||!bd.length)&&(!r(ba)||!ba.length)){return}if(r(bd)&&bd.length){ax[3]=["_pks",bd]}if(!r(ba)||!ba.length){ba=""}ax[4]=["_pkn",ba]},addEcommerceItem:function(be,ba,bc,bb,bd){if(be.length){aN[be]=[be,ba,bc,bb,bd]}},trackEcommerceOrder:function(ba,be,bd,bc,bb,bf){aQ(ba,be,bd,bc,bb,bf)},trackEcommerceCartUpdate:function(ba){a4(ba)}}}function q(){return{push:G}}J(x,"beforeunload",H,false);k();Date.prototype.getTimeAlias=Date.prototype.getTime;B=new u();for(D=0;D<_paq.length;D++){G(_paq[D])}_paq=new q();return{addPlugin:function(i,L){a[i]=L},getTracker:function(i,L){return new u(i,L)},getAsyncTracker:function(){return B}}}()),piwik_track,piwik_log=function(b,f,d,g){function a(h){try{return eval("piwik_"+h)}catch(i){}return}var c,e=Piwik.getTracker(d,f);e.setDocumentTitle(b);e.setCustomData(g);c=a("tracker_pause");if(c){e.setLinkTrackingTimer(c)}c=a("download_extensions");if(c){e.setDownloadExtensions(c)}c=a("hosts_alias");if(c){e.setDomains(c)}c=a("ignore_classes");if(c){e.setIgnoreClasses(c)
-}e.trackPageView();if(a("install_tracker")){piwik_track=function(i,k,j,h){e.setSiteId(k);e.setTrackerUrl(j);e.trackLink(i,h)};e.enableLinkTracking()}}; var pkBaseURL = (("https:" == document.location.protocol) ? "https://attractor.yottos.com/" : "http://attractor.yottos.com/");try{var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", %(piwik_site_id)s);piwikTracker.trackPageView();piwikTracker.enableLinkTracking();} catch (err) {}""") % {
-            'piwik_site_id': str(site_id)}
+}e.trackPageView();if(a("install_tracker")){piwik_track=function(i,k,j,h){e.setSiteId(k);e.setTrackerUrl(j);e.trackLink(i,h)};e.enableLinkTracking()}}; var pkBaseURL = (("https:" == document.location.protocol) ? "https://attractor.yottos.com/" : "http://attractor.yottos.com/");try{var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", %(piwik_site_id)s);piwikTracker.trackPageView();piwikTracker.enableLinkTracking();} catch (err) {}""") % {'piwik_site_id': str(site_id)}
         return """//<![CDATA[\n""" + minifier.minify(script, mangle=False) + piwik_tracker_code + """\n//]]>"""
     return """//<![CDATA[\n""" + minifier.minify(script.encode('utf-8'), mangle=False) + """\n//]]>"""
-    # return """//<![CDATA[\n""" + script.encode('utf-8') + """\n//]]>"""
+    #return """//<![CDATA[\n""" + script.encode('utf-8') + """\n//]]>"""
 
 
 def upload_all():
@@ -1285,10 +1282,10 @@ def upload_all():
               user=informer_loader_ftp_user,
               passwd=informer_loader_ftp_password)
     ftp.cwd(informer_loader_ftp_path)
-
+    
     informers = [x['guid'] for x in db.informer.find({}, ['guid'])]
-    informers += map(lambda x: x.upper(), informers)  # Для тех, кому выдавался upper-case GUID
-
+    informers += map(lambda x: x.upper(), informers)        # Для тех, кому выдавался upper-case GUID
+    
     for informer in informers:
         print "Uploading %s" % informer
         loader = StringIO.StringIO()
@@ -1296,18 +1293,19 @@ def upload_all():
         loader.seek(0)
         ftp.storlines('STOR %s.js' % informer, loader)
 
-    # informer = '3bfe6280-1b8f-11e1-ae13-00163e0300c1'
-    # loader = StringIO.StringIO()
-    # loader.write(_generate_informer_loader(informer))
-    # loader.seek(0)
-    # ftp.storlines('STOR %s.js' % informer, loader)
+    #informer = '3bfe6280-1b8f-11e1-ae13-00163e0300c1'
+    #loader = StringIO.StringIO()
+    #loader.write(_generate_informer_loader(informer))
+    #loader.seek(0)
+    #ftp.storlines('STOR %s.js' % informer, loader)
 
-
+    
     ftp.quit()
     loader.close()
-
+    
 
 if __name__ == '__main__':
     upload_all()
     print "Finished!"
     exit()
+    

@@ -2,7 +2,7 @@
 # Скрипт анализирует файл с логами mongostat и определяет, сколько времени база данных бездействовала
 # (меньше 10 запросов в секунду). На данный момент один запрос к показу рекламы GetMyAd должен
 # производить один запрос к mongodb, так что это фактически показатель работоспособности GetMyAd 
-
+ 
 import sys
 
 if len(sys.argv) < 2:
@@ -19,7 +19,7 @@ try:
     verbose = (sys.argv[2] == '--verbose')
 except:
     verbose = False
-
+    
 downtime = 0
 total = 0
 
@@ -36,3 +36,4 @@ for row in log:
 print 'Total minutes:    ', total / 60
 print 'Downtime minutes: ', downtime / 60
 print 'Uptime rate:      ', 100 - (float(downtime) / total) * 100.0
+    

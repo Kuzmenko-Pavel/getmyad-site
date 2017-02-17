@@ -6,32 +6,35 @@ from datetime import datetime
 import re
 
 
+
+
+
 def advertise_to_css(opt, css):
     """
         конвертация и валидация выгрузки из параметров в ксс
         
     """
     try:
-        res = {"status": 'ok', "css": css}
+        res={"status":'ok',"css":css}
         html_re = re.compile(r"<.*?<.*?>")
         s_re = re.compile(r"<.*?")
         for el in opt:
-            # res = res + "=>\n"
+            #res = res + "=>\n"
             for x in opt[el]:
-                # log.info(str(x)+":"+str(opt[el][x])+"\n")
-                # res = res + str(x)+":"+str(opt[el][x])+"\n"
-                if re.match(html_re, str(opt[el][x])):
+                #log.info(str(x)+":"+str(opt[el][x])+"\n")
+                #res = res + str(x)+":"+str(opt[el][x])+"\n"
+                if re.match(html_re,str(opt[el][x])):
                     log.info(str(opt[el][x]))
                     res['status'] = 'fail'
-                    res['css'] = str(res['css']) + str(opt[el][x]) + "\n"
-                if re.match(s_re, str(opt[el][x])):
+                    res['css'] = str(res['css']) + str(opt[el][x])+"\n" 
+                if re.match(s_re,str(opt[el][x])):
                     log.info(str(opt[el][x]))
                     res['status'] = 'fail'
-                    res['css'] = str(res['css']) + str(opt[el][x]) + "\n"
+                    res['css'] = str(res['css']) + str(opt[el][x])+"\n"                          
     except Exception, ex:
         res['status'] = 'fail'
         log.info(str(ex))
-        res['css'] = ex
+        res['css'] = ex        
     return res
     try:
         DescriptionWidth = str(opt['Description']['width'])
@@ -43,9 +46,9 @@ def advertise_to_css(opt, css):
         DescriptionFontFamily = str(opt['Description']['fontFamily'])
         DescriptionHide = str(opt['Description']['hide'])
         DescriptionTop = str(opt['Description']['top'])
-        DescriptionAlign = ''  # str(opt['Description']['align'])
+        DescriptionAlign = ''#str(opt['Description']['align'])
         DescriptionLeft = str(opt['Description']['left'])
-        # DescriptionBackgroundColor = str(opt['Description']['backgroundColor'])
+        #DescriptionBackgroundColor = str(opt['Description']['backgroundColor'])
         mainWidth = str(opt['Main']['width'])
         mainHeight = str(opt['Main']['height'])
         mainBorderWidth = str(opt['Main']['borderWidth'])
@@ -56,22 +59,22 @@ def advertise_to_css(opt, css):
         mainHide = str(opt['Main']['hide'])
         mainTop = str(opt['Main']['top'])
         mainBackgroundColor = str(opt['Main']['backgroundColor'])
-        mainAlign = ''  # str(opt['Main']['align'])
+        mainAlign = ''#str(opt['Main']['align'])
         mainLeft = str(opt['Main']['left'])
-        # Image
+        #Image
         ImageWidth = str(opt['Image']['width'])
         ImageHeight = str(opt['Image']['height'])
         ImageBorderWidth = str(opt['Image']['borderWidth'])
         ImageBorderColor = str(opt['Image']['borderColor'])
         ImageFontUnderline = str(opt['Image']['fontUnderline'])
         ImageFontBold = str(opt['Image']['fontBold'])
-        # ImageFontFamily = str(opt['Image']['fontFamily'])
+        #ImageFontFamily = str(opt['Image']['fontFamily'])
         ImageHide = str(opt['Image']['hide'])
         ImageTop = str(opt['Image']['top'])
-        # ImageBackgroundColor = str(opt['Image']['backgroundColor'])
-        # ImageAlign = str(opt['Image']['align'])
+        #ImageBackgroundColor = str(opt['Image']['backgroundColor'])
+        #ImageAlign = str(opt['Image']['align'])
         ImageLeft = str(opt['Image']['left'])
-        # Header
+        #Header
         HeaderWidth = str(opt['Header']['width'])
         HeaderHeight = str(opt['Header']['height'])
         HeaderBorderWidth = str(opt['Header']['borderWidth'])
@@ -81,12 +84,12 @@ def advertise_to_css(opt, css):
         HeaderFontFamily = str(opt['Header']['fontFamily'])
         HeaderHide = str(opt['Header']['hide'])
         HeaderTop = str(opt['Header']['top'])
-        try:
-            HeaderAlign = str(opt['Header']['align'])
+        try:                    
+            HeaderAlign = str(opt['Header']['align'])            
         except:
             HeaderAlign = 'center'
         HeaderLeft = str(opt['Header']['left'])
-        # cost
+        #cost
         CostWidth = str(opt['Cost']['width'])
         CostHeight = str(opt['Cost']['height'])
         CostBorderWidth = str(opt['Cost']['borderWidth'])
@@ -96,16 +99,17 @@ def advertise_to_css(opt, css):
         CostFontFamily = str(opt['Cost']['fontFamily'])
         CostHide = str(opt['Cost']['hide'])
         CostTop = str(opt['Cost']['top'])
-        CostAlign = ''  # str(opt['Cost']['align'])
+        CostAlign = ''#str(opt['Cost']['align'])
         CostLeft = str(opt['Cost']['left'])
-        # Nav
+        #Nav 
         NavColor = str(opt['Nav']['color'])
         NavLogoPosition = str(opt['Nav']['logoPosition'])
         NavLogoColor = str(opt['Nav']['logoColor'])
         NavColor = str(opt['Nav']['color'])
         NavPosition = str(opt['Nav']['navPosition'])
         NavBackgroundColor = str(opt['Nav']['backgroundColor'])
-
+        
+         
         css = u"""
 <style type="text/css">
 #mainContainer {
@@ -117,14 +121,14 @@ def advertise_to_css(opt, css):
     overflow: hidden;
     border-radius: 5px;
 }
-        """ % (
-            mainWidth,
-            mainHeight,
+        """ %(            
+            mainWidth, 
+            mainHeight, 
             mainBorderWidth,
             mainBorderColor,
             mainBackgroundColor,
-        )
-
+            )
+        
         css = css + u"""
 .advBlock {
     width: 240px;
@@ -135,8 +139,8 @@ def advertise_to_css(opt, css):
     font-family: %s
     color: #;
     overflow: hidden;
-}""" % (HeaderFontFamily)
-
+}"""%(HeaderFontFamily)
+    
         css = css + u"""
 .advHeader {
     position: absolute;
@@ -148,16 +152,16 @@ def advertise_to_css(opt, css):
     overflow: hidden;
     text-align: %s;
 
-    }""" % (
-            HeaderTop,
-            HeaderLeft,
-            HeaderWidth,
-            HeaderHeight,
-            HeaderBorderWidth,
-            HeaderBorderColor,
-            HeaderAlign
+    }"""%(              
+              HeaderTop,
+              HeaderLeft,
+              HeaderWidth, 
+              HeaderHeight,
+              HeaderBorderWidth,
+              HeaderBorderColor,  
+              HeaderAlign                         
         )
-
+        
         css = css + u"""
 .advHeader, .advHeader:hover, .advHeader:visited, .advHeader:active, .advHeader:link {
     text-decoration: none;
@@ -192,15 +196,15 @@ def advertise_to_css(opt, css):
 .advDescription:hover {
     text-decoration: underline;
 }
-    """ % (
-            DescriptionTop,
-            DescriptionLeft,
-            DescriptionWidth,
-            DescriptionHeight,
-            DescriptionBorderWidth,
-            DescriptionBorderColor,
-            DescriptionAlign,
-            DescriptionFontFamily)
+    """%(
+        DescriptionTop, 
+        DescriptionLeft, 
+        DescriptionWidth, 
+        DescriptionHeight,        
+        DescriptionBorderWidth,
+        DescriptionBorderColor,      
+        DescriptionAlign,
+        DescriptionFontFamily)        
         css = css + u"""
 .advCost {
     position: absolute;
@@ -223,16 +227,16 @@ def advertise_to_css(opt, css):
 
 .advCost:hover {
     text-decoration: underline;
-}""" % (
-            CostTop,
-            CostLeft,
-            CostWidth,
-            CostHeight,
+}"""%(
+              CostTop, 
+            CostLeft, 
+            CostWidth, 
+            CostHeight,        
             CostBorderWidth,
-            CostBorderColor,
+            CostBorderColor,      
             CostAlign,
             CostFontFamily
-        )
+          )
         css = css + u"""
 .advImage {
     position: absolute;
@@ -242,31 +246,31 @@ def advertise_to_css(opt, css):
     left: %s
     border: %s solid %s
 }
-    """ % (
-            ImageWidth,
-            ImageHeight,
-            ImageTop,
-            ImageLeft,
-            ImageBorderWidth,
-            ImageBorderColor
+    """ %(
+        ImageWidth, 
+        ImageHeight,        
+        ImageTop, 
+        ImageLeft, 
+        ImageBorderWidth,
+        ImageBorderColor    
         )
-        # return NavPosition
+        #return NavPosition
         NavLeft = ""
         NavBottom = ""
         NavRight = ""
-        if NavPosition == "top-right":
+        if NavPosition == "top-right":  
             NavTop = "5px;"
             NavRight = "2px;"
-        elif NavPosition == "top-left":
+        elif NavPosition == "top-left": 
             NavTop = "1px;"
             NavLeft = "14px;"
-        elif NavPosition == "bottom-left":
+        elif NavPosition == "bottom-left": 
             NavBottom = "1px;"
             NavLeft = "14px;"
         elif NavPosition == "bottom-right":
             NavBottom = "5px;"
             NavRight = "5px;"
-
+        
         css = css + u"""
 .nav {    
     position: absolute;
@@ -276,11 +280,11 @@ def advertise_to_css(opt, css):
     bottom: %s;
     left:%s;
     right:%s
-}""" % (
-            NavBottom,
-            NavLeft,
-            NavRight
-        )
+}""" %(
+               NavBottom,
+               NavLeft,
+               NavRight
+               )  
         css = css + u"""
 .nav a, .nav a:hover, .nav a:link, .nav a:visited, .nav a:active {    
     text-decoration: none;
@@ -290,11 +294,11 @@ def advertise_to_css(opt, css):
     display: block;
     /*border: 1px solid #000;*/
     width: 11px;    
-}""" % (
-            NavColor,
+}"""%(
+            NavColor,        
             NavBackgroundColor
-        )
-
+          )
+        
         css = css + u"""
 .navr {    
     position: absolute;
@@ -303,11 +307,11 @@ def advertise_to_css(opt, css):
     bottom: %s;
     left:%s;
     right:%s
-}""" % (
-            NavBottom,
-            NavLeft,
-            NavRight
-        )
+}"""% (
+       NavBottom,
+       NavLeft,
+       NavRight
+       )
         css = css + u"""
 .navr a, .nav a:hover, .navr a:link, .navr a:visited, .navr a:active {
     font-size: 15px;
@@ -328,7 +332,7 @@ def advertise_to_css(opt, css):
     width: 45px;
 }    
         """
-
+        
         css = css + """
 #adInfo a {
 width:100%;
@@ -352,67 +356,71 @@ display: block;
     return css
 
 
+
+
+
+
+
 def adoptions_to_css(opt, css):
     u"""
         конвертация и валидация выгрузки из параметров в ксс
         upd: передал попроще, но нужно сделать как раньше, только учитывать, что не все параметры передаются пользователей, т.е. нужно подпрвить admaker
     """
     try:
-
+        
         s_path = "background-image: url('http://cdnt.yottos.com/getmyad/logos/yot/"
         f_path = "background-image: url('http://cdnt.yottos.com/getmyad/logos/"
-        if opt['Main']['width'] < 200:
-            if css.find(s_path) < 1:
-                if css.find(f_path) > 0:
-                    css.replace(f_path, s_path)
-        res = {"status": 'ok', "css": css}
-
+        if opt['Main']['width']<200:
+            if css.find(s_path)<1:
+                if css.find(f_path)>0:
+                    css.replace(f_path,s_path)
+        res={"status":'ok',"css":css}
+        
         html_re = re.compile(r"<.*?<.*?>")
         s_re = re.compile(r"<")
         size_re = re.compile(r"[0-9]{3,}?px")
         cl_re = re.compile(r"color")
         color_re = re.compile(r"/^#?([a-f0-9]{6}|[a-f0-9]{3})$/")
         for el in opt:
-            # res = res + "=>\n"
+            #res = res + "=>\n"
             for x in opt[el]:
-                # log.info(str(x)+":"+str(opt[el][x])+"\n")
-                # res = res + str(x)+":"+str(opt[el][x])+"\n"
-                if re.match(html_re, str(opt[el][x])):
+                #log.info(str(x)+":"+str(opt[el][x])+"\n")
+                #res = res + str(x)+":"+str(opt[el][x])+"\n"
+                if re.match(html_re,str(opt[el][x])):
                     print (str(opt[el][x]))
                     res['status'] = 'fail'
-                    res['css'] = str(res['css']) + str(opt[el][x]) + "\n"
+                    res['css'] = str(res['css']) + str(opt[el][x])+"\n" 
                     break;
-                if re.match(s_re, str(opt[el][x])):
+                if re.match(s_re,str(opt[el][x])):
                     print (str(opt[el][x]))
                     res['status'] = 'fail'
-                    res['css'] = str(res['css']) + str(opt[el][x]) + "\n"
+                    res['css'] = str(res['css']) + str(opt[el][x])+"\n"
                     break;
                 if x == u"top" or x == u"left" or x == u"width" or x == u"height":
-                    if not re.match(size_re, str(opt[el][x])):
+                    if not re.match(size_re,str(opt[el][x])):
                         print (str(opt[el][x]))
                         res['status'] = 'fail'
-                        res['css'] = str(res['css']) + str(opt[el][x]) + u"\n"
+                        res['css'] = str(res['css']) + str(opt[el][x])+u"\n"
                         break;
-                if re.match(cl_re, str(x)):
-                    if not re.match(color_re, str(opt[el][x])):
+                if re.match(cl_re,str(x)):
+                    if not re.match(color_re,str(opt[el][x])):
                         print (str(opt[el][x]))
                         res['status'] = 'fail'
-                        res['css'] = str(res['css']) + str(opt[el][x]) + u"\n"
-                        break;
+                        res['css'] = str(res['css']) + str(opt[el][x])+u"\n"
+                        break;                    
     except Exception, ex:
         res['status'] = 'fail'
         print (str(ex))
-        res['css'] = ex
+        res['css'] = ex        
     return res
 
-
 def read_advertise():
-    conn = Connection()
+    conn = Connection()       
     db = conn.getmyad_db
-    for adv in db.Advertise.find():  # _one()#['admaker']
-        css = advertise_to_css(adv['admaker'], adv['css'])
+    for adv in db.Advertise.find():#_one()#['admaker']
+        css = advertise_to_css(adv['admaker'],adv['css'])
         if
-    # css = adoptions_to_css(x['admaker'],x['css'])
+    #css = adoptions_to_css(x['admaker'],x['css'])
     print css
     pass
 

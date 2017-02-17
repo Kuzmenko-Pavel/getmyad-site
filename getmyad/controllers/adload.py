@@ -15,57 +15,49 @@ from uuid import uuid1
 from routes.util import url_for
 from pymongo import DESCENDING, ASCENDING
 from urlfetch import get
-import urllib
-
+import urllib 
+ 
 log = logging.getLogger(__name__)
-
 
 def current_user_check(f):
     ''' Декоратор. Проверка есть ли в сессии авторизованный пользователь'''
-
     def wrapper(*args):
         user = request.environ.get('CURRENT_USER')
         if not user: return h.userNotAuthorizedError()
         c.manager_login = user
         return f(*args)
-
     return wrapper
 
 
 def expandtoken(f):
     ''' Декоратор находит данные сессии по токену, переданному в параметре ``token`` и 
         записывает их в ``c.info`` '''
-
     def wrapper(*args):
         try:
             token = request.params.get('token')
             c.info = session.get(token)
         except:
-            return h.JSON(
-                {"error": True, 'msg': u"Ошибка, вы вышли из аккаунта!"})  # TODO: Ошибку на нормальной странице
+            return h.JSON({"error": True, 'msg': u"Ошибка, вы вышли из аккаунта!"})                    # TODO: Ошибку на нормальной странице     
         return f(*args)
-
     return wrapper
 
-
 def authcheck(f):
-    ''' Декоратор сравнивает текущего пользователя и пользователя, от которого пришёл запрос. '''
-
+    ''' Декоратор сравнивает текущего пользователя и пользователя, от которого пришёл запрос. ''' 
     def wrapper(*args):
         try:
             c.campaign_id = c.info['campaign_id']
             if c.info['user'] != session.get('user'): raise
         except NameError:
-            return h.JSON({"error": True, 'msg': "Не задана переменная info во время вызова authcheck"})
+            return h.JSON({"error": True, 'msg':"Не задана переменная info во время вызова authcheck"})
         except:
-            return h.JSON(
-                {"error": True, 'msg': u"Ошибка, вы вышли из аккаунта!"})  # TODO: Ошибку на нормальной странице
+            return h.JSON({"error": True, 'msg': u"Ошибка, вы вышли из аккаунта!"})                    # TODO: Ошибку на нормальной странице
         return f(*args)
+    return wrapper 
 
-    return wrapper
 
 
 class AdloadController(BaseController):
+    
     def __before__(self, action, **params):
         user = session.get('adload_user')
         if user:
@@ -75,6 +67,7 @@ class AdloadController(BaseController):
             self.user = None
             request.environ['CURRENT_USER'] = None
 
+    
     def index(self):
         # TODO: Сделать главную страницу AdLoad 
         return ''' <html>
@@ -98,7 +91,7 @@ class AdloadController(BaseController):
               </div>
             </body>
             </html>
-            '''
+            ''' 
 
     def checkPassword(self):
         ''' Проверка пароля и пользователя'''
@@ -106,13 +99,13 @@ class AdloadController(BaseController):
             user = request.params.get('login')
             password = request.params.get('password')
             if not (user == 'yottos') or not (password == 'futurama1'):
-                return self.index()
+                return self.index()                 
             session['adload_user'] = user
             session.save()
             request.environ['CURRENT_USER'] = user
         except:
             raise
-            return self.index()
+            return self.index()   
         return '''
         <html>
         <body>
@@ -126,7 +119,7 @@ class AdloadController(BaseController):
 
         </body>
         </html>
-         '''
+         '''     
 
     @current_user_check
     def currency_cost(self):
@@ -150,13 +143,14 @@ class AdloadController(BaseController):
         ad = AdloadData()
         ad.setCurrencyCost('$', dollar_cost)
         return h.redirect(url_for(controller="adload", action="currency_cost"))
-
+            
+         
     @current_user_check
     def categories_settings(self):
         ''' Отображает страницу с настройками категорий предложений '''
         c.categories = self.categories()
         return render("/adload/categories.mako.html")
-
+    
     @current_user_check
     def offer_rating(self):
         ''' Отображает страницу с рейтингом предложений '''
@@ -173,6 +167,7 @@ class AdloadController(BaseController):
         userdata = {'title': '', 'clickCost': '', 'guid': ''}
         return h.jgridDataWrapper(categories, userdata)
 
+    
     @current_user_check
     def delCategory(self):
         ''' Удаление категории'''
@@ -181,8 +176,8 @@ class AdloadController(BaseController):
             app_globals.db_m.advertise.category.remove({'guid': guid})
             return h.JSON({'error': False})
         except:
-            return h.JSON({'error': True})
-
+            return h.JSON({'error': True})    
+    
     @current_user_check
     def saveCategory(self):
         ''' Сохранение категории'''
@@ -192,36 +187,35 @@ class AdloadController(BaseController):
             guid = request.params.get('guid')
             if not guid:
                 guid = str(uuid1()).upper()
-            app_globals.db_m.advertise.category.update({'guid': guid},
-                                                       {'$set': {'clickCost': clickCost, 'title': title}}, upsert=True)
+            app_globals.db_m.advertise.category.update({'guid': guid}, {'$set': {'clickCost': clickCost, 'title': title}}, upsert=True)
             return h.JSON({'error': False})
         except:
             return h.JSON({'error': True})
-
+    
+        
     def campaign_settings(self, id):
         ''' Настройки кампании. ID кампании передаётся в параметре ``id`` '''
         user = request.environ.get('CURRENT_USER')
         if not user: return h.userNotAuthorizedError()
         if not Campaign(id).exists():
-            return h.JSON(
-                {"error": True, "msg": "Кампания с заданным id не существует"})  # TODO: Ошибку на нормальной странице
+            return h.JSON({"error": True, "msg": "Кампания с заданным id не существует"})       # TODO: Ошибку на нормальной странице
         c.campaign = Campaign(id)
         c.campaign.load()
-
+        
         token = str(uuid1()).upper()
         session[token] = {'user': session.get('user'), 'campaign_id': id}
         session.save()
-        c.token = token
-
+        c.token = token  
+        
         if session.get('showActiveOrAll'):
             c.showActiveOrAll = session.get('showActiveOrAll')
-        else:
+        else:    
             c.showActiveOrAll = "all"
         c.common = self.commonList(id)
         structuredShowCondition = self.structuredShowCondition(id)
         c.shown = structuredShowCondition.get('allowed')
         c.ignored = structuredShowCondition.get('ignored')
-
+        
         showCondition = ShowCondition(id)
         showCondition.load()
         c.days = showCondition.daysOfWeek
@@ -235,23 +229,21 @@ class AdloadController(BaseController):
         c.regionTargeting = showCondition.regionTargeting
         c.all_geo_countries = [x for x in app_globals.db.geo.country.find().sort('ru')]
         c.all_geo_regions = [(x['region'], x.get('ru')) for x in app_globals.db.geo.regions.find().sort('ru')]
-        c.all_categories = [{'title': x['title'], 'guid': x['guid']} for x in
-                            app_globals.db.advertise.category.find().sort('title')]
+        c.all_categories = [{'title':x['title'], 'guid': x['guid']} for x in app_globals.db.advertise.category.find().sort('title')]
         c.categories = showCondition.categories
-        c.all_device = [{'title': x['title'], 'name': x['name']} for x in app_globals.db.device.find().sort('title')]
+        c.all_device = [{'title':x['title'], 'name': x['name']} for x in app_globals.db.device.find().sort('title')]
         c.device = showCondition.device
         c.UnicImpressionLot = showCondition.UnicImpressionLot
         c.gender = showCondition.gender
-        c.all_gender = [[0, u'все'], [1, u'мужчины'], [2, u'женщины']]
+        c.all_gender = [[0,u'все'],[1,u'мужчины'],[2,u'женщины']]
         c.cost = showCondition.cost
-        c.all_cost = [[0, u'все'], [1, u'0-2500'], [2, u'2501-4500'], [3, u'4501-9000'], [4, u'9001-14000'],
-                      [5, u'14001-16500'], [6, u'16501-19000'], [7, u'19001-25000'], [8, u'25001-∞']]
+        c.all_cost = [[0,u'все'],[1,u'0-2500'],[2,u'2501-4500'],[3,u'4501-9000'],[4,u'9001-14000'],[5,u'14001-16500'],[6,u'16501-19000'],[7,u'19001-25000'],[8,u'25001-∞']]
         c.contextOnly = showCondition.contextOnly
         c.retargeting = showCondition.retargeting
         c.brending = showCondition.brending
         c.html_notification = showCondition.html_notification
-        c.recomendet_types = [['all', u'Всегда'], ['min', u'По убыванию'], ['max', u'По возрастанию']]
-        c.retargeting_types = [['offer', u'на помеченные товары'], ['account', u'на аккаунт']]
+        c.recomendet_types = [['all',u'Всегда'],['min',u'По убыванию'],['max',u'По возрастанию']]
+        c.retargeting_types = [['offer',u'на помеченные товары'],['account',u'на аккаунт']]
         c.recomendet_type = showCondition.recomendet_type
         c.retargeting_type = showCondition.retargeting_type
         c.recomendet_count = showCondition.recomendet_count
@@ -262,14 +254,13 @@ class AdloadController(BaseController):
 
     def _campaign_settings_redirect(self):
         return h.redirect(url_for(controller="adload", action="campaign_settings", id=c.campaign_id))
-
+    
     def keywords_settings(self, id):
         ''' Настройки кампании. ID кампании передаётся в параметре ``id`` '''
         user = request.environ.get('CURRENT_USER')
         if not user: return h.userNotAuthorizedError()
         if not Campaign(id).exists():
-            return h.JSON(
-                {"error": True, "msg": "Кампания с заданным id не существует"})  # TODO: Ошибку на нормальной странице
+            return h.JSON({"error": True, "msg": "Кампания с заданным id не существует"})       # TODO: Ошибку на нормальной странице
         token = str(uuid1()).upper()
         session[token] = {'user': session.get('user'), 'campaign_id': id}
         session.save()
@@ -281,15 +272,14 @@ class AdloadController(BaseController):
         data = []
         for offer in offers:
             data.append((offer.get('guid', ''),
-                         offer.get('url', ''),
-                         '<a href="' + offer.get('url', '') + '" target="_blank" >' + offer.get('title', '') + '</a>',
-                         offer_categoryes.get(offer.get('category', ''), ''),
+                         offer.get('url',''),
+                         '<a href="'+offer.get('url','')+'" target="_blank" >'+ offer.get('title', '') + '</a>',
+                         offer_categoryes.get(offer.get('category', ''),''),
                          ",".join(offer.get('keywords', '')),
                          ",".join(offer.get('phrases', '')),
                          ",".join(offer.get('exactly_phrases', '')),
                          ",".join(offer.get('minus_words', ''))))
-        c.offers_keywords_data = h.jqGridLocalData(data, ['id', 'url', 'title', 'category', 'keywords', 'phrases',
-                                                          'exactly_phrases', 'minus_words'])
+        c.offers_keywords_data = h.jqGridLocalData(data, ['id', 'url', 'title', 'category', 'keywords', 'phrases', 'exactly_phrases', 'minus_words'])
         c.offer_categoryes = offer_categoryes
         c.campaignId = id
         return render("/adload/keywords_settings.mako.html")
@@ -331,21 +321,21 @@ class AdloadController(BaseController):
         else:
             phrases = []
         if exactly_phrases:
-            exactly_phrases = exactly_phrases.replace('\r', ',').replace('\n', ',').replace('\t', ',').strip().split(
-                ',')
+            exactly_phrases = exactly_phrases.replace('\r', ',').replace('\n', ',').replace('\t', ',').strip().split(',')
             exactly_phrases = filter(lambda x: x != '', exactly_phrases)
         else:
             exactly_phrases = []
         if oper:
             app_globals.db_m.offer.update({'guid': guid},
-                                          {'$set': {'category': long(category),
-                                                    'keywords': keywords,
-                                                    'phrases': phrases,
-                                                    'exactly_phrases': exactly_phrases,
-                                                    'minus_words': minus_words}}, False)
-            # model.mq.MQ().offer_add(guid, id)
+                                                 {'$set': {'category':long(category),
+                                                  'keywords': keywords,
+                                                  'phrases': phrases,
+                                                  'exactly_phrases': exactly_phrases,
+                                                  'minus_words': minus_words}}, False)
+            #model.mq.MQ().offer_add(guid, id)
 
-    @expandtoken
+
+    @expandtoken    
     @authcheck
     def saveConditions(self):
         ''' Сохранение настроек кампании.'''
@@ -386,15 +376,15 @@ class AdloadController(BaseController):
         else:
             UnicImpressionLot = 1
         showCondition.UnicImpressionLot = UnicImpressionLot
-        showCondition.gender = int(request.params.get('gender', 0))
-        showCondition.cost = int(request.params.get('cost', 0))
+        showCondition.gender = int(request.params.get('gender',0))
+        showCondition.cost = int(request.params.get('cost',0))
         showCondition.contextOnly = True if request.params.get('contextOnly') else False
         showCondition.retargeting = True if request.params.get('retargeting') else False
         showCondition.brending = True if request.params.get('brending') else False
         showCondition.html_notification = True if request.params.get('html_notification') else False
-        showCondition.recomendet_type = request.params.get('recomendet_type', 'all')
-        showCondition.retargeting_type = request.params.get('retargeting_type', 'offer')
-        RecomendetCount = request.params.get('recomendet_count', 10)
+        showCondition.recomendet_type = request.params.get('recomendet_type','all')
+        showCondition.retargeting_type = request.params.get('retargeting_type','offer')
+        RecomendetCount = request.params.get('recomendet_count',10)
         if RecomendetCount.isdigit():
             showCondition.recomendet_count = int(RecomendetCount)
         showCondition.target = request.params.get('target', '')
@@ -422,7 +412,8 @@ class AdloadController(BaseController):
         if campaign.is_working() and not campaign.is_update():
             model.mq.MQ().campaign_update(c.campaign_id)
         return self._campaign_settings_redirect()
-
+    
+    
     def commonList(self, campaign_id):
         ''' Возвращает все активные аккаунты, домены и информеры, которые не относятся ни
         к игнорируемым, ни к разрешённым в кампании ``campaign_id``.
@@ -441,27 +432,25 @@ class AdloadController(BaseController):
         '''
         showCondition = ShowCondition(campaign_id)
         showCondition.load()
-
-        #        all_accounts = [x['login'] for x in app_globals.db.users.find().sort('login')]
-        try:
+       
+#        all_accounts = [x['login'] for x in app_globals.db.users.find().sort('login')]
+        try:    
             if c.showActiveOrAll == 'active':
-                all_accounts = [x['user'] for x in
-                                app_globals.db.stats.user.summary.find({'activity': {'$ne': 'orangeflag'}}).sort(
-                                    'user')]
-            else:
+                all_accounts = [x['user'] for x in app_globals.db.stats.user.summary.find({'activity': {'$ne': 'orangeflag'}}).sort('user')]
+            else:    
                 all_accounts = [x['user'] for x in app_globals.db.stats.user.summary.find({}).sort('user')]
         except:
             all_accounts = [x['user'] for x in app_globals.db.stats.user.summary.find({}).sort('user')]
-            c.showActiveOrAll = "all"
+            c.showActiveOrAll = "all"        
         accounts = []
         for x in all_accounts:
             if x not in showCondition.allowed_accounts:
                 if x not in showCondition.ignored_accounts:
                     accounts.append(x)
-
+        
         domains = {}
         for user_domain in app_globals.db.domain.find({'login': {'$in': all_accounts}}) or []:
-            for key, value in user_domain['domains'].items():
+            for key,value in user_domain['domains'].items(): 
                 if value not in showCondition.allowed_domains:
                     if value not in showCondition.ignored_domains:
                         if not domains.get(user_domain['login']):
@@ -482,8 +471,8 @@ class AdloadController(BaseController):
                         adv[account] = {}
                     if not adv[account].get(domain):
                         adv[account][domain] = []
-                    adv[account][domain].append({'title': title, 'guid': guid})
-
+                    adv[account][domain].append({'title': title, 'guid': guid})     
+        
         return {'accounts': accounts, 'domains': domains, 'adv': adv}
 
     def structuredShowCondition(self, campaign_id):
@@ -511,7 +500,7 @@ class AdloadController(BaseController):
         list['ignored'] = {}
         showCondition = ShowCondition(campaign_id)
         showCondition.load()
-
+            
         # accounts   
         list['allowed']['accounts'] = showCondition.allowed_accounts
         list['ignored']['accounts'] = showCondition.ignored_accounts
@@ -524,7 +513,7 @@ class AdloadController(BaseController):
                     d = user_domain['domains'][item]
                     if d == allowed_domain:
                         if not list['allowed']['domains'].get(user_domain['login']):
-                            list['allowed']['domains'][user_domain['login']] = []
+                                list['allowed']['domains'][user_domain['login']] = []
                         list['allowed']['domains'][user_domain['login']].append(allowed_domain)
         for ignored_domain in showCondition.ignored_domains:
             for user_domain in app_globals.db.domain.find({}):
@@ -532,10 +521,10 @@ class AdloadController(BaseController):
                     d = user_domain['domains'][item]
                     if d == ignored_domain:
                         if not list['ignored']['domains'].get(user_domain['login']):
-                            list['ignored']['domains'][user_domain['login']] = []
-                        list['ignored']['domains'][user_domain['login']].append(ignored_domain)
-
-                        # advertises
+                                list['ignored']['domains'][user_domain['login']] = []
+                        list['ignored']['domains'][user_domain['login']].append(ignored_domain)            
+  
+        # advertises
         list['allowed']['adv'] = {}
         list['ignored']['adv'] = {}
         for allowed_adv in showCondition.allowed_informers:
@@ -553,7 +542,7 @@ class AdloadController(BaseController):
             if not list['allowed']['adv'][account].get(domain):
                 list['allowed']['adv'][account][domain] = []
             list['allowed']['adv'][account][domain].append({'title': title, 'guid': guid})
-
+         
         for ignored_adv in showCondition.ignored_informers:
             adv = app_globals.db.informer.find_one(
                 {'guid': ignored_adv},
@@ -568,34 +557,34 @@ class AdloadController(BaseController):
                 list['ignored']['adv'][account] = {}
             if not list['ignored']['adv'][account].get(domain):
                 list['ignored']['adv'][account][domain] = []
-            list['ignored']['adv'][account][domain].append({'title': title, 'guid': guid})
+            list['ignored']['adv'][account][domain].append({'title': title, 'guid': guid})    
         return {'allowed': list['allowed'], 'ignored': list['ignored']}
-
-    @expandtoken
-    @authcheck
+    
+    
+    @expandtoken    
+    @authcheck 
     def switchShowActiveOrAll(self):
-        #        showActiveOrAll = request.params.get("showActiveOrAll")
+#        showActiveOrAll = request.params.get("showActiveOrAll")
         session['showActiveOrAll'] = request.params.get("showActiveOrAll")
         session.save()
         return self._campaign_settings_redirect()
-
-    @expandtoken
-    @authcheck
+    
+    @expandtoken    
+    @authcheck    
     def addAccountsToShowList(self):
         ''' Добавление аккаунтов в список отображаемых'''
         try:
             accounts = request.params.getall('common-accounts-list')
             for account in accounts:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.allowed.accounts': account}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.allowed.accounts': account} }, safe=True, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')
-
+            
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def addAccountsToIgnoreList(self):
         ''' Добавление аккаунтов в список игнорируемых'''
@@ -603,14 +592,13 @@ class AdloadController(BaseController):
             accounts = request.params.getall('common-accounts-list')
             for account in accounts:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.ignored.accounts': account}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.ignored.accounts': account} }, safe=True, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def addDomainsToShowList(self):
         ''' Добавление доменов в список отображаемых'''
@@ -618,14 +606,13 @@ class AdloadController(BaseController):
             domains = request.params.getall('common-domains-list')
             for domain in domains:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.allowed.domains': domain}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.allowed.domains': domain} }, safe=True, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
-            log.debug('error')
+            log.debug('error')      
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def addDomainsToIgnoreList(self):
         ''' Добавление доменов в список игнорируемых'''
@@ -633,29 +620,27 @@ class AdloadController(BaseController):
             domains = request.params.getall('common-domains-list')
             for domain in domains:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.ignored.domains': domain}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.ignored.domains': domain} }, safe=True, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')
         return self._campaign_settings_redirect()
-
-    @expandtoken
-    @authcheck
+    
+    @expandtoken    
+    @authcheck    
     def addAdvToShowList(self):
         ''' Добавление информеров в список отображаемых'''
         try:
             advs = request.params.getall('common-adv-list')
             for adv in advs:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.allowed.informers': adv}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.allowed.informers': adv} }, safe=True, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
-            log.debug('error')
+            log.debug('error')        
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def addAdvToIgnoreList(self):
         ''' Добавление информеров в список игнорируемых'''
@@ -663,14 +648,13 @@ class AdloadController(BaseController):
             advs = request.params.getall('common-adv-list')
             for adv in advs:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.ignored.informers': adv}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.ignored.informers': adv} }, safe=True, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
-            log.debug('error')
+            log.debug('error') 
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def removeAccountsFromShowList(self):
         ''' Убирание аккаунтов из списка отображаемых '''
@@ -680,10 +664,10 @@ class AdloadController(BaseController):
                                            {'$pullAll': {'showConditions.allowed.accounts': accounts}})
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
-            log.debug('error')
+            log.debug('error')    
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def removeDomainsFromShowList(self):
         ''' Убирание доменов из списка отображаемых '''
@@ -695,8 +679,8 @@ class AdloadController(BaseController):
         except:
             log.debug('error')
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def removeAdvFromShowList(self):
         ''' Убирание информера из списка отображаемых'''
@@ -708,8 +692,8 @@ class AdloadController(BaseController):
         except:
             log.debug('error')
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def removeAccountsFromIgnoreList(self):
         ''' Убирание аккаунта из списка игнорируемых'''
@@ -721,8 +705,8 @@ class AdloadController(BaseController):
         except:
             log.debug('error')
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def removeDomainsFromIgnoreList(self):
         ''' Убирание доменов из списка игнорируемых'''
@@ -734,8 +718,8 @@ class AdloadController(BaseController):
         except:
             log.debug('error')
         return self._campaign_settings_redirect()
-
-    @expandtoken
+    
+    @expandtoken    
     @authcheck
     def removeAdvFromIgnoreList(self):
         ''' Убирание информеров из списка игнорируемых'''
@@ -747,7 +731,7 @@ class AdloadController(BaseController):
         except:
             log.debug('error')
         return self._campaign_settings_redirect()
-
+ 
     @current_user_check
     def adload_campaign_list(self):
         '''Возвращает список всех кампаний, запущенных в AdLoad'''
@@ -774,24 +758,25 @@ class AdloadController(BaseController):
                     else:
                         status = 'style="color: #F10606"> Незапушена'
                     c.camp_setings[camp.id] = {
-                        'social': camp.social,
-                        'manager': item.get('manager', ''),
-                        'status': status,
-                        'yottos_partner_marker': camp.yottos_partner_marker,
-                        'last_update': camp.last_update,
-                        'UnicImpressionLot': camp.UnicImpressionLot,
-                        'contextOnly': camp.contextOnly,
-                        'retargeting': camp.retargeting,
-                        'offer_by_campaign_unique': camp.offer_by_campaign_unique,
-                        'load_count': camp.load_count,
-                        'offers_count': offers_count,
-                    }
+                            'social':camp.social,
+                            'manager':item.get('manager',''),
+                            'status': status,
+                            'yottos_partner_marker':camp.yottos_partner_marker,
+                            'last_update':camp.last_update,
+                            'UnicImpressionLot':camp.UnicImpressionLot,
+                            'contextOnly':camp.contextOnly,
+                            'retargeting':camp.retargeting,
+                            'offer_by_campaign_unique':camp.offer_by_campaign_unique,
+                            'load_count':camp.load_count,
+                            'offers_count':offers_count,
+                        }
             except Exception as ex:
                 print ex
                 pass
         return render('/adload/campaign_list.mako.html')
+ 
 
-    #   @current_user_check
+#   @current_user_check
     def campaign_addToGetmyad(self, id):
         ''' Разрешает кампании рекламироваться в GetMyAd '''
         ad = AdloadData()
@@ -809,7 +794,7 @@ class AdloadController(BaseController):
         session['message'] = result.get('warning', '')
         session.save()
         return redirect(url_for(controller="adload", action="campaign_overview", id=id))
-
+ 
     def campaign_start(self, id):
         '''Запуск кампании ``id`` в GetMyAd.'''
         try:
@@ -819,7 +804,7 @@ class AdloadController(BaseController):
         session['message'] = u"Ответ GetMyAd: %s" % result
         session.save()
         return redirect(url_for(controller="adload", action="campaign_overview", id=id))
-
+        
     def campaign_work(self, id):
         '''Запуск кампании ``id`` в партнёрской сети.'''
         try:
@@ -829,8 +814,8 @@ class AdloadController(BaseController):
         session['message'] = u"Ответ GetMyAd: %s" % result
         session.save()
         return redirect(url_for(controller="adload", action="campaign_overview", id=id))
-
-    #    @current_user_check
+        
+#    @current_user_check    
     def campaign_stop(self, id):
         '''Остановка кампании ``id`` в GetMyAd. '''
         try:
@@ -838,7 +823,7 @@ class AdloadController(BaseController):
         except Exception as ex:
             result = u'Неизвестная ошибка: %s' % ex
         session['message'] = u"Ответ GetMyAd: %s" % result
-        session.save()
+        session.save() 
         return redirect(url_for(controller="adload", action="campaign_overview", id=id))
 
     def campaign_hold(self, id):
@@ -848,27 +833,27 @@ class AdloadController(BaseController):
         except Exception as ex:
             result = u'Неизвестная ошибка: %s' % ex
         session['message'] = u"Ответ GetMyAd: %s" % result
-        session.save()
+        session.save() 
         return redirect(url_for(controller="adload", action="campaign_overview", id=id))
 
-    #    @current_user_check
+#    @current_user_check
     def campaign_update(self, id):
         '''Обновление кампании ``id`` в GetMyAd.'''
         try:
             result = app_globals.getmyad_rpc.campaign.update(id)
         except Exception as ex:
             result = u'Неизвестная ошибка: %s' % ex
-        session['message'] = u"Ответ GetMyAd: %s" % result
+        session['message'] = u"Ответ GetMyAd: %s" % result 
         session.save()
         return redirect(url_for(controller="adload", action="campaign_overview", id=id))
-
+    
     def campaign_update_all(self):
         '''Обновление всех запущенных в GetMyAd кампаний'''
         try:
             campaigns = app_globals.getmyad_rpc.campaign_list()
         except:
             return "Ошибка получения списка кампаний GetMyAd"
-
+        
         result = ''
         for campaign in campaigns:
             try:
@@ -879,7 +864,7 @@ class AdloadController(BaseController):
                 msg = repr(ex)
             result += '<p>Campaign %s: %s</p>' % (id, msg)
         return result
-
+    
     def campaign_overview(self, id):
         ''' Страница обзора кампании ``id``. '''
         user = request.environ.get('CURRENT_USER')
@@ -892,7 +877,7 @@ class AdloadController(BaseController):
             abort(404, comment='Кампания не найдена')
         c.campaign = campaign
         c.getmyad_details = app_globals.getmyad_rpc.campaign.details(id)
-
+        
         if 'message' in session:
             c.message = session.get("message")
             del session["message"]
@@ -902,9 +887,10 @@ class AdloadController(BaseController):
         return render('/adload/campaign_overview.mako.html')
 
 
+ 
 class ShowCondition:
     ''' Класс для загрузки и сохранения настроек кампании  '''
-
+    
     def __init__(self, campaign_id):
         self.campaign_id = campaign_id
         self.allowed = {}
@@ -915,7 +901,7 @@ class ShowCondition:
         self.ignored_accounts = []
         self.ignored_domains = []
         self.ignored_informers = []
-        self.daysOfWeek = []
+        self.daysOfWeek = []  
         self.startShowTime = {'hours': '00', 'minutes': '00'}
         self.startShowTimeHours = self.startShowTime.get('hours')
         self.startShowTimeMinutes = self.startShowTime.get('minutes')
@@ -941,7 +927,7 @@ class ShowCondition:
         self.retargeting_type = 'offer'
         self.recomendet_count = 10
         self.target = ""
-
+        
     def load(self):
         ''' Загружает из базы данных настройки кампании.
         
@@ -950,21 +936,21 @@ class ShowCondition:
         campaign = app_globals.db_m.campaign.find_one({'guid': self.campaign_id})
         if not campaign:
             raise Campaign.NotFoundError()
-
+        
         cond = campaign.get('showConditions', {})
         self.allowed = cond.get('allowed') or {}
         self.ignored = cond.get('ignored') or {}
-
+        
         self.allowed_accounts = self.allowed.get('accounts') or []
         self.allowed_domains = self.allowed.get('domains') or []
         self.allowed_informers = self.allowed.get('informers') or []
-
+        
         self.ignored_accounts = self.ignored.get('accounts') or []
         self.ignored_domains = self.ignored.get('domains') or []
         self.ignored_informers = self.ignored.get('informers') or []
-
+        
         self.showCoverage = cond.get("showCoverage", 'allowed')
-
+        
         self.daysOfWeek = cond.get('daysOfWeek') or self.daysOfWeek
         self.startShowTime = cond.get('startShowTime') or self.startShowTime
         self.startShowTimeHours = self.startShowTime.get('hours') or self.startShowTimeHours
@@ -972,7 +958,7 @@ class ShowCondition:
         self.endShowTime = cond.get('endShowTime') or self.endShowTime
         self.endShowTimeHours = self.endShowTime.get('hours') or self.endShowTimeHours
         self.endShowTimeMinutes = self.endShowTime.get('minutes') or self.endShowTimeMinutes
-
+        
         self.clicksPerDayLimit = int(cond.get('clicksPerDayLimit') or self.clicksPerDayLimit)
         self.geoTargeting = cond.get('geoTargeting') or self.geoTargeting
         self.regionTargeting = cond.get('regionTargeting') or self.regionTargeting
@@ -987,11 +973,11 @@ class ShowCondition:
         self.retargeting = cond.get('retargeting', False)
         self.brending = cond.get('brending', False)
         self.html_notification = cond.get('html_notification', False)
-        self.target = cond.get('target', '')
-        self.recomendet_type = cond.get('recomendet_type', 'all')
-        self.retargeting_type = cond.get('retargeting_type', 'offer')
-        self.recomendet_count = cond.get('recomendet_count', 10)
-
+        self.target = cond.get('target','')
+        self.recomendet_type = cond.get('recomendet_type','all')
+        self.retargeting_type = cond.get('retargeting_type','offer')
+        self.recomendet_count = cond.get('recomendet_count',10)
+    
     def save(self):
         ''' Сохранение настроек кампании'''
         try:
@@ -1001,7 +987,7 @@ class ShowCondition:
         showCondition = {'clicksPerDayLimit': self.clicksPerDayLimit,
                          'startShowTime': {'hours': self.startShowTimeHours,
                                            'minutes': self.startShowTimeMinutes},
-                         'endShowTime': {'hours': self.endShowTimeHours,
+                         'endShowTime': {'hours': self.endShowTimeHours, 
                                          'minutes': self.endShowTimeMinutes},
                          'geoTargeting': self.geoTargeting,
                          'regionTargeting': self.regionTargeting,
@@ -1025,8 +1011,8 @@ class ShowCondition:
                          'target': self.target,
                          'contextOnly': self.contextOnly
                          }
-
+        
         app_globals.db_m.campaign.update({'guid': self.campaign_id},
-                                         {'$set': {'showConditions': showCondition,
-                                                   'offer_by_campaign_unique': self.offer_by_campaign_unique,
-                                                   'load_count': self.load_count, }})
+                                       {'$set': {'showConditions': showCondition,
+                                           'offer_by_campaign_unique': self.offer_by_campaign_unique,
+                                           'load_count': self.load_count,}})

@@ -51,23 +51,26 @@ table {
 -------------------SETUP--------------------------*/
 
 html, body {
-    font-size: 12px;
-    font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-family: Arial, Helvetica, sans-serif;
 }
 
+
 #divHeader {
-}
+    }
+
 
 h2 {
     font-family: "Trebuchet MS", Sans-Serif;
     font-size: 20px;
 }
 
+
 .LoginLabel {
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 12px;
-    line-height: 3em;
-    color: #fe7300;
+	font-family:Arial,'Microsoft Sans Serif'; 
+	font-size:12px;
+	line-height: 3em;
+	color: #fe7300;
 }
 
 .LoginTitle {
@@ -75,914 +78,957 @@ h2 {
     margin-top: 20px;
 }
 
+
+
 /****************/
 
-* {
-    /*font-family:Arial;
-    font-size:12pt;*/
+
+
+*	
+{
+	/*font-family:Arial;
+	font-size:12pt;*/
+}
+	
+body
+{  
+	color: #000000;
+	font-family:Arial,'Microsoft Sans Serif'; 
+	font-size:12px;
 }
 
-body {
-    color: #000000;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 12px;
+.where	
+{
+	word-spacing:60px;
 }
 
-.where {
-    word-spacing: 60px;
+.loginpers
+{
+	font-family:Arial;
+	font-size:10pt;
+	font-weight:bold ; 
+}
+	
+a, #a	
+{
+	font-size:12px; 
 }
 
-.loginpers {
-    font-family: Arial;
-    font-size: 10pt;
-    font-weight: bold;
+a:hover, #a:hover
+{
+	color: #fe7300;
+}
+	
+.newst #switch
+{
+	font-size: 8px;
+	color: black;
+	font-style: italic;
+	background-color: lime;
+	text-align: right;
+}
+	
+.opt a	
+{
+	font-family:Arial; 
+	font-size:10px;
+}
+	
+#opt a:hover	
+{
+	color:#0000CC;
+	text-decoration:none;
 }
 
-a, #a {
-    font-size: 12px;
+#paginate	
+{
+	word-spacing:10px;
 }
 
-a:hover, #a:hover {
-    color: #fe7300;
-}
-
-.newst #switch {
-    font-size: 8px;
-    color: black;
-    font-style: italic;
-    background-color: lime;
-    text-align: right;
-}
-
-.opt a {
-    font-family: Arial;
-    font-size: 10px;
-}
-
-#opt a:hover {
-    color: #0000CC;
-    text-decoration: none;
-}
-
-#paginate {
-    word-spacing: 10px;
-}
-
-a:link, .w, a.w:link, .w a:link {
-    color: #0000CC;
-    Text-decoration: underline;
-}
-
-a:visited, .fl:visited {
-    color: #551A8B;
-    Text-decoration: underline;
-}
-
-a:active, .fl:active {
-    color: #FF0000;
-    Text-decoration: underline;
-}
-
+a:link,.w,a.w:link,.w a:link{color:#0000CC;Text-decoration:underline;}
+a:visited,.fl:visited{color:#551A8B;Text-decoration: underline;}
+a:active,.fl:active{color:#FF0000;Text-decoration: underline;}
 /*changed color 0000CC*/
-.q:link, .q:active, .q:visited, .q {
-    color: #4C6BDF;
-    Text-decoration: none;
-}
-
-.q:hover {
-    color: #fe7300;
-    text-decoration: none;
-}
-
-.t:link, .t:active, .t {
-    color: #0000CC;
-    Text-decoration: none;
-}
-
-.t:visited {
-    color: #551A8B;
-    Text-decoration: none;
-}
-
-.t:hover {
-    color: #f3580c;
-    text-decoration: none;
-}
-
-.pers:link, .pers:active, .pers, .pers:visited {
-    color: #657905;
-    Text-decoration: underline;
-    font-size: 10pt;
-}
-
+.q:link,.q:active,.q:visited,.q{color:#4C6BDF;Text-decoration: none;}
+.q:hover{color: #fe7300;text-decoration: none;}
+.t:link,.t:active,.t{color:#0000CC;Text-decoration: none;}
+.t:visited{color:#551A8B;Text-decoration: none;}
+.t:hover{color: #f3580c;text-decoration: none;}
+.pers:link,.pers:active,.pers,.pers:visited{color:#657905;Text-decoration: underline;font-size:10pt;}
 a.cultureMenu_1 {
-    text-decoration: none;
+            text-decoration: none;
+        }
+
+.pers:hover{color:#fe7300;Text-decoration: none;font-size:10pt;}
+
+/*catalog*/	
+a.rubrika	
+{	color: #4C6BDF;
+	font-size:16px;
+	font-family: sans-serif;
+	font-weight:bold ; 
 }
 
-.pers:hover {
-    color: #fe7300;
-    Text-decoration: none;
-    font-size: 10pt;
+a.rubrika:visited
+{
+	color:#660099/*2c4b7a;*/
+	
 }
 
-/*catalog*/
-a.rubrika {
-    color: #4C6BDF;
-    font-size: 16px;
-    font-family: sans-serif;
-    font-weight: bold;
+a.rubrika:hover
+{
+	color: #fe7300;
+	
 }
 
-a.rubrika:visited {
-    color: #660099 /*2c4b7a;*/
 
+
+a.razdel
+{
+	color: #000000;
+	font-family: sans-serif;
+	font-size: 16px;
+	
+}
+a.razdel:visited
+{
+	color:#660099/*2c4b7a;*/
+	
 }
 
-a.rubrika:hover {
-    color: #fe7300;
+a.razdel:hover
+{
+	color: #fe7300;
 
 }
-
-a.razdel {
-    color: #000000;
-    font-family: sans-serif;
-    font-size: 16px;
-
+a.catalogTitle
+{
+	font-size:12pt;
+	}
+a.catalogDescription
+{
+	font-size:10pt;
+	}
+a.catalogUrl
+{
+	font-size:11pt;
+		
 }
 
-a.razdel:visited {
-    color: #660099 /*2c4b7a;*/
-
+.rubrikCurentTitle
+{
+	font-size:14px;
+	font-weight:bold ; 
 }
-
-a.razdel:hover {
-    color: #fe7300;
-
-}
-
-a.catalogTitle {
-    font-size: 12pt;
-}
-
-a.catalogDescription {
-    font-size: 10pt;
-}
-
-a.catalogUrl {
-    font-size: 11pt;
-
-}
-
-.rubrikCurentTitle {
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.forButton {
-    /*ackground-color: buttonface;*/
-    /*	background-image: url(Image/button_sm.gif);font-family:Arial;*/
-    font-size: 13px;
+	
+.forButton
+{
+	/*ackground-color: buttonface;*/
+/*	background-image: url(Image/button_sm.gif);font-family:Arial;*/
+	font-size: 13px;
 
 }
 
-.advertTableRow1 {
-    background-color: #ffffff;
-    text-align: center;
-    font-size: 12px;
+.advertTableRow1
+{
+	background-color:#ffffff; 
+	text-align: center;
+	font-size:12px;
+	}
+
+.advertTableRow2
+{
+	background-color: white;
+	font-size: 12px;
+	text-align: center;
 }
 
-.advertTableRow2 {
-    background-color: white;
-    font-size: 12px;
-    text-align: center;
+.advertTableTitle
+{
+	background-color: #dcdcdc;
+	font-size: 12px;
+	font-weight: bold;
+	text-align: center;
 }
 
-.advertTableTitle {
-    background-color: #dcdcdc;
-    font-size: 12px;
-    font-weight: bold;
-    text-align: center;
+.advertTable
+{
+	width : 500px;
+	border-color:#ccffcc;
+	border:1px;
 }
 
-.advertTable {
-    width: 500px;
-    border-color: #ccffcc;
-    border: 1px;
+.pbutton
+{
+border :solid 1px;
+font: 10px Verdana;
 }
 
-.pbutton {
-    border: solid 1px;
-    font: 10px Verdana;
-}
-
-.newsItemsDesc {
-    font-size: 11pt;
-    color: black;
-    line-height: normal;
-    font-family: Arial;
-    letter-spacing: normal;
-    vertical-align: top;
-    white-space: pre-wrap;
-    text-indent: 20pt;
+.newsItemsDesc
+{
+	font-size: 11pt;
+	color: black;
+	line-height: normal;
+	font-family: Arial;
+	letter-spacing: normal;
+	vertical-align: top;
+	white-space:pre-wrap;
+	text-indent :20pt;
 }
 
 /* default for Web*/
-.findactivelink, .findactivelink a, .findactivelink a:visited, .findactivelink a:active, .findactivelink a:hover {
-    color: #fe7300;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 14px;
-    font-weight: bold;
-    text-decoration: none;
+.findactivelink, .findactivelink a, .findactivelink a:visited, .findactivelink a:active, .findactivelink a:hover
+{
+	color: #fe7300;
+	font-family: Arial, 'Microsoft Sans Serif';
+	font-size: 14px;
+	font-weight:bold ;
+	text-decoration: none; 
 }
 
-a.findactivelink, a.findactivelink:visited, a.findactivelink:active, a.findactivelink:hover {
-    color: #fe7300;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 14px;
-    font-weight: bold;
-    text-decoration: none;
+a.findactivelink, a.findactivelink:visited, a.findactivelink:active, a.findactivelink:hover
+{
+	color: #fe7300;
+	font-family: Arial, 'Microsoft Sans Serif';
+	font-size: 14px;
+	font-weight:bold ;
+	text-decoration: none; 
 }
 
-.mainfindactivelink {
-    color: #fe7300;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 12pt;
-    font-weight: bold;
-    text-decoration: none;
+.mainfindactivelink 
+{
+	color: #fe7300;
+	font-family: Arial, 'Microsoft Sans Serif';
+	font-size: 12pt;
+	font-weight:bold ;
+	text-decoration: none; 
 }
-
 /* Line |*/
-.Line {
-    color: #fe7300;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 12pt;
+.Line
+{
+	color: #fe7300;
+	font-family: Arial, 'Microsoft Sans Serif';
+	font-size: 12pt;
 }
-
 /* Main menu bottom*/
-.mainlink:link, .mainlink:active {
-    color: #4c6bdf;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
+.mainlink:link ,.mainlink:active 
+{
+	color:#4c6bdf;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
 
 }
-
-.mainlink:visited {
-    color: #4c6bdf;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
-
+.mainlink:visited 
+{
+	color:#4c6bdf;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
+ 
 }
-
-.mainlink:hover {
-    color: #fe7300;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
+.mainlink:hover
+{
+	color:#fe7300;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
 }
 
 /* Main menu personal top*/
-.persmainlink:link, .persmainlink:active {
-    color: #4c6bdf;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
+.persmainlink:link ,.persmainlink:active 
+{
+	color:#4c6bdf;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
 
 }
-
-.persmainlink:visited {
-    color: #4c6bdf;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
-
+.persmainlink:visited 
+{
+	color:#4c6bdf;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
+ 
 }
-
-.persmainlink:hover {
-    color: #fe7300;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
+.persmainlink:hover
+{
+	color:#fe7300;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
 }
 
 /* Main menu personal left*/
-.persleftlink:link, .persleftlink:active {
-    color: #000000;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
+.persleftlink:link ,.persleftlink:active 
+{
+	color:#000000;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
 
 }
-
-.persleftlink:visited {
-    color: #000000;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
-
+.persleftlink:visited 
+{
+	color:#000000;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
+ 
+}
+.persleftlink:hover
+{
+	color:#fe7300;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
 }
 
-.persleftlink:hover {
-    color: #fe7300;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.folder-setting:link, .folder-setting:active, .folder-setting:visited, .folder-setting {
-    color: #657905;
-    Text-decoration: none;
-}
-
-.folder-setting:hover {
-    color: #fe7300;
-    text-decoration: none;
-}
+.folder-setting:link,.folder-setting:active,.folder-setting:visited,.folder-setting{color:#657905;Text-decoration: none;}
+.folder-setting:hover{color: #fe7300;text-decoration: none;}
 
 /* default for Web*/
-.persactivelink {
-    color: #fe7300;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
+.persactivelink 
+{   color:#fe7300;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
 }
-
 /* main menu Default*/
-.refer, .refer:active, .refer:visited, .refer:link {
-    color: #000000;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 14px;
-    font-weight: bold;
-    text-decoration: none;
+ .refer, .refer:active, .refer:visited, .refer:link
+{
+	color: #000000;
+	font-family: Arial, 'Microsoft Sans Serif';
+	font-size: 14px;
+	font-weight:bold ;
+	text-decoration: none;
+}
+	.refer:hover
+{
+	color: #fe7300;
+	font-weight: bold;
+	text-decoration: none;
 }
 
-.refer:hover {
-    color: #fe7300;
-    font-weight: bold;
-    text-decoration: none;
+ .mainrefer:active, .mainrefer:visited, .mainrefer:link
+{
+	color: #000000;
+	font-family: Arial, 'Microsoft Sans Serif';
+	font-size: 12pt;
+	font-weight:bold ;
+	text-decoration: none;
 }
-
-.mainrefer:active, .mainrefer:visited, .mainrefer:link {
-    color: #000000;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 12pt;
-    font-weight: bold;
-    text-decoration: none;
+	.mainrefer:hover
+{
+	color: #fe7300;
+	font-weight: bold;
+	text-decoration: none;
 }
-
-.mainrefer:hover {
-    color: #fe7300;
-    font-weight: bold;
-    text-decoration: none;
-}
-
 /*for navigate to nastroiki & rashirennii poisk*/
-.settinglink:active, .settinglink:link {
-    color: #000000;
-    font-family: 'Microsoft Sans Serif';
-    font-size: 9px;
-    font-weight: bold;
-    text-decoration: none;
+.settinglink:active, .settinglink:link
+{
+	color: #000000;
+	font-family: 'Microsoft Sans Serif';
+	font-size: 9px;
+	font-weight:bold ;
+	text-decoration: none; 
 }
 
-.settinglink:visited {
-    color: #000000;
-    font-family: 'Microsoft Sans Serif';
-    font-size: 9px;
-    font-weight: bold;
-    text-decoration: none;
 
+.settinglink:visited 
+{
+	color:#000000;
+	font-family: 'Microsoft Sans Serif'; 
+	font-size:9px;
+	font-weight:bold ;
+	text-decoration:none; 
+	
+}
+.settinglink:hover
+{
+	color:#fe7300;
+	font-family: 'Microsoft Sans Serif';
+	font-size:9px;
+	font-weight:bold ;  
+	text-decoration:none;
+	
 }
 
-.settinglink:hover {
-    color: #fe7300;
-    font-family: 'Microsoft Sans Serif';
-    font-size: 9px;
-    font-weight: bold;
-    text-decoration: none;
-
-}
 
 /* Grid */
-.grid {
-    border-color: White;
-    border-width: 2px;
-    border-style: solid;
+.grid
+{
+	border-color:White ;
+	border-width:2px;
+	border-style:solid ;    
+}
+.grid-header
+{
+	/*background-image: url("Images/grid-header1.gif");
+	
+	background-repeat: repeat;
+	background-position: right;
+	*/
+	background-color:#F4F2E8; 
+	font-size:12px; 
+	font-weight :normal ;
+	height: 18px;
+	color: #4c6bdf;	
+	font-family:Arial,'Microsoft Sans Serif'; 
+}
+.grid-header a
+{
+	text-decoration: none;
+	font-size:12px; 
+	font-weight :normal ;
+	display: block;
+	height: 20px;
+	color: #4c6bdf;
+	padding-top: 2px;
+	font-family:Arial,'Microsoft Sans Serif'; 
+	font-weight:bold;
 }
 
-.grid-header {
-    /*background-image: url("Images/grid-header1.gif");
-
-    background-repeat: repeat;
-    background-position: right;
-    */
-    background-color: #F4F2E8;
-    font-size: 12px;
-    font-weight: normal;
-    height: 18px;
-    color: #4c6bdf;
-    font-family: Arial, 'Microsoft Sans Serif';
+.grid-header a:active,.grid-header a:visited
+{
+	text-decoration: none;
+	font-size:12px; 
+	font-weight :normal ;
+	display: block;
+	height: 20px;
+	color: #4c6bdf;
+	padding-top: 2px;
+	font-family:Arial,'Microsoft Sans Serif';
+	font-weight:bold; 
 }
-
-.grid-header a {
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: normal;
-    display: block;
-    height: 20px;
-    color: #4c6bdf;
-    padding-top: 2px;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-weight: bold;
+.grid-header a:hover
+{
+	color: navy;
+	font-family:Arial,'Microsoft Sans Serif';
+	font-weight:bold; 
 }
-
-.grid-header a:active, .grid-header a:visited {
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: normal;
-    display: block;
-    height: 20px;
-    color: #4c6bdf;
-    padding-top: 2px;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-weight: bold;
+.grid-row
+{	
 }
-
-.grid-header a:hover {
-    color: navy;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-weight: bold;
+.grid-alternative-row
+{
+	background-color: #f5f5f5;
 }
-
-.grid-row {
+.grid-selected-row
+{
+	background-color: #316ac5;
 }
-
-.grid-alternative-row {
-    background-color: #f5f5f5;
-}
-
-.grid-selected-row {
-    background-color: #316ac5;
-}
-
-.grid-pager {
-    height: 28px;
-    background-color: #F4F2E8;
-    font-size: 13px;
-    font-family: sans-serif;
-    border-style: solid;
-    border-width: 1px;
+.grid-pager
+{
+	height: 28px; 
+	background-color: #F4F2E8;
+	font-size: 13px;
+	font-family: sans-serif;
+	border-style:solid;
+	border-width :1px;
 
 }
-
-.grid-pager a {
-    text-decoration: none;
-    color: black;
-    font-weight: normal;
+.grid-pager a
+{
+	text-decoration: none;
+	color: black;
+	font-weight:normal ;
 }
-
-.grid-pager a:hover {
-    color: #fe7300;
-    font-weight: normal;
+.grid-pager a:hover
+{
+	color: #fe7300;
+	font-weight:normal ;
 }
-
-.calendar a {
-    color: #000000;
-    text-decoration: none;
-    font-size: 13px;
-    font-family: sans-serif;
-    font-weight: normal;
+.calendar a
+{
+	color: #000000;
+	text-decoration: none;
+	font-size: 13px;
+	font-family: sans-serif;
+	font-weight:normal ;
 }
-
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { 
     border: 1px solid #cccccc;
     background: #fafafa url(images/ui-bg_flat_100_fafafa_40x100.png) 50% 50% repeat-x;
     font-weight: bold;
     color: #1c94c4;
     font-size: 12px;
 }
-
 /*Skin for calendar*/
-.calendar a:hover {
-    color: #fe7300;
-    text-decoration: none;
-    font-size: 13px;
-    font-family: sans-serif;
-    font-weight: normal;
+.calendar a:hover
+{
+	color:#fe7300;
+	text-decoration:none;
+	font-size:13px; 
+	font-family: sans-serif; 
+	font-weight:normal ;
 }
 
-.calendar a:visited {
-    color: #000000;
-    text-decoration: none;
-    font-size: 13px;
-    font-family: sans-serif;
-    font-weight: normal;
+.calendar a:visited 
+{
+	color:#000000;
+	text-decoration:none;
+	font-size:13px; 
+	font-family: sans-serif; 
+	font-weight:normal ;
 }
-
 /*  */
-.page-title {
-    background-color: #469CFF;
-    height: 24px;
-    font-size: 16px;
-    font-weight: bold;
-    color: White;
-    padding-left: 0px;
+.page-title
+{
+	background-color:#469CFF;
+    height:24px;
+    font-size:16px;
+    font-weight:bold;
+    color:White;
+    padding-left:0px;
     text-indent: 6px;
     vertical-align: bottom;
     display: block;
-    width: 100%;
-    text-align: center;
+    width: 100%;   
+    text-align:center ;  
 }
 
-.loginpers-title {
-    background-color: #7E7B70;
-    height: 16px;
-    font-size: 12px;
-    font-weight: bold;
-    color: White;
-    padding-left: 0px;
+.loginpers-title
+{
+	background-color:#7E7B70;
+    height:16px;
+    font-size:12px;
+    font-weight:bold;
+    color:White;
+    padding-left:0px;
     text-indent: 6px;
     vertical-align: bottom;
     display: block;
-    width: 100%;
-    text-align: center;
+    width: 100%;   
+    text-align:center ;  
 }
-
 /*  Text for Page*/
-.textovka {
-    color: #000000;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
+.textovka
+{ 
+	color: #000000;
+	font-family:Arial,'Microsoft Sans Serif'; 
+	font-size:10pt;
 }
-
 /* Text for Page Post Scriptum*/
-.PStextovka {
-    color: #000000;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 8pt;
+.PStextovka
+{ 
+	color: #000000;
+	font-family:Arial,'Microsoft Sans Serif'; 
+	font-size:8pt;
 }
-
 /*Text for Heder*/
-.textovkaHeder {
-    color: #000000;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 12pt;
+.textovkaHeder
+{ 
+	color: #000000;
+	font-family:Arial,'Microsoft Sans Serif'; 
+	font-size:12pt;
 }
-
 /*For RadioButton*/
-.RadioButton {
-    color: #000000;
-    font-family: Arial, 'Microsoft Sans Serif';
-    font-size: 14px;
+.RadioButton
+{ 
+	color: #000000;
+	font-family:Arial,'Microsoft Sans Serif'; 
+	font-size:14px;
 }
 
 /*find*/
-.findlink {
-    color: #000000;
-    text-decoration: none;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
+.findlink
+{
+	color: #000000;
+	text-decoration: none;
+	font-size: 14px;
+	font-family: sans-serif;
+	font-weight:bold ; 
 }
 
-.findlink:hover {
-    color: #fe7300;
-    text-decoration: none;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
+.findlink:hover
+{
+	color:#fe7300;
+	text-decoration:none;
+	font-size:14px; 
+	font-family: sans-serif; 
+	font-weight:bold ; 
 }
 
-.findlink:visited {
-    color: #000000;
-    text-decoration: none;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
+.findlink:visited 
+{
+	color:#000000;
+	text-decoration:none;
+	font-size:14px; 
+	font-family: sans-serif; 
+	font-weight:bold ; 
 }
 
-.findactivelink {
-    color: #fe7300;
-    text-decoration: none;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
+.findactivelink
+{
+	color: #fe7300;
+	text-decoration: none;
+	font-size: 14px;
+	font-family: sans-serif;
+	font-weight:bold ; 
 }
 
-.findactivelink:hover {
-    color: #fe7300;
-    text-decoration: none;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
+.findactivelink:hover
+{
+	color:#fe7300;
+	text-decoration:none;
+	font-size:14px; 
+	font-family: sans-serif; 
+	font-weight:bold ; 
 }
 
-.findactivelink:visited {
-    color: #fe7300;
-    text-decoration: none;
-    font-size: 14px;
-    font-family: sans-serif;
+.findactivelink:visited 
+{
+	color:#fe7300;
+	text-decoration:none;
+	font-size:14px; 
+	font-family: sans-serif; 
 }
 
-/*new*/
+/*new*/	
 
-a.newbasecategory {
-    color: #4C6BDF;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
+a.newbasecategory	
+{	color: #4C6BDF;
+	font-size:14px;
+	font-family: sans-serif;
+	font-weight:bold ; 
 }
 
-a.newbasecategory:visited {
-    color: #4C6BDF;
+a.newbasecategory:visited
+{
+	color: #4C6BDF;
 }
 
-a.newbasecategory:hover {
-    color: #fe7300;
+a.newbasecategory:hover
+{
+	color: #fe7300;
 }
 
-a.carentbasecategory, a.carentbasecategory:visited, a.carentbasecategory:active {
-    color: #fe7300;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
-    text-decoration: underline;
+a.carentbasecategory, a.carentbasecategory:visited, a.carentbasecategory:active
+{	color: #fe7300;
+	font-size:14px;
+	font-family: sans-serif;
+	font-weight:bold ; 
+	text-decoration :underline;
 }
 
-a.newCountry {
-    color: #9C9C9C;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
+
+
+a.newCountry	
+{	color: #9C9C9C;
+	font-size:14px;
+	font-family: sans-serif;
+	font-weight:bold ; 
 }
 
-a.newCountry:visited {
-    color: #9C9C9C;
-    font-family: sans-serif;
+a.newCountry:visited
+{
+	color: #9C9C9C;
+	font-family: sans-serif;
 }
 
-a.newCountry:hover {
-    color: #fe7300;
-    font-family: sans-serif;
+a.newCountry:hover
+{
+	color: #fe7300;
+	font-family: sans-serif;
 }
 
-a.carentCountry, a.carentCountry:visited, a.carentCountry:active {
-    color: #fe7300;
-    font-size: 14px;
-    font-family: sans-serif;
-    font-weight: bold;
-    text-decoration: underline;
+a.carentCountry, a.carentCountry:visited, a.carentCountry:active
+{	color: #fe7300;
+	font-size:14px;
+	font-family: sans-serif;
+	font-weight:bold ; 
+	text-decoration :underline;
 }
 
-a.newSity {
-    color: #000000;
-    font-family: sans-serif;
-    font-size: 14px;
+
+a.newSity
+{
+	color: #000000;
+	font-family: sans-serif;
+	font-size: 14px;
 }
 
-a.newSity:visited {
-    color: #660099 /*2c4b7a;*/
+a.newSity:visited
+{
+	color:#660099/*2c4b7a;*/
+	
+}
+
+a.newSity:hover
+{
+	color: #fe7300;
 
 }
 
-a.newSity:hover {
-    color: #fe7300;
-
+a.newTitle
+{
+	font-size:14px;
+	font-weight:bold ;
+	color:#4C6BDF 
 }
 
-a.newTitle {
-    font-size: 14px;
-    font-weight: bold;
-    color: #4C6BDF
+a.newResultTitle
+{
+	font-size:14px;
+/*	font-weight:bold ;*/
+	color:#4C6BDF 
 }
 
-a.newResultTitle {
-    font-size: 14px;
-    /*	font-weight:bold ;*/
-    color: #4C6BDF
+a.newAgency
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#fe7300 
 }
 
-a.newAgency {
-    font-size: 12px;
-    font-weight: bold;
-    color: #fe7300
+a.newRegion, a.newRegion:visited
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#9C9C9C 
 }
 
-a.newRegion, a.newRegion:visited {
-    font-size: 12px;
-    font-weight: bold;
-    color: #9C9C9C
+a.newRegion:hover
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#fe7300  
+}
+	
+.newDescription
+{
+	font-size:12px;
 }
 
-a.newRegion:hover {
-    font-size: 12px;
-    font-weight: bold;
-    color: #fe7300
+a.newLocation:hover
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#fe7300 
 }
 
-.newDescription {
-    font-size: 12px;
+.newLocation, a.newLocation, a.newLocation:visited, a.newLocation:active
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#657905 
 }
 
-a.newLocation:hover {
-    font-size: 12px;
-    font-weight: bold;
-    color: #fe7300
+a.newCategory:hover
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#fe7300 
+} 
+
+.newCategory,  a.newCategory, a.newCategory:visited, a.newCategory:active
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#657905 
+}
+	
+.newDate
+{
+	font-size:12px;
+	font-weight:bold ; 
 }
 
-.newLocation, a.newLocation, a.newLocation:visited, a.newLocation:active {
-    font-size: 12px;
-    font-weight: bold;
-    color: #657905
+.rubrikCurentTitle
+{
+	font-size:14px;
+	font-weight:bold ; 
+}
+	
+a.newLang, a.newLang:visited
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#9C9C9C 
 }
 
-a.newCategory:hover {
-    font-size: 12px;
-    font-weight: bold;
-    color: #fe7300
+a.newLang:hover
+{
+	font-size:12px;
+	font-weight:bold ;
+	color:#fe7300  ;
 }
 
-.newCategory, a.newCategory, a.newCategory:visited, a.newCategory:active {
-    font-size: 12px;
-    font-weight: bold;
-    color: #657905
-}
-
-.newDate {
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.rubrikCurentTitle {
-    font-size: 14px;
-    font-weight: bold;
-}
-
-a.newLang, a.newLang:visited {
-    font-size: 12px;
-    font-weight: bold;
-    color: #9C9C9C
-}
-
-a.newLang:hover {
-    font-size: 12px;
-    font-weight: bold;
-    color: #fe7300;
-}
-
-.newexport, a.newexport, a.newexport:visited, a.newexport:active {
-    color: #4c6bdf;
-    font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
-    font-size: 10pt;
-    font-weight: bold;
-    text-decoration: none;
+.newexport,  a.newexport, a.newexport:visited, a.newexport:active
+{
+	color:#4c6bdf;
+	font-family: Tahoma, Helvetica, Arial, 'Microsoft Sans Serif';
+	font-size:10pt; 
+	font-weight:bold ; 
+	text-decoration:none;
 }
 
 /* Tree View*/
-.tree-all a {
-    text-align: left;
+.tree-all a
+{
+	text-align:left;
 }
 
-.tree-all a:hover {
-    color: #fe7300;
-    text-align: left;
+.tree-all a:hover
+{
+	color: #fe7300;
+	text-align:left;
 }
 
-.tree-all a:visited {
-    color: #9C9C9C;
-    text-align: left;
+.tree-all a:visited
+{
+	color:#9C9C9C ;
+	text-align:left;
 }
 
-.tree-root {
-    font-weight: bold;
-    color: #657905;
-    text-align: left;
+.tree-root
+{
+	font-weight: bold;
+	color:#657905 ;
+	text-align:left;
 }
 
 a.tree-leaf, a.tree-leaf:visited {
-    color: #657905;
-    text-align: left;
+	color:#657905 ;
+	text-align:left;
 }
 
-a.tree-selected, a.tree-selected:visited {
-    color: #fe7300;
-    font-weight: bold;
-    text-align: left;
+a.tree-selected, a.tree-selected:visited
+{
+	color: #fe7300;
+	font-weight: bold;
+	text-align:left;
 }
 
-.tree-selected {
-    color: #fe7300;
-    font-weight: bold;
-    text-align: left;
+.tree-selected
+{
+	color: #fe7300;
+	font-weight: bold;
+	text-align:left;
 }
 
-.tree-selected a:hover {
-    color: #fe7300;
-    text-align: left;
+.tree-selected a:hover
+{
+	color: #fe7300;
+	text-align:left;
 }
 
-.tree-parent, .tree-parent a, .tree-parent a:visited, .tree-parent a:active {
-    font-weight: bold;
-    color: #4C6BDF;
-    text-align: left;
+.tree-parent, .tree-parent a, .tree-parent a:visited, .tree-parent a:active
+
+{
+	font-weight: bold;
+	color:#4C6BDF ;
+	text-align:left;
 }
 
-a.setstartlink, a.setstartlink:active, a.setstartlink:hover, a.setstartlink:visited {
-    color: #4C6BDF;
-    text-decoration: none;
+a.setstartlink ,a.setstartlink:active, a.setstartlink:hover, a.setstartlink:visited
+{
+	color:#4C6BDF;
+	text-decoration:none;
 
 }
 
-.catalog-box {
-    min-height: 350px;
-    height: auto !important;
-    height: 350px;
-    width: 100%;
-    vertical-align: top;
+
+.catalog-box { 
+	min-height: 350px; 
+	height: auto !important; 
+	height: 350px; 
+	width: 100%; 
+	vertical-align: top; 
 }
 
-.left_botton {
-    text-align: left;
-    vertical-align: bottom;
+.left_botton 
+{
+	text-align:left;
+	vertical-align:bottom ;  
+	}
+	
+	
+	/*paging*/
+
+.paginglink
+{
+	color: #000000;
+	text-decoration: none;
+	font-size: 13px;
+	font-family: sans-serif;
+	font-weight:normal ;
 }
 
-/*paging*/
-
-.paginglink {
-    color: #000000;
-    text-decoration: none;
-    font-size: 13px;
-    font-family: sans-serif;
-    font-weight: normal;
+.paginglink:hover
+{
+	color:#fe7300;
+	text-decoration:none;
+	font-size:13px; 
+	font-family: sans-serif; 
+	font-weight:normal ;
 }
 
-.paginglink:hover {
-    color: #fe7300;
-    text-decoration: none;
-    font-size: 13px;
-    font-family: sans-serif;
-    font-weight: normal;
+.paginglink:visited 
+{
+	color:#000000;
+	text-decoration:none;
+	font-size:13px; 
+	font-family: sans-serif; 
+	font-weight:normal ;
 }
 
-.paginglink:visited {
-    color: #000000;
-    text-decoration: none;
-    font-size: 13px;
-    font-family: sans-serif;
-    font-weight: normal;
+.curentpage
+{  
+	font-family: sans-serif;
+    font-size:13px;
+    color:#fe7300;
 }
 
-.curentpage {
-    font-family: sans-serif;
-    font-size: 13px;
-    color: #fe7300;
-}
-
-.page-title {
-    background-color: #469CFF;
-    height: 24px;
-    font-size: 16px;
-    font-weight: bold;
-    color: White;
-    padding-left: 0px;
+.page-title
+{
+	background-color:#469CFF;
+    height:24px;
+    font-size:16px;
+    font-weight:bold;
+    color:White;
+    padding-left:0px;
     text-indent: 6px;
     vertical-align: bottom;
     display: block;
-    width: 100%;
-    text-align: center;
+    width: 100%;   
+    text-align:center ;  
 }
+
+
+
 
 /* Результаты */
 .categoryHeader {
-    font: 14px sans-serif;
-    font-weight: bold;
-    color: #333;
-    margin: 0;
+	font: 14px sans-serif;
+	font-weight: bold;
+	color: #333;
+	margin: 0;
 }
-
 .categoryLink {
-    font: 12px sans-serif;
-    text-decoration: none;
+	font: 12px sans-serif;
+	text-decoration: none;
+}
+.categoryList {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	margin-top: 5px;
+	margin-left: 15px;
 }
 
-.categoryList {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    margin-top: 5px;
-    margin-left: 15px;
-}
 
 .resultComment {
     color: #777;
@@ -991,59 +1037,56 @@ a.setstartlink, a.setstartlink:active, a.setstartlink:hover, a.setstartlink:visi
 }
 
 .resultImage {
-    height: 60px;
-    width: 90px;
-    border: 0px solid #ddd;
-    float: left;
-    margin: 3px;
-    margin-right: 7px;
+    height:60px;width:90px;border:0px solid #ddd;float:left; margin: 3px; margin-right: 7px;
 }
 
-.resultMore:link, .resultMore:visited, .resultMore:hover, .resultMore:active {
-    /* Больше новостей*/
+.resultMore:link, .resultMore:visited, .resultMore:hover, .resultMore:active {                   /* Больше новостей*/
     color: #a8a0c7;
     margin-left: 15px;
-    padding-top: 0;
+	padding-top: 0;
 }
 
-.articleBox {
-    border: 0px solid gray;
-    margin: 0;
-    text-align: center;
-    /*            width:145px;*/
-}
+	.articleBox {
+			 border: 0px solid gray; margin: 0; text-align:center;
+/*            width:145px;*/
+		}
+		
+			
+    .articleTitle, .articleTitle:link, .articleTitle:hover, .articleTitle:active, .articleTitle:visited {
+			font: 12px sans-serif;
+			margin:0;
+		/*width: 160px;*/
+		text-align: center;
+		display: none;
+	}
+		
+	.articleImage {
+		margin:0;
+		margin-top:5px;
+		padding: 0;
+	}
+	
+	
+	.articleImage>a>img {
+		border: solid 1px #bbf;
+		max-width:200px;
+	display:none;
+	}
 
-.articleTitle, .articleTitle:link, .articleTitle:hover, .articleTitle:active, .articleTitle:visited {
-    font: 12px sans-serif;
-    margin: 0;
-    /*width: 160px;*/
-    text-align: center;
-    display: none;
-}
+	.articleImage>a:hover>img {
+	    border: solid 1px #337;
+	}
+	
+	
+	.articleURL:link, .articleURL:hover, .articleURL:visited, .articleURL:active {
+		color: green;
+		font-family:Arial;
+		font-size:9pt;
+		font-weight:normal;
+		text-decoration:none;
+	}
 
-.articleImage {
-    margin: 0;
-    margin-top: 5px;
-    padding: 0;
-}
 
-.articleImage > a > img {
-    border: solid 1px #bbf;
-    max-width: 200px;
-    display: none;
-}
-
-.articleImage > a:hover > img {
-    border: solid 1px #337;
-}
-
-.articleURL:link, .articleURL:hover, .articleURL:visited, .articleURL:active {
-    color: green;
-    font-family: Arial;
-    font-size: 9pt;
-    font-weight: normal;
-    text-decoration: none;
-}
 
 .similarLotsList {
     list-style-type: none;
@@ -1056,21 +1099,28 @@ a.setstartlink, a.setstartlink:active, a.setstartlink:hover, a.setstartlink:visi
 .LotDetailsHint {
     font-size: 100%;
     color: #666;
-    margin-left: 3px;
-
+	margin-left: 3px;
+    
 }
+
+
+
+
+
+
+
 
 /****************************/
 .linkAction a, .linkAction a:hover, .linkAction a:visited, .linkAction a:active, .linkAction a:link {
-    text-decoration: none;
+	text-decoration: none;
 }
+
 
 .errorMessage {
-    color: red;
+	color: red;
 }
-
 .otherfind a, .otherfind a:hover, .otherfind a:visited, .otherfind a:active, .otherfind a:link {
-    text-decoration: none;
+	text-decoration: none;
 }
 
 .multiselect {
@@ -1078,7 +1128,8 @@ a.setstartlink, a.setstartlink:active, a.setstartlink:hover, a.setstartlink:visi
     height: 340px;
 }
 
-.ui-jqgrid .ui-jqgrid-htable th div {
-    height: auto;
+.ui-jqgrid .ui-jqgrid-htable th div 
+{ 
+    height: auto; 
     padding: 0px;
 }

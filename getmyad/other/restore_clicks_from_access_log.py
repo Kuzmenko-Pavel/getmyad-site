@@ -10,7 +10,6 @@ import xmlrpclib
 MONGO_MAIN_HOST = 'yottos.com'
 ADLOAD_XMLRPC_HOST = 'http://adload.vsrv-1.2.yottos.com/rpc'
 
-
 class ClicksLogParser():
     def __init__(self, mongo_host):
         self.db = pymongo.Connection(mongo_host).getmyad_db
@@ -30,7 +29,7 @@ class ClicksLogParser():
                                         '%d/%b/%Y:%H:%M:%S')
         ip = row.group('ip')
         query = row.group('query')
-
+    
         # Получаем словарь параметров
         base64_encoded_params = query.partition('&')[0]
         try:
@@ -66,14 +65,14 @@ class ClicksLogParser():
 
         # Сохраняем клик в GetMyAd
         self.db.clicks.insert({"ip": ip,
-                               "offer": offer_id,
-                               "title": title,
-                               "dt": dt,
-                               "inf": informer_id,
-                               "unique": True,
-                               "cost": self._click_cost(informer_id, dt),
-                               "url": url},
-                              safe=True)
+                          "offer": offer_id,
+                          "title": title,
+                          "dt": dt,
+                          "inf": informer_id,
+                          "unique": True,
+                          "cost": self._click_cost(informer_id, dt),
+                          "url": url},
+                          safe=True)
         self.ok_count += 1
         return True
 
@@ -129,8 +128,8 @@ class ClicksLogParser():
             adload_ok = False
             print u'Ошибка при обращении к adload: %s' % str(ex)
         return adload_ok
-
-
+    
+    
 # TODO: Плавающая цена за клик
 raise NotImplementedError()
 

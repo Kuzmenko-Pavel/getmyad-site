@@ -27,12 +27,10 @@ def rating_counting():
         if impressions > border_impressions:
             offer_count += 1
             offer_cost = adload.clickCost(offer['guid'])
-            rating = ((float(clicks) / impressions) * 10000000) * offer_cost.get('cost', 1.5)
-            db.offer.update({'guid': offer['guid']},
-                            {'$set': {'rating': round(rating, 4), 'impressions': 0, 'clicks': 0}}, False)
+            rating = ((float(clicks)/impressions) * 10000000) * offer_cost.get('cost', 1.5)
+            db.offer.update({'guid': offer['guid']},{'$set': {'rating': round(rating, 4), 'impressions': 0, 'clicks': 0}}, False)
 
     print "Created %d rating for offer" % offer_count
-
 
 if __name__ == '__main__':
     print "Rating"

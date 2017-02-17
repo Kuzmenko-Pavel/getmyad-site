@@ -7,10 +7,13 @@ from getmyad.lib import helpers as h
 from pylons.controllers.util import abort, redirect
 import logging
 
+
+
+
 log = logging.getLogger(__name__)
 
-
 class AdminController(BaseController):
+
     def update_reserve(self):
         ''' Перезаливка заглушек на FTP '''
         for i in app_globals.db.informer.find({}, ['guid']):
@@ -27,7 +30,8 @@ class AdminController(BaseController):
             links.append((url, x['date'], x['user']['login']))
         return u"<h2>Неподтверждённые заявки: %s</h2>" % \
                h.ul(map(lambda x: h.link_to('%s %s' % (x[1], x[2]), x[0]), links))
-
+        
+    
     def ResendConfirmation(self, id):
         ''' Повторно отправляет заявки на вывод средств '''
         m = MoneyOutRequest()

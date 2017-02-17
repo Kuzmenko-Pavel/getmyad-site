@@ -4,18 +4,16 @@ import datetime
 import pymongo
 import GeoIP
 import csv
-
 gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
-gc = GeoIP.open("/usr/share/GeoIP/GeoLiteCity.dat", GeoIP.GEOIP_STANDARD)
+gc = GeoIP.open("/usr/share/GeoIP/GeoLiteCity.dat",GeoIP.GEOIP_STANDARD)
 main_db_host = '213.186.119.106:27017,213.186.121.201:27018,213.186.121.84:27018'
 conn = Connection(host=main_db_host)
 db = conn.getmyad_db
 
-
 def geo_clicks(db):
     date = datetime.datetime.now()
     date = datetime.datetime(date.year, date.month, date.day, 0, 0)
-    cursor = db['clicks'].find({'dt': {'$gte': date - datetime.timedelta(days=1), '$lt': date}})
+    cursor = db['clicks'].find({'dt': {'$gte': date - datetime.timedelta(days=1), '$lt': date} })
     ip_buffer = {}
     processed_records = 0
     for click in cursor:
@@ -24,15 +22,15 @@ def geo_clicks(db):
         processed_records += 1
 
     geo_country = {}
-    for key, value in ip_buffer.items():
+    for key,value in ip_buffer.items():
         country = gi.country_name_by_addr(key)
         if country == None:
             country = 'None'
         key = (country)
         geo_country[key] = geo_country.get(key, 0) + value
 
-    geo_buffer = {}
-    for key, value in ip_buffer.items():
+    geo_buffer = {}    
+    for key,value in ip_buffer.items():
         country = gi.country_name_by_addr(key)
         if country == None:
             country = 'None'
@@ -47,22 +45,21 @@ def geo_clicks(db):
 
     outfile = open('Country_city_geo_cliks.csv', 'w')
     writer = csv.writer(outfile, delimiter=';', quoting=csv.QUOTE_MINIMAL, quotechar='`')
-    for key, value in sorted(geo_buffer.items()):
+    for key,value in sorted(geo_buffer.items()):
         data = []
         data.append(' '.join(key))
-        data.append(str(round((float(value) / float(processed_records)) * 100, 7)).replace('.', ','))
+        data.append(str(round((float(value)/float(processed_records))*100, 7)).replace('.', ','))
         writer.writerow(data)
     outfile.close()
 
     outfile = open('Country_geo_cliks.csv', 'w')
     writer = csv.writer(outfile, delimiter=';', quoting=csv.QUOTE_MINIMAL, quotechar='`')
-    for key, value in sorted(geo_country.items()):
+    for key,value in sorted(geo_country.items()):
         data = []
         data.append(key)
-        data.append(str(round((float(value) / float(processed_records)) * 100, 7)).replace('.', ','))
+        data.append(str(round((float(value)/float(processed_records))*100, 7)).replace('.', ','))
         writer.writerow(data)
     outfile.close()
-
 
 if __name__ == '__main__':
     geo_clicks(db)

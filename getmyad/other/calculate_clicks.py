@@ -7,7 +7,7 @@ import pymongo
 import xmlrpclib
 
 PYLONS_CONFIG = "deploy.ini"
-# PYLONS_CONFIG = "development.ini"
+#PYLONS_CONFIG = "development.ini"
 
 config_file = '%s./../%s' % (os.path.dirname(__file__), PYLONS_CONFIG)
 print config_file
@@ -31,7 +31,6 @@ def _mongo_connection():
         connection = pymongo.Connection(host=MONGO_HOST)
     return connection
 
-
 def _mongo_main_db():
     ''' Возвращает подключение к базе данных MongoDB '''
     return _mongo_connection()[MONGO_DATABASE]
@@ -44,11 +43,11 @@ if __name__ == '__main__':
     print date - datetime.timedelta(days=3)
     print date
     clicks = db.clicks.group(
-        key=['campaignTitle', 'campaignId', ],
-        condition={'dt': {'$gte': date - datetime.timedelta(days=3),
-                          '$lt': date}, 'unique': True},
-        reduce='''function(obj,prev) { prev.count += 1; }''',
-        initial={'count': 0, })
+            key = ['campaignTitle', 'campaignId',],
+            condition = {'dt': {'$gte': date - datetime.timedelta(days=3),
+                '$lt': date}, 'unique': True},
+                reduce = '''function(obj,prev) { prev.count += 1; }''',
+                initial = {'count': 0,})
     all = 0
     for item in clicks:
         all += item['count']
