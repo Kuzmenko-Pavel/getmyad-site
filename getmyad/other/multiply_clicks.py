@@ -46,8 +46,9 @@
 import datetime
 import math
 import optparse
-import pymongo
 import sys
+
+import pymongo
 
 if __name__ == '__main__':
     # Парсим аргументы командной строки

@@ -1,15 +1,14 @@
 # coding: utf-8
 ''' Проверяет работоспособность GetMyAd
 '''
-import simplejson
 
 LOG_FILE = 'check-getmyad.log'
 
 from time import time
 import logging
-import re
-import simplejson as json
 import urllib2
+
+import simplejson as json
 import pymongo
 from amqplib import client_0_8 as amqp
 

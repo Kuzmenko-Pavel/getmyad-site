@@ -2,7 +2,6 @@
 import logging
 
 import pylons.test
-
 from getmyad.config.environment import load_environment
 
 log = logging.getLogger(__name__)

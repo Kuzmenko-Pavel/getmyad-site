@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # This Python file uses the following encoding: utf-8
-from pymongo import Connection, DESCENDING
 from uuid import uuid1
+
+from pymongo import Connection
+
 
 def  add_categories():
     main_db_host = 'yottos.ru,213.186.121.76:27018,213.186.121.199:27018'

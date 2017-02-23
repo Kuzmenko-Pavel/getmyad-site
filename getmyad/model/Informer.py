@@ -1,5 +1,11 @@
-# This Python file uses the following encoding: utf-8
+# -*- coding: UTF-8 -*-
 from ftplib import FTP
+from uuid import uuid1
+import StringIO
+import datetime
+import logging
+from binascii import crc32
+
 from getmyad.config.social_ads import social_ads
 from getmyad.lib.helpers import progressBar
 from getmyad.lib.admaker_validator import validate_admaker
@@ -7,16 +13,7 @@ from getmyad.lib.template_convertor import js2mako
 from getmyad.model import mq
 from pylons import config, app_globals
 import mako.template
-from uuid import uuid1
-import StringIO, codecs
-import datetime
-import logging
 import re
-from urlparse import urlparse
-import urllib2
-import json
-from binascii import crc32
-
 from slimit import minifier
 
 
@@ -24,6 +21,9 @@ class Informer:
     """ Рекламный информер (он же рекламный скрипт, рекламная выгрузка) """
 
     def __init__(self):
+        """
+
+        """
         self.guid = None
         self.guid_int = 0
         self.title = None
@@ -171,6 +171,11 @@ class Informer:
         mq.MQ().informer_update(self.guid)
 
     def load(self, id):
+        """
+
+        Args:
+            id:
+        """
         raise NotImplementedError
 
     def loadGuid (self, id):
@@ -304,6 +309,11 @@ class InformerFtpUploader:
     """
 
     def __init__(self, informer_id):
+        """
+
+        Args:
+            informer_id:
+        """
         self.informer_id = informer_id
         self.db = app_globals.db
 
@@ -665,6 +675,14 @@ class InformerFtpUploader:
 
 
 def minify_css(css):
+    """
+
+    Args:
+        css:
+
+    Returns:
+
+    """
     # remove comments - this will break a lot of hacks :-P
     css = re.sub( r'\s*/\*\s*\*/', "$$HACK1$$", css ) # preserve IE<6 comment hack
     css = re.sub( r'/\*[\s\S]*?\*/', "", css )
@@ -707,6 +725,9 @@ class InformerPattern:
     """ Рекламный информер (он же рекламный скрипт, рекламная выгрузка) """
 
     def __init__(self):
+        """
+
+        """
         self.guid = None
         self.admaker = None
         self.db = app_globals.db
@@ -729,6 +750,11 @@ class InformerPattern:
                                        safe=True)
 
     def load(self, id):
+        """
+
+        Args:
+            id:
+        """
         raise NotImplementedError
 
     def loadGuid (self, id):

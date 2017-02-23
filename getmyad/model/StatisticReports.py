@@ -1,7 +1,6 @@
-# This Python file uses the following encoding: utf-8
+# -*- coding: UTF-8 -*-
 from pylons import app_globals
-from pylons.decorators.cache import beaker_cache
-from getmyad.lib import helpers as h
+
 
 class StatisticReport():
     

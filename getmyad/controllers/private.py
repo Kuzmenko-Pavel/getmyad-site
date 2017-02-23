@@ -1,5 +1,9 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 from datetime import datetime, timedelta
+from uuid import uuid1
+import logging
+import time
+
 from formencode import validators as v
 from getmyad import model
 from getmyad.controllers.advertise import AdvertiseController
@@ -7,34 +11,33 @@ from getmyad.controllers.main import MainController
 from getmyad.lib import helpers as h
 from getmyad.lib.base import BaseController, render
 from getmyad.model import AccountReports, Account
-from pylons import request, response, session, tmpl_context as c, url, \
+from pylons import request, session, tmpl_context as c, url, \
     app_globals, config
-from pylons.controllers.util import abort, redirect
-from uuid import uuid1
+from pylons.controllers.util import redirect
 import formencode
-import json
-import logging
 import os
 import pymongo
-import time
 
 log = logging.getLogger(__name__)
 
 
 def current_user_check(f):
     ''' Декоратор. Проверка есть ли в сессии авторизованный пользователь'''
+
     def wrapper(*args):
         user = request.environ.get('CURRENT_USER')
         if not user:
             return h.userNotAuthorizedError()
         c.user = user
         return f(*args)
+
     return wrapper
 
 
 def expandtoken(f):
     ''' Декоратор находит данные сессии по токену, переданному в параметре
         ``token`` и записывает их в ``c.info`` '''
+
     def wrapper(*args):
         try:
             token = request.params.get('token')
@@ -43,12 +46,14 @@ def expandtoken(f):
             # TODO: Ошибку на нормальной странице
             return h.userNotAuthorizedError()
         return f(*args)
+
     return wrapper
 
 
 def authcheck(f):
     ''' Декоратор сравнивает текущего пользователя и пользователя,
         от которого пришёл запрос. '''
+
     def wrapper(*args):
         try:
             if c.info['user'] != session.get('user'):
@@ -60,11 +65,11 @@ def authcheck(f):
             # TODO: Ошибку на нормальной странице
             return h.userNotAuthorizedError()
         return f(*args)
+
     return wrapper
 
 
 class PrivateController(BaseController):
-
     def __before__(self, action, **params):
         user = session.get('user')
         if user:
@@ -91,7 +96,7 @@ class PrivateController(BaseController):
             return MainController().signOut()
 
         ad = AdvertiseController()
-        c.manager = account.getManagerInfo() 
+        c.manager = account.getManagerInfo()
         c.updateTime = model.updateTime()
         try:
             c.updateTimeUTC = int(time.mktime(c.updateTime.timetuple()) * 1000)
@@ -100,7 +105,7 @@ class PrivateController(BaseController):
         c.accountSumm = account.report.balance()
         c.informers = account.informers()
         c.min_out_sum = account.min_out_sum
-        c.money_out_paymentType = (account.money_out_paymentType or 
+        c.money_out_paymentType = (account.money_out_paymentType or
                                    ['webmoney_z'])
         c.moneyOutEnabled = (account.prepayment or
                              c.accountSumm >= c.min_out_sum)
@@ -126,9 +131,9 @@ class PrivateController(BaseController):
         ad = AdvertiseController()
         money_out_paymentType = account.money_out_paymentType or ['webmoney_z']
         return h.JSON({
-            'accountSumm':      account.report.balance(),
-            'accountOutSumm':      account.report.outBalance(),
-            'chartData':        ad.days(json=False)
+            'accountSumm': account.report.balance(),
+            'accountOutSumm': account.report.outBalance(),
+            'chartData': ad.days(json=False)
         })
 
     @current_user_check
@@ -139,9 +144,9 @@ class PrivateController(BaseController):
         data = db.stats.daily.adv.group(['date'],
                                         {'user': c.user},
                                         {
-                                        'sum': 0,
-                                        'unique': 0,
-                                        'impressions_block': 0,
+                                            'sum': 0,
+                                            'unique': 0,
+                                            'impressions_block': 0,
                                         },
                                         '''function(o,p) {
                                           p.sum += o.totalCost || 0;
@@ -163,14 +168,14 @@ class PrivateController(BaseController):
         data = data[(page - 1) * rows: page * rows]
         data = [{'id': index,
                  'cell': (
-                    x['date'].strftime("%d.%m.%Y"),
-                    x['impressions_block'],
-                    x['unique'],
-                    '%.2f грн' % ((x['sum'] / x['unique']) if x['unique'] else 0),
-                    '%.2f грн' % x['sum']
+                     x['date'].strftime("%d.%m.%Y"),
+                     x['impressions_block'],
+                     x['unique'],
+                     '%.2f грн' % ((x['sum'] / x['unique']) if x['unique'] else 0),
+                     '%.2f грн' % x['sum']
                  )
-                }
-                    for index, x in enumerate(data)]
+                 }
+                for index, x in enumerate(data)]
         return h.JSON({'total': totalPages,
                        'page': page,
                        'records': len(data),
@@ -223,13 +228,13 @@ class PrivateController(BaseController):
 
         elif paymentType == 'cash':
             return self._moneyOutSubmit_cash()
-        
+
         elif paymentType == 'card':
             return self._moneyOutSubmit_card()
 
         elif paymentType == 'card_pb_ua':
             return self._moneyOutSubmit_card_pb_ua()
-        
+
         elif paymentType == 'card_pb_us':
             return self._moneyOutSubmit_card_pb_us()
 
@@ -259,7 +264,7 @@ class PrivateController(BaseController):
         req.summ = form.get('moneyOut_summ')
         req.webmoney_login = form.get('moneyOut_webmoneyLogin')
         req.webmoney_account_number = form.get(
-                                        'moneyOut_webmoneyAccountNumber')
+            'moneyOut_webmoneyAccountNumber')
         req.phone = form.get('moneyOut_phone')
         req.comment = form.get('moneyOut_comment', '')
         try:
@@ -296,7 +301,7 @@ class PrivateController(BaseController):
         req.summ = form.get('moneyOut_summ_r')
         req.webmoney_login = form.get('moneyOut_webmoneyLogin_r')
         req.webmoney_account_number = form.get(
-                                        'moneyOut_webmoneyAccountNumber_r')
+            'moneyOut_webmoneyAccountNumber_r')
         req.phone = form.get('moneyOut_phone_r')
         req.comment = form.get('moneyOut_comment_r', '')
         try:
@@ -333,7 +338,7 @@ class PrivateController(BaseController):
         req.summ = form.get('moneyOut_summ_u')
         req.webmoney_login = form.get('moneyOut_webmoneyLogin_u')
         req.webmoney_account_number = form.get(
-                                        'moneyOut_webmoneyAccountNumber_u')
+            'moneyOut_webmoneyAccountNumber_u')
         req.phone = form.get('moneyOut_phone_u')
         req.comment = form.get('moneyOut_comment_u', '')
         try:
@@ -358,7 +363,7 @@ class PrivateController(BaseController):
         ''' Обработка заявки на вывод средств посредством Яндекс Деньги '''
         schema = MoneyOutForm_yandex()
         try:
-            form = schema.to_python(dict(request.params))            
+            form = schema.to_python(dict(request.params))
         except formencode.Invalid, error:
             errorMessage = '<br/>\n'.join(
                 [x.msg for x in error.error_dict.values()])
@@ -371,7 +376,7 @@ class PrivateController(BaseController):
         req.yandex_number = form.get('moneyOut_yandex_number')
         req.phone = form.get('moneyOut_yandex_phone')
         req.comment = form.get('moneyOut_yandex_comment', '')
-        try:           
+        try:
             req.save()
             req.send_confirmation_email()
         except model.MoneyOutRequest.NotEnoughMoney:
@@ -392,7 +397,7 @@ class PrivateController(BaseController):
             form = schema.to_python(dict(request.params))
         except formencode.Invalid, error:
             errorMessage = '<br/>\n'.join(
-                            [x.msg for x in error.error_dict.values()])
+                [x.msg for x in error.error_dict.values()])
             return h.JSON({'error': True, 'msg': errorMessage, 'ok': False})
 
         req = model.CardMoneyOutRequest()
@@ -426,8 +431,8 @@ class PrivateController(BaseController):
         except Exception as ex:
             log.debug(repr(ex))
         return h.JSON({'error': False,
-           'ok': True,
-           'msg': u'Заявка успешно принята'})
+                       'ok': True,
+                       'msg': u'Заявка успешно принята'})
 
     def _moneyOutSubmit_card_pb_ua(self):
         ''' Обработка заявки на вывод средств посредством пластиковой карты '''
@@ -436,7 +441,7 @@ class PrivateController(BaseController):
             form = schema.to_python(dict(request.params))
         except formencode.Invalid, error:
             errorMessage = '<br/>\n'.join(
-                            [x.msg for x in error.error_dict.values()])
+                [x.msg for x in error.error_dict.values()])
             return h.JSON({'error': True, 'msg': errorMessage, 'ok': False})
 
         req = model.CardMoneyOutRequest_pb_ua()
@@ -465,9 +470,9 @@ class PrivateController(BaseController):
         except Exception as ex:
             log.debug(repr(ex))
         return h.JSON({'error': False,
-           'ok': True,
-           'msg': u'Заявка успешно принята'})
-    
+                       'ok': True,
+                       'msg': u'Заявка успешно принята'})
+
     def _moneyOutSubmit_card_pb_us(self):
         ''' Обработка заявки на вывод средств посредством пластиковой карты '''
         schema = MoneyOutForm_card_pb_us()
@@ -475,7 +480,7 @@ class PrivateController(BaseController):
             form = schema.to_python(dict(request.params))
         except formencode.Invalid, error:
             errorMessage = '<br/>\n'.join(
-                            [x.msg for x in error.error_dict.values()])
+                [x.msg for x in error.error_dict.values()])
             return h.JSON({'error': True, 'msg': errorMessage, 'ok': False})
 
         req = model.CardMoneyOutRequest_pb_us()
@@ -504,8 +509,8 @@ class PrivateController(BaseController):
         except Exception as ex:
             log.debug(repr(ex))
         return h.JSON({'error': False,
-           'ok': True,
-           'msg': u'Заявка успешно принята'})
+                       'ok': True,
+                       'msg': u'Заявка успешно принята'})
 
     def _moneyOutSubmit_cash(self):
         ''' Обработка заявки на вывод средств посредством пластиковой карты '''
@@ -514,7 +519,7 @@ class PrivateController(BaseController):
             form = schema.to_python(dict(request.params))
         except formencode.Invalid, error:
             errorMessage = '<br/>\n'.join(
-                            [x.msg for x in error.error_dict.values()])
+                [x.msg for x in error.error_dict.values()])
             return h.JSON({'error': True, 'msg': errorMessage, 'ok': False})
 
         req = model.CashMoneyOutRequest()
@@ -537,9 +542,8 @@ class PrivateController(BaseController):
         except Exception as ex:
             log.debug(repr(ex))
         return h.JSON({'error': False,
-           'ok': True,
-           'msg': u'Заявка успешно принята'})
-
+                       'ok': True,
+                       'msg': u'Заявка успешно принята'})
 
     def _moneyOutSubmit_factura(self):
         ''' Обработка заявки на вывод средств посредством счёт-фактуры '''
@@ -552,7 +556,7 @@ class PrivateController(BaseController):
             form = schema.to_python(dict(request.params))
         except formencode.Invalid as error:
             errorMessage = '<br/>\n'.join(
-                                [x.msg for x in error.error_dict.values()])
+                [x.msg for x in error.error_dict.values()])
             return h.JSON({'error': True, 'msg': errorMessage, 'ok': False})
 
         req = model.InvoiceMoneyOutRequest()
@@ -577,8 +581,8 @@ class PrivateController(BaseController):
         except Exception as ex:
             log.debug(unicode(ex))
         return h.JSON({'error': False,
-           'ok': True,
-           'msg': u'Заявка успешно принята'})
+                       'ok': True,
+                       'msg': u'Заявка успешно принята'})
 
     @current_user_check
     @expandtoken
@@ -588,8 +592,8 @@ class PrivateController(BaseController):
         try:
             id = int(request.params.get('id'))
             obj = app_globals.db.money_out_request \
-                    .find({'user.login': c.user}) \
-                    .sort('date', pymongo.DESCENDING)[id - 1]
+                .find({'user.login': c.user}) \
+                .sort('date', pymongo.DESCENDING)[id - 1]
             if obj.get('approved', False):
                 return h.JSON({'error': True,
                                'msg': u'Эта заявка уже была выполнена'})
@@ -613,7 +617,7 @@ class PrivateController(BaseController):
             account.domains.add_request(domain)
         except formencode.Invalid, error:
             errorMessage = '<br/>\n'.join(
-                                    [x.msg for x in error.error_dict.values()])
+                [x.msg for x in error.error_dict.values()])
             return h.JSON({'error': True, 'msg': errorMessage})
         except Account.Domains.AlreadyExistsError:
             return h.JSON({'error': True,
@@ -623,7 +627,7 @@ class PrivateController(BaseController):
             return h.JSON({'error': True})
         else:
             return h.JSON({'error': False})
-    
+
     @current_user_check
     @expandtoken
     @authcheck
@@ -637,9 +641,9 @@ class PrivateController(BaseController):
             account.domains.remove(domain)
         except formencode.Invalid, error:
             errorMessage = '<br/>\n'.join(
-                                    [x.msg for x in error.error_dict.values()])
+                [x.msg for x in error.error_dict.values()])
             return h.JSON({'error': True, 'msg': errorMessage})
-        except Exception as e :
+        except Exception as e:
             raise
             return h.JSON({'error': True, 'msg': e})
         else:
@@ -659,7 +663,7 @@ class PrivateController(BaseController):
                     средств</p>''')
 
             if money_out_request['date'] - datetime.today() > \
-                                                        timedelta(days=3):
+                    timedelta(days=3):
                 raise UserWarning(u'''
                     <h2>Извините! Ваша заявка устарела.</h2>
                     <p>Пожалуйста, оформите новую заявку в личном кабинете.
@@ -761,6 +765,7 @@ class MoneyOutForm_web(formencode.Schema):
     moneyOut_comment = \
         v.String(if_missing=None)
 
+
 class MoneyOutForm_web_r(formencode.Schema):
     """Форма вывода денег на web money"""
     allow_extra_fields = True
@@ -783,6 +788,7 @@ class MoneyOutForm_web_r(formencode.Schema):
         v.NotEmpty(messages={'empty': u'Пожалуйста, введите номер телефона!'})
     moneyOut_comment_r = \
         v.String(if_missing=None)
+
 
 class MoneyOutForm_web_u(formencode.Schema):
     """Форма вывода денег на web money"""
@@ -807,6 +813,7 @@ class MoneyOutForm_web_u(formencode.Schema):
     moneyOut_comment_u = \
         v.String(if_missing=None)
 
+
 class MoneyOutForm_yandex(formencode.Schema):
     """Форма вывода денег на web money"""
     allow_extra_fields = True
@@ -825,6 +832,7 @@ class MoneyOutForm_yandex(formencode.Schema):
         v.NotEmpty(messages={'empty': u'Пожалуйста, введите номер телефона!'})
     moneyOut_yandex_comment = \
         v.String(if_missing=None)
+
 
 class MoneyOutForm_card(formencode.Schema):
     """Форма вывода денег на пластиковую карту"""
@@ -876,8 +884,9 @@ class MoneyOutForm_card(formencode.Schema):
             messages={'invalid': u'ОКПО банка должен состоять из  цифр!'})
     moneyOut_cardBankTransitAccount = \
         v.Regex(
-           regex="[0-9]+",
-           messages={'invalid': u'Транзитый счёт должен состоять из  цифр!'})
+            regex="[0-9]+",
+            messages={'invalid': u'Транзитый счёт должен состоять из  цифр!'})
+
 
 class MoneyOutForm_card_pb_ua(formencode.Schema):
     """Форма вывода денег на пластиковую карту"""
@@ -917,6 +926,7 @@ class MoneyOutForm_card_pb_ua(formencode.Schema):
     moneyOut_cardCurrency_pb_ua = \
         v.String(if_missing=None)
 
+
 class MoneyOutForm_card_pb_us(formencode.Schema):
     """Форма вывода денег на пластиковую карту"""
     allow_extra_fields = True
@@ -954,6 +964,7 @@ class MoneyOutForm_card_pb_us(formencode.Schema):
         v.String(if_missing=None)
     moneyOut_cardCurrency_pb_us = \
         v.String(if_missing=None)
+
 
 class MoneyOutForm_cash(formencode.Schema):
     """Форма вывода денег на пластиковую карту"""
@@ -1009,11 +1020,12 @@ class RegisterDomainRequestForm(formencode.Schema):
                       'httpError': u'Во время попытки обращения к данному '
                                    u'сайту возникла ошибка: %(error)s',
                       'status': u'Во время попытки обращения к данному '
-                                   u'сайту возникла ошибка: %(status)s',
+                                u'сайту возникла ошибка: %(status)s',
                       'socketError': u'Во время попытки обращения к серверу '
                                      u'возникла ошибка: %(error)s',
                       'empty': u'Пожалуйста, введите url сайта!'
                       })
+
 
 class RemoveDomainRequestForm(formencode.Schema):
     ''' Форма заявки на регистрацию домена '''
@@ -1032,7 +1044,7 @@ class RemoveDomainRequestForm(formencode.Schema):
                       'httpError': u'Во время попытки обращения к данному '
                                    u'сайту возникла ошибка: %(error)s',
                       'status': u'Во время попытки обращения к данному '
-                                   u'сайту возникла ошибка: %(status)s',
+                                u'сайту возникла ошибка: %(status)s',
                       'socketError': u'Во время попытки обращения к серверу '
                                      u'возникла ошибка: %(error)s',
                       'empty': u'Пожалуйста, введите url сайта!'

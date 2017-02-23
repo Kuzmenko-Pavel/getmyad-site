@@ -1,20 +1,10 @@
-# This Python file uses the following encoding: utf-8
-from datetime import datetime, timedelta
-from ftplib import FTP
-from getmyad.config.social_ads import social_ads
-from getmyad.lib.helpers import progressBar
-from getmyad.lib.app_globals import Globals
-from pylons import app_globals, config
-from pymongo import ASCENDING, DESCENDING
-from uuid import uuid1
-import StringIO
-import getmyad
-import getmyad.lib.helpers as h
+# -*- coding: UTF-8 -*-
+from datetime import datetime
 import logging
-import mq
-import pymongo
-import re
 
+from pylons import app_globals
+from pymongo import ASCENDING
+import mq
 from MoneyOutRequest import  MoneyOutRequest, WebmoneyMoneyOutRequest, CardMoneyOutRequest,YandexMoneyOutRequest, InvoiceMoneyOutRequest, CashMoneyOutRequest , CardMoneyOutRequest_pb_ua, CardMoneyOutRequest_pb_us, WebmoneyMoneyOutRequest_r, WebmoneyMoneyOutRequest_u
 from Account import Account, AccountReports, ManagerReports, Permission
 from Informer import Informer, InformerFtpUploader, InformerPattern

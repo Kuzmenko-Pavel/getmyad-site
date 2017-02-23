@@ -1,6 +1,8 @@
-# encoding: utf-8
+# -*- coding: UTF-8 -*-
 from random import randint
+
 from PIL import ImageFont, ImageDraw, Image
+
 
 class Capcha(object):
     ''' Генерирует изображение со случайным текстом для защиты от ботов '''

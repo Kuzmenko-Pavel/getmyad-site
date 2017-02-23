@@ -1,23 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import re
-import os
-import sys
 import smtplib
-import mimetypes
-
-import email.Charset
-from email import encoders
 from email.header import Header
-from email.message import Message
-from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.audio import MIMEAudio
 from email.mime.multipart import MIMEMultipart
 
-from mako import exceptions
-from mako.template import Template
+import re
+import os
 from mako.lookup import TemplateLookup
 
 TEMPLATES_DIRS = [os.getcwdu()]

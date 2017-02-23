@@ -1,27 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from pprint import pprint
+from uuid import uuid1
+import cStringIO
+import ftplib
+import urllib2
+import datetime
+import pymssql
 
-import os
 import letter
 from letter import Letter
-
 from celery.task import task
-from uuid import uuid1
-from PIL import Image, ImageFilter
-import StringIO, cStringIO
-import datetime
-import ftplib
-import logging
-import urllib2
-import ConfigParser
-import datetime
+from PIL import Image
 import os
-import socket
 import pymongo
-import xmlrpclib
 from amqplib import client_0_8 as amqp
-import pymssql
 
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
 MONGO_HOST = 'srv-5.yottos.com:27018,srv-9.yottos.com:27018,srv-5.yottos.com:27019,srv-8.yottos.com:27018'
@@ -53,6 +45,11 @@ def _mongo_main_db():
     return _mongo_connection()[MONGO_DATABASE]
 
 def _get_channel():
+    """
+
+    Returns:
+
+    """
     conn = amqp.Connection(host='localhost:5672', userid='guest', password='guest', virtual_host="/", insist=False)
     ch = conn.channel()
     ch.exchange_declare(exchange="indexator", type="topic", durable=False, auto_delete=True)
@@ -81,6 +78,11 @@ def campaign_update(campaign_id):
     print "AMQP campaign_update", campaign_id
     
 def mssql_connection_adload():
+    """
+
+    Returns:
+
+    """
     pymssql.set_max_connections(450)
     conn = pymssql.connect(host='srv-1.yottos.com',
                            user='web',
@@ -101,6 +103,11 @@ except Exception:
 
 @task(max_retries=10, default_retry_delay=10)
 def registration_request_manager(**kwargs):
+    """
+
+    Args:
+        kwargs:
+    """
     email = 'getmyad@yottos.com'
     try:
         letter = Letter()
@@ -120,6 +127,12 @@ def registration_request_manager(**kwargs):
 
 @task(max_retries=10, default_retry_delay=10)
 def registration_request_user(email, **kwargs):
+    """
+
+    Args:
+        email:
+        kwargs:
+    """
     try:
         letter = Letter()
         letter.sender = 'support@yottos.com'
@@ -138,6 +151,13 @@ def registration_request_user(email, **kwargs):
 
 @task(max_retries=10, default_retry_delay=10)
 def money_out_request(payment_type, email, **kwargs):
+    """
+
+    Args:
+        payment_type:
+        email:
+        kwargs:
+    """
     try:
         letter = Letter()
         letter.sender = 'support@yottos.com'
@@ -174,6 +194,12 @@ def money_out_request(payment_type, email, **kwargs):
 
 @task(max_retries=10, default_retry_delay=10)
 def confirmation_email(email, **kwargs):
+    """
+
+    Args:
+        email:
+        kwargs:
+    """
     try:
         letter = Letter()
         letter.sender = 'support@yottos.com'
@@ -193,12 +219,28 @@ def confirmation_email(email, **kwargs):
 
 @task(max_retries=10, default_retry_delay=10, acks_late=True, ignore_result=True, queue='small-image')
 def small_resize_image(res, campaign_id, work, **kwargs):
+    """
+
+    Args:
+        res:
+        campaign_id:
+        work:
+        kwargs:
+    """
     resize_image(res, campaign_id, work, **kwargs)
 
 
 
 @task(max_retries=10, default_retry_delay=10, acks_late=True, ignore_result=True, queue='image')    
 def resize_image(res, campaign_id, work, **kwargs):
+    """
+
+    Args:
+        res:
+        campaign_id:
+        work:
+        kwargs:
+    """
     print "------------------------------------------------"
     try:
         db = _mongo_main_db()
@@ -209,11 +251,26 @@ def resize_image(res, campaign_id, work, **kwargs):
             '''
             try:
                 def chdir(ftp, dir): 
+                    """
+
+                    Args:
+                        ftp:
+                        dir:
+                    """
                     if directory_exists(ftp, dir) is False: # (or negate, whatever you prefer for readability)
                         ftp.mkd(dir)
                     ftp.cwd(dir)
 
                 def directory_exists(ftp, dir):
+                    """
+
+                    Args:
+                        ftp:
+                        dir:
+
+                    Returns:
+
+                    """
                     filelist = []
                     ftp.retrlines('LIST',filelist.append)
                     for f in filelist:
@@ -222,6 +279,15 @@ def resize_image(res, campaign_id, work, **kwargs):
                     return False
 
                 def ftp_loader(png, webp):
+                    """
+
+                    Args:
+                        png:
+                        webp:
+
+                    Returns:
+
+                    """
                     new_filename = uuid1().get_hex()
                     for host in cdn_ftp_list:
                         png.seek(0)
@@ -242,6 +308,17 @@ def resize_image(res, campaign_id, work, **kwargs):
                     return new_filename
 
                 def resizer(url, trum_height, trum_width, logo):
+                    """
+
+                    Args:
+                        url:
+                        trum_height:
+                        trum_width:
+                        logo:
+
+                    Returns:
+
+                    """
                     opener = urllib2.build_opener()
                     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
                     response = opener.open(url)
@@ -570,6 +647,12 @@ def campaign_offer_update(campaign_id, **kwargs):
 
 @task(max_retries=10, default_retry_delay=10)    
 def delete_account(login, **kwargs):
+    """
+
+    Args:
+        login:
+        kwargs:
+    """
     try:
         print "Delete Account"
         db = _mongo_main_db()

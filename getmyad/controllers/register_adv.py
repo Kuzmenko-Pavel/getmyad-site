@@ -1,27 +1,17 @@
-# -*- coding: utf-8 -*-
-from datetime import datetime
+# -*- coding: UTF-8 -*-
+import logging
+
 from formencode import Schema
 from getmyad.lib import helpers as h
 from getmyad.lib.base import BaseController, render
 from getmyad.model import Account, Permission
-from optparse import OptionParser
-from pylons import request, response, session, tmpl_context as c, url, config,\
-    app_globals
-from pylons.controllers.util import abort, redirect
-from urlparse import urlparse
-import logging
-import re
-import sys
-import uuid
+from pylons import request, session, tmpl_context as c, app_globals
 import formencode
-
-
 
 log = logging.getLogger(__name__)
 
 
 class RegisterAdvController(BaseController):
-
     def __init__(self):
         c.name = ''
         c.phone = ''
@@ -62,8 +52,7 @@ class RegisterAdvController(BaseController):
         c.money_factura = False
         c.money_yandex = False
         c.list_manager = Account.active_managers()
-        c.categories = [[x['guid'],x['title']] for x in app_globals.db.advertise.category.find()]
-        
+        c.categories = [[x['guid'], x['title']] for x in app_globals.db.advertise.category.find()]
 
     def __before__(self, action, **params):
         user = session.get('user')
@@ -73,22 +62,23 @@ class RegisterAdvController(BaseController):
             request.environ['IS_MANAGER'] = True
         else:
             self.user = ''
-     
-    
+
     def index(self):
         if not self.user: return h.userNotAuthorizedError()
         permission = Permission(Account(login=self.user))
         if not permission.has(Permission.REGISTER_USERS_ACCOUNT):
             return h.userNotAuthorizedError()
-        return render('/register_adv.mako.html')  
+        return render('/register_adv.mako.html')
 
     class PaymentTypeNotDefined(Exception):
         ''' Не выбран ни один способ вывода средств '''
+
         def __init__(self, value):
             self.value = value
+
         def __str__(self):
             return 'PaymentTypeNotDefined'
-    
+
     def createUser(self):
         """Создаёт пользователя GetMyAd"""
         if not self.user: return h.userNotAuthorizedError()
@@ -119,13 +109,14 @@ class RegisterAdvController(BaseController):
                 c.money_card = False if request.params.get('money_card') == None else True
                 c.money_card_pb_ua = False if request.params.get('money_card_pb_ua') == None else True
                 c.money_card_pb_us = False if request.params.get('money_card_pb_us') == None else True
-                c.money_web_z = False if request.params.get('money_web_z')  == None else True
-                c.money_web_r = False if request.params.get('money_web_r')  == None else True
-                c.money_web_u = False if request.params.get('money_web_u')  == None else True
+                c.money_web_z = False if request.params.get('money_web_z') == None else True
+                c.money_web_r = False if request.params.get('money_web_r') == None else True
+                c.money_web_u = False if request.params.get('money_web_u') == None else True
                 c.money_factura = False if request.params.get('money_factura') == None else True
-                c.money_yandex = False if request.params.get('money_yandex')  == None else True
+                c.money_yandex = False if request.params.get('money_yandex') == None else True
                 c.category = request.params.getall('categories')
-                if (not c.money_card and not c.money_web_z and not c.money_factura and not c.money_cash and not c.money_card_pb_ua and not c.money_card_pb_us and not c.money_web_r and not c.money_web_u and not c.money_yandex):
+                if (
+                                                not c.money_card and not c.money_web_z and not c.money_factura and not c.money_cash and not c.money_card_pb_ua and not c.money_card_pb_us and not c.money_web_r and not c.money_web_u and not c.money_yandex):
                     raise RegisterAdvController.PaymentTypeNotDefined('Payment_type_not_defined')
             except formencode.Invalid, error:
                 c.user_error_messages = '<br/>\n'.join([x.msg for x in error.error_dict.values()])
@@ -151,29 +142,28 @@ class RegisterAdvController(BaseController):
                 c.money_card = False if request.params.get('money_card') == None else True
                 c.money_card_pb_ua = False if request.params.get('money_card_pb_ua') == None else True
                 c.money_card_pb_us = False if request.params.get('money_card_pb_us') == None else True
-                c.money_web_z = False if request.params.get('money_web_z')  == None else True
-                c.money_web_r = False if request.params.get('money_web_r')  == None else True
-                c.money_web_u = False if request.params.get('money_web_u')  == None else True
+                c.money_web_z = False if request.params.get('money_web_z') == None else True
+                c.money_web_r = False if request.params.get('money_web_r') == None else True
+                c.money_web_u = False if request.params.get('money_web_u') == None else True
                 c.money_factura = False if request.params.get('money_factura') == None else True
-                c.money_yandex = False if request.params.get('money_yandex')  == None else True
+                c.money_yandex = False if request.params.get('money_yandex') == None else True
                 c.category = request.params.getall('categories')
                 return self.index()
             except self.PaymentTypeNotDefined:
                 c.user_error_messages = u'Укажите хотя бы один способ вывода средств'
                 return self.index()
-                
-            
+
             c.siteUrl = request.params.get('siteUrl')
             if c.siteUrl.startswith('http://www.'):
                 c.siteUrl = c.siteUrl[11:]
             elif c.siteUrl.startswith('http://'):
                 c.siteUrl = c.siteUrl[7:]
             elif c.siteUrl.startswith('https://'):
-                c.siteUrl = c.siteUrl[8:]    
-            elif  c.siteUrl.startswith('www.'):
+                c.siteUrl = c.siteUrl[8:]
+            elif c.siteUrl.startswith('www.'):
                 c.siteUrl = c.siteUrl[4:]
             c.siteUrl = c.siteUrl.split('/')[0]
-            
+
             c.money_out = ''
             if c.money_cash:
                 c.money_out += u'наличный расчет'
@@ -206,7 +196,7 @@ class RegisterAdvController(BaseController):
 
         else:
             schema = RegisterManagerForm()
-            try: 
+            try:
                 form_result = schema.to_python(dict(request.params))
                 c.manager_login = form_result['manager_login']
                 c.manager_name = form_result['manager_name']
@@ -219,7 +209,7 @@ class RegisterAdvController(BaseController):
                 c.manager_name = request.params.get('manager_name')
                 c.manager_email = request.params.get('manager_email')
                 c.manager_skype = request.params.get('manager_skype')
-                c.manager_phone = request.params.get('manager_phone')    
+                c.manager_phone = request.params.get('manager_phone')
                 return self.index()
 
         c.user_error_messages = c.manager_error_messages = ''
@@ -228,15 +218,14 @@ class RegisterAdvController(BaseController):
             c.user_error_messages = c.save_res[1]
             return self.index()
         return render("/register.thanks.mako.html")
-        
-        
+
     def saveUser(self):
         ''' Сохраняет создаваемый аккаунт в бд'''
         try:
             if c.account_type == 'user':
                 account = Account(login=c.siteUrl)
                 if account.domains.check_exists(c.siteUrl):
-                    return (False,"Данный сайт уже зарегестрирован")
+                    return (False, "Данный сайт уже зарегестрирован")
                 account.email = c.email
                 account.skype = c.skype
                 account.phone = c.phone
@@ -258,24 +247,24 @@ class RegisterAdvController(BaseController):
                 account.imp_percent = c.imp_percent
                 account.imp_cost_min = c.imp_cost_min
                 account.imp_cost_max = c.imp_cost_max
-                account.range_short_term = (int(c.range_short_term)/100.0)
-                account.range_long_term = (int(c.range_long_term)/100.0)
-                account.range_context = (int(c.range_context)/100.0)
-                account.range_search = (int(c.range_search)/100.0)
-                account.range_retargeting = (int(c.range_retargeting)/100.0)
+                account.range_short_term = (int(c.range_short_term) / 100.0)
+                account.range_long_term = (int(c.range_long_term) / 100.0)
+                account.range_context = (int(c.range_context) / 100.0)
+                account.range_search = (int(c.range_search) / 100.0)
+                account.range_retargeting = (int(c.range_retargeting) / 100.0)
             else:
                 account = Account(login=c.manager_login)
                 account.email = c.manager_email
                 account.skype = c.manager_skype
                 account.phone = c.manager_phone
                 account.owner_name = c.manager_name
-                    
+
             account.password = Account.makePassword()
             c.password = account.password
             account.account_type = {'user': Account.User,
                                     'manager': Account.Manager,
                                     'admin': Account.Administrator
-                                   }.get(c.account_type, Account.User)
+                                    }.get(c.account_type, Account.User)
             account.register()
             account.domains.add(account.login)
             account.domains.categories_add(account.login, c.category)
@@ -283,102 +272,101 @@ class RegisterAdvController(BaseController):
             print e
             return (False, e)
         return (True, '')
-        
 
 
 class RegisterUserForm(Schema):
     allow_extra_fields = True
     filter_extra_fields = True
     siteUrl = formencode.validators.URL(
-                    not_empty=True,
-                    messages={'badURL': u'Неправильный формат URL',
-                              'empty': u'Введите URL'})
+        not_empty=True,
+        messages={'badURL': u'Неправильный формат URL',
+                  'empty': u'Введите URL'})
     name = formencode.validators.String(
-                    not_empty=True,
-                    messages={'empty':u'Введите ФИО'})
+        not_empty=True,
+        messages={'empty': u'Введите ФИО'})
     phone = formencode.validators.String(
-                    not_empty=True,
-                    messages={'empty':u'Введите телефон'})
+        not_empty=True,
+        messages={'empty': u'Введите телефон'})
     click_percent = formencode.validators.Number(
-                    not_empty=True,
-                    messages={'empty': u'Введите процент от цены рекламодателя',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        messages={'empty': u'Введите процент от цены рекламодателя',
+                  'number': u'Некорректный формат числа'})
     click_cost_min = formencode.validators.Number(
-                    not_empty=True,
-                    messages={'empty': u'Введите минимальную цену за клик',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        messages={'empty': u'Введите минимальную цену за клик',
+                  'number': u'Некорректный формат числа'})
     click_cost_max = formencode.validators.Number(
-                    not_empty=True,
-                    messages={'empty': u'Введите максимальную цену за клик',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        messages={'empty': u'Введите максимальную цену за клик',
+                  'number': u'Некорректный формат числа'})
     imp_percent = formencode.validators.Number(
-                    not_empty=True,
-                    messages={'empty': u'Введите процент от цены рекламодателя',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        messages={'empty': u'Введите процент от цены рекламодателя',
+                  'number': u'Некорректный формат числа'})
     imp_cost_min = formencode.validators.Number(
-                    not_empty=True,
-                    messages={'empty': u'Введите минимальную цену за 1000 показов',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        messages={'empty': u'Введите минимальную цену за 1000 показов',
+                  'number': u'Некорректный формат числа'})
     imp_cost_max = formencode.validators.Number(
-                    not_empty=True,
-                    messages={'empty': u'Введите максимальную цену за 1000 показов',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        messages={'empty': u'Введите максимальную цену за 1000 показов',
+                  'number': u'Некорректный формат числа'})
     email = formencode.validators.Email(
-                    not_empty=True,
-                    messages={'empty':u'Введите e-mail',
-                              'noAt': u'Неправильный формат e-mail',
-                              'badUsername': u'Неправильный формат e-mail',
-                              'badDomain': u'Неправильный формат e-mail'})
+        not_empty=True,
+        messages={'empty': u'Введите e-mail',
+                  'noAt': u'Неправильный формат e-mail',
+                  'badUsername': u'Неправильный формат e-mail',
+                  'badDomain': u'Неправильный формат e-mail'})
     skype = formencode.validators.String(
-                    not_empty=False,
-                    messages={'empty':u'Введите Skype'})
+        not_empty=False,
+        messages={'empty': u'Введите Skype'})
     range_retargeting = formencode.validators.Int(
-                    min=0, 
-                    max=100,
-                    not_empty=True,
-                    messages={'empty': u'Введите вес ветки ретаргетинга',
-                              'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
-                              'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
-                              'number': u'Некорректный формат числа'})
+        min=0,
+        max=100,
+        not_empty=True,
+        messages={'empty': u'Введите вес ветки ретаргетинга',
+                  'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
+                  'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
+                  'number': u'Некорректный формат числа'})
     range_search = formencode.validators.Int(
-                    not_empty=True,
-                    min=0, 
-                    max=100,
-                    messages={'empty': u'Введите вес ветки поиска',
-                              'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
-                              'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        min=0,
+        max=100,
+        messages={'empty': u'Введите вес ветки поиска',
+                  'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
+                  'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
+                  'number': u'Некорректный формат числа'})
     range_short_term = formencode.validators.Int(
-                    not_empty=True,
-                    min=0, 
-                    max=100,
-                    messages={'empty': u'Введите вес ветки краткосрочной',
-                              'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
-                              'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        min=0,
+        max=100,
+        messages={'empty': u'Введите вес ветки краткосрочной',
+                  'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
+                  'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
+                  'number': u'Некорректный формат числа'})
     range_long_term = formencode.validators.Int(
-                    not_empty=True,
-                    min=0, 
-                    max=100,
-                    messages={'empty': u'Введите вес ветки долгосрочной истории',
-                              'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
-                              'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
-                              'number': u'Некорректный формат числа'})
+        not_empty=True,
+        min=0,
+        max=100,
+        messages={'empty': u'Введите вес ветки долгосрочной истории',
+                  'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
+                  'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
+                  'number': u'Некорректный формат числа'})
     range_context = formencode.validators.Int(
-                    not_empty=True,
-                    min=0, 
-                    max=100,
-                    messages={'empty': u'Введите вес ветки контекста',
-                              'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
-                              'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
-                              'number': u'Некорректный формат числа'})
-    
-    
+        not_empty=True,
+        min=0,
+        max=100,
+        messages={'empty': u'Введите вес ветки контекста',
+                  'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
+                  'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
+                  'number': u'Некорректный формат числа'})
+
+
 class RegisterManagerForm(Schema):
     allow_extra_fields = True
     filter_extra_fields = True
-    manager_login = formencode.validators.String(not_empty=True, messages={'empty':u'Введите логин'})
-    manager_name = formencode.validators.String(not_empty=True, messages={'empty':u'Введите ФИО'})
-    manager_phone = formencode.validators.String(not_empty=True, messages={'empty':u'Введите телефон'})
-    manager_email = formencode.validators.Email(not_empty=True, messages={'empty':u'Введите e-mail'})    
-    manager_skype = formencode.validators.String(not_empty=True, messages={'empty':u'Введите Skype'})    
+    manager_login = formencode.validators.String(not_empty=True, messages={'empty': u'Введите логин'})
+    manager_name = formencode.validators.String(not_empty=True, messages={'empty': u'Введите ФИО'})
+    manager_phone = formencode.validators.String(not_empty=True, messages={'empty': u'Введите телефон'})
+    manager_email = formencode.validators.Email(not_empty=True, messages={'empty': u'Введите e-mail'})
+    manager_skype = formencode.validators.String(not_empty=True, messages={'empty': u'Введите Skype'})

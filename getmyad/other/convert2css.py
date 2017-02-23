@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 from pymongo import Connection
-import json
-import time
-from datetime import datetime
 import re
 
 

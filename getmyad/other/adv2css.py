@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
 from pymongo import Connection
-from math import floor, ceil
 
 
 def dec2hex(i):

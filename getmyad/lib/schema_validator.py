@@ -1,6 +1,7 @@
-# encoding: utf-8
-import re
+# -*- coding: UTF-8 -*-
 from copy import deepcopy
+
+import re
 
 
 class ValidationError(Exception):
@@ -18,7 +19,6 @@ class BadSchema(Exception):
 
 
 class BaseValidator(object):
-
     class NO_DEFAULT:
         pass
 
@@ -65,6 +65,7 @@ class Integer(BaseValidator):
                 pass
         raise ValidationError("%s is not Integer" % repr(obj))
 
+
 class Float(BaseValidator):
     def __init__(self, allow_convert=False, **kwargs):
         BaseValidator.__init__(self, **kwargs)
@@ -79,7 +80,6 @@ class Float(BaseValidator):
             except ValueError:
                 pass
         raise ValidationError("%s is not Float" % repr(obj))
-
 
 
 class Boolean(BaseValidator):
@@ -142,7 +142,7 @@ class Dictionary(BaseValidator):
                 raise ex
             except KeyError:
                 if isinstance(schema, BaseValidator) and \
-                   schema.default != BaseValidator.NO_DEFAULT:
+                                schema.default != BaseValidator.NO_DEFAULT:
                     result[key] = schema.default
                 else:
                     raise ValidationError("Dictionary has no key %s" %

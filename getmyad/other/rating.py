@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # This Python file uses the following encoding: utf-8
-from pymongo import Connection, DESCENDING
-import datetime
-import pymongo
-import pymongo.objectid
 import xmlrpclib
+
+from pymongo import Connection
+
 
 # Сервер основной базы данных, куда будет помещена обработанная статистика
 main_db_host = '213.186.119.106:27017,213.186.121.201:27018,213.186.121.84:27018'

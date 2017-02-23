@@ -1,5 +1,7 @@
 import unittest
+
 from getmyad.lib.template_convertor import js2mako
+
 
 class TestTemplateConvertor(unittest.TestCase):
 

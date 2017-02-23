@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 from __future__ import absolute_import
+
 """Routes configuration
 
 The more specific and detailed routes should be defined first so they
@@ -29,6 +30,6 @@ def make_map(config):
     map.connect('/', controller='main', action='index')
     map.connect('/{controller}/{action}')
     map.connect('/{controller}/{action}/{id}')
-    #map.connect('*', controller='main', action='index')
+    # map.connect('*', controller='main', action='index')
 
     return map

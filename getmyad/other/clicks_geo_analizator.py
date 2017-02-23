@@ -1,9 +1,10 @@
 #!/usr/bin/python
-from pymongo import Connection, DESCENDING
 import datetime
-import pymongo
-import GeoIP
 import csv
+
+from pymongo import Connection
+import GeoIP
+
 gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
 gc = GeoIP.open("/usr/share/GeoIP/GeoLiteCity.dat",GeoIP.GEOIP_STANDARD)
 main_db_host = '213.186.119.106:27017,213.186.121.201:27018,213.186.121.84:27018'

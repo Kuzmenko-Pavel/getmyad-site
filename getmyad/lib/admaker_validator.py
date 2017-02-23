@@ -1,55 +1,55 @@
-# encoding: utf-8
+# -*- coding: UTF-8 -*-
 from schema_validator import *
 
 Int = Integer(allow_convert=True)
 Color = Regex("[0-9a-fA-F]{6}$", default="777777")
-PixelSize = Regex("\d+\s?px$", default="0px") # TODO: нужен ли default?
+PixelSize = Regex("\d+\s?px$", default="0px")  # TODO: нужен ли default?
 Position = String(one_of=["bottom-right", "top-right",
                           "bottom-left", "top-left"])
-FontFamily = String(default='Arial, "Helvetica CY",  sans-serif')     # TODO: one_of
+FontFamily = String(default='Arial, "Helvetica CY",  sans-serif')  # TODO: one_of
 
 Block = {
-        "borderColor": Color,
-        "borderWidth": Integer(allow_convert=True, default=0),
-        "borderColorRet": Color,
-        "borderWidthRet": Integer(allow_convert=True, default=0),
-        "borderColorRec": Color,
-        "borderWidthRec": Integer(allow_convert=True, default=0),
-        "border_top_left_radius": Integer(allow_convert=True, default=0),
-        "border_top_right_radius": Integer(allow_convert=True, default=0),
-        "border_bottom_right_radius": Integer(allow_convert=True, default=0),
-        "border_bottom_left_radius": Integer(allow_convert=True, default=0),
-        "margin_top": Integer(allow_convert=True, default=0),
-        "margin_right": Integer(allow_convert=True, default=0),
-        "margin_bottom": Integer(allow_convert=True, default=0),
-        "margin_left": Integer(allow_convert=True, default=0),
-        "fontUnderline": Boolean,
-        "borderColorStatus": Boolean(default=False),
-        "backgroundColorStatus": Boolean(default=True),
-        "backgroundColorRetStatus": Boolean(default=True),
-        "backgroundColorRecStatus": Boolean(default=True),
-        "fontBold": Boolean,
-        "fontFamily": FontFamily,
-        "fontSize": Integer(allow_convert=True, default=10),
-        "font_variant": Boolean(default=False),
-        "line_height": Float(allow_convert=True, default=1.2),
-        "letter_spacing": Integer(allow_convert=True, default=0),
-        "hide": Boolean,
-        "top": Int,
-        "left": Int,
-        "height": PixelSize,
-        "width": PixelSize,
-        "html": String(default=''),
-        "align": String(one_of=["center", "left", "right"], default="center")
+    "borderColor": Color,
+    "borderWidth": Integer(allow_convert=True, default=0),
+    "borderColorRet": Color,
+    "borderWidthRet": Integer(allow_convert=True, default=0),
+    "borderColorRec": Color,
+    "borderWidthRec": Integer(allow_convert=True, default=0),
+    "border_top_left_radius": Integer(allow_convert=True, default=0),
+    "border_top_right_radius": Integer(allow_convert=True, default=0),
+    "border_bottom_right_radius": Integer(allow_convert=True, default=0),
+    "border_bottom_left_radius": Integer(allow_convert=True, default=0),
+    "margin_top": Integer(allow_convert=True, default=0),
+    "margin_right": Integer(allow_convert=True, default=0),
+    "margin_bottom": Integer(allow_convert=True, default=0),
+    "margin_left": Integer(allow_convert=True, default=0),
+    "fontUnderline": Boolean,
+    "borderColorStatus": Boolean(default=False),
+    "backgroundColorStatus": Boolean(default=True),
+    "backgroundColorRetStatus": Boolean(default=True),
+    "backgroundColorRecStatus": Boolean(default=True),
+    "fontBold": Boolean,
+    "fontFamily": FontFamily,
+    "fontSize": Integer(allow_convert=True, default=10),
+    "font_variant": Boolean(default=False),
+    "line_height": Float(allow_convert=True, default=1.2),
+    "letter_spacing": Integer(allow_convert=True, default=0),
+    "hide": Boolean,
+    "top": Int,
+    "left": Int,
+    "height": PixelSize,
+    "width": PixelSize,
+    "html": String(default=''),
+    "align": String(one_of=["center", "left", "right"], default="center")
 }
 
 MainHeader = {
-        "height": PixelSize,
-        "width": PixelSize,
-        "top": Int,
-        "left": Int,
-        "html": String(default=''),
-        }
+    "height": PixelSize,
+    "width": PixelSize,
+    "top": Int,
+    "left": Int,
+    "html": String(default=''),
+}
 
 MainBlock = Block.copy()
 MainBlock["itemsNumber"] = Int
@@ -100,12 +100,14 @@ admaker_schema = {
     }
 }
 
+
 def _mix_colors(color1, color2):
     ''' Смешивает цвета ``color1`` и ``color2``.
 
         Цвета передаются в формате rrggbb, в таком же формате возвращается
         результат.
     '''
+
     def split_rgb(c):
         split = (c[0:2], c[2:4], c[4:6])
         return [int(x, 16) for x in split]
@@ -114,6 +116,7 @@ def _mix_colors(color1, color2):
     c2 = split_rgb(color2)
     mixed = [(x[0] + x[1]) / 2 for x in zip(c1, c2)]
     return ''.join(hex(x)[2:] for x in mixed)
+
 
 def validate_admaker(admaker_options):
     ''' Выполняет проверку настроек admaker.
@@ -125,5 +128,6 @@ def validate_admaker(admaker_options):
                                                  validated['Nav']['backgroundColor'])
 
     return validated
+
 
 __all__ = ['validate_admaker']

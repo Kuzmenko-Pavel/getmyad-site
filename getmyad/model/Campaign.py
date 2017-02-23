@@ -1,8 +1,9 @@
-# This Python file uses the following encoding: utf-8
-import pymongo
+# -*- coding: UTF-8 -*-
 import datetime
-from pylons import app_globals, config
 from binascii import crc32
+
+from pylons import app_globals
+
 
 class Campaign(object):
     "Класс описывает рекламную кампанию, запущенную в GetMyAd"

@@ -1,16 +1,12 @@
 #!/usr/bin/python
 # encoding: utf-8
-from time import sleep
 from ftplib import FTP
-import pymongo
-import StringIO, codecs
-import re
-from sys import argv
-import json
-import urllib2
-from urlparse import urlparse
+import StringIO
 
+import pymongo
+import re
 from slimit import minifier
+
 
 def _generate_informer_loader(informer_id):
     ''' Возвращает код javascript-загрузчика информера '''

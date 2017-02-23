@@ -1,5 +1,6 @@
 # encoding: utf-8
 import unittest
+
 from getmyad.lib.schema_validator import *
 
 

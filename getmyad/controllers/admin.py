@@ -1,19 +1,15 @@
-# coding: utf-8
-from getmyad.lib.base import BaseController, render
-from getmyad.model import InformerFtpUploader, MoneyOutRequest
-from pylons import request, response, session, tmpl_context as c, url, \
-    app_globals
-from getmyad.lib import helpers as h
-from pylons.controllers.util import abort, redirect
+# -*- coding: UTF-8 -*-
 import logging
 
-
-
+from getmyad.lib.base import BaseController
+from getmyad.model import InformerFtpUploader, MoneyOutRequest
+from pylons import app_globals
+from getmyad.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
-class AdminController(BaseController):
 
+class AdminController(BaseController):
     def update_reserve(self):
         ''' Перезаливка заглушек на FTP '''
         for i in app_globals.db.informer.find({}, ['guid']):
@@ -30,8 +26,7 @@ class AdminController(BaseController):
             links.append((url, x['date'], x['user']['login']))
         return u"<h2>Неподтверждённые заявки: %s</h2>" % \
                h.ul(map(lambda x: h.link_to('%s %s' % (x[1], x[2]), x[0]), links))
-        
-    
+
     def ResendConfirmation(self, id):
         ''' Повторно отправляет заявки на вывод средств '''
         m = MoneyOutRequest()

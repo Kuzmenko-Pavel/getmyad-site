@@ -1,18 +1,10 @@
 #!/usr/bin/python
 # encoding: utf-8
-from time import sleep
 from ftplib import FTP
-import pymongo
-import StringIO, codecs
-import re
-from sys import argv
-import json
-import urllib2
-from urlparse import urlparse
+import StringIO
 import random
 
-from slimit import minifier
-
+import pymongo
 
 social_ads = [{'title': u'YOTTOS за креатив!',
                'description': u'Разрабатываем привлекательные информеры! Без плагиата!',

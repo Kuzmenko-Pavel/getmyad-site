@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # This Python file uses the following encoding: utf-8
-from pymongo import Connection, DESCENDING
 import datetime
+
+from pymongo import Connection, DESCENDING
 import pymongo
 import bson.objectid
+
 
 
 

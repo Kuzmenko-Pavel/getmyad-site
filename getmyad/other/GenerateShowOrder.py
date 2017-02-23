@@ -2,10 +2,10 @@
 # Этот скрипт устарел и в данный момент не используется
 # Оставлен на всякий случай (может содержать полезные куски кода)
 
-from pymongo import Connection
-import random
-import pyodbc
 from optparse import OptionParser
+
+from pymongo import Connection
+import pyodbc
 
 conn = Connection()
 mongo = conn.getmyadTemporaryDisabled_db

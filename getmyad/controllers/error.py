@@ -1,12 +1,10 @@
-# encoding: utf-8
+# -*- coding: UTF-8 -*-
 import cgi
 
 from getmyad.lib.base import BaseController, render
 from paste.urlparser import PkgResourcesParser
-from pylons.middleware import error_document_template
-from webhelpers.html.builder import literal
-from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import redirect, abort
+from pylons import tmpl_context as c
+
 
 class ErrorController(BaseController):
     """Generates error documents as and when they are required.
@@ -18,11 +16,12 @@ class ErrorController(BaseController):
     ErrorDocuments middleware in your config/middleware.py file.
 
     """
+
     def document(self):
         """Render the error document"""
         request = self._py_object.request
         res = request.environ.get('pylons.original_response')
-        code=cgi.escape(request.GET.get('code', str(res.status_int)))
+        code = cgi.escape(request.GET.get('code', str(res.status_int)))
         if code == "404":
             c.error_message = u'<h2>Запрашиваемая страница не найдена.</h2>'
         else:

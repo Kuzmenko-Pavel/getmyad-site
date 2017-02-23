@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # encoding: utf-8
 import ConfigParser
-import datetime
+
 import os
 import pymongo
-import xmlrpclib
 
 PYLONS_CONFIG = "deploy.ini"
 #PYLONS_CONFIG = "development.ini"

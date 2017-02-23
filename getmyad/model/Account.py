@@ -1,13 +1,13 @@
-# This Python file uses the following encoding: utf-8
-from getmyad.model import mq
+# -*- coding: UTF-8 -*-
 from uuid import uuid1
-from getmyad.model.Informer import Informer
-from getmyad.model.StatisticReports import StatisticReport
-from pylons import app_globals
 import datetime
+import logging
+
+from getmyad.model import mq
+from getmyad.model.Informer import Informer
+from pylons import app_globals
 import getmyad.lib.helpers as h
 import pymongo
-import logging
 
 log = logging.getLogger(__name__)
 

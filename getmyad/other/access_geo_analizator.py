@@ -1,8 +1,9 @@
 #!/usr/bin/python
-import datetime
-import GeoIP
 import sys
 import csv
+
+import GeoIP
+
 gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
 gc = GeoIP.open("/usr/share/GeoIP/GeoLiteCity.dat",GeoIP.GEOIP_STANDARD)
 

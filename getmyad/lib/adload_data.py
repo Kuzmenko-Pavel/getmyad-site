@@ -1,9 +1,8 @@
-# encoding: utf-8
-from pylons import app_globals
+# -*- coding: UTF-8 -*-
 import logging
-import datetime
 import uuid
-import dateutil.parser
+
+from pylons import app_globals
 
 log = logging.getLogger(__name__)
 

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# This Python file uses the following encoding: utf-8
+# -*- coding: UTF-8 -*-
 """Helper functions
 
 Consists of functions to typically be used within templates, but also
@@ -13,8 +12,8 @@ from webhelpers.html.tags import *
 from datetime import datetime
 from pylons.controllers.util import redirect
 import json
-import bson.json_util
 
+import bson.json_util
 
 
 class progressBar:

@@ -3,6 +3,7 @@
 # Обновляется коллекция stats_daily
 
 from datetime import datetime
+
 import pymongo
 
 date_start = datetime(2011, 10, 13)

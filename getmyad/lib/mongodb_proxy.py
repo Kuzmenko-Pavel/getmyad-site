@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """
 Copyright 2013 Gustav Arngarden
 
@@ -15,7 +16,9 @@ Copyright 2013 Gustav Arngarden
 """
 
 import time
+
 import pymongo
+
 
 def get_methods(*objs):
     return set(
