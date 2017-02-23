@@ -16,14 +16,14 @@ import pymongo
 from amqplib import client_0_8 as amqp
 
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
-MONGO_HOST = 'srv-5.yottos.com:27018,srv-9.yottos.com:27018,srv-5.yottos.com:27019,srv-8.yottos.com:27018'
+MONGO_HOST = 'srv-5.yottos.com:27018,srv-5.yottos.com:27020,srv-5.yottos.com:27019'
 MONGO_DATABASE = 'getmyad_db'
 otype = type
 
 # Параметры FTP для заливки статических файлов на сервер CDN
 cdn_server_url = 'https://cdnt.yottos.com/getmyad/'
-cdn_ftp = 'srv-2.yottos.com'
-cdn_ftp_list = ['srv-2.yottos.com', 'srv-3.yottos.com', 'srv-6.yottos.com', 'srv-7.yottos.com', 'srv-8.yottos.com', 'srv-9.yottos.com']
+cdn_ftp = 'srv-3.yottos.com'
+cdn_ftp_list = ['srv-3.yottos.com', 'srv-6.yottos.com', 'srv-7.yottos.com', 'srv-8.yottos.com', 'srv-9.yottos.com']
 cdn_ftp_user = 'cdn'
 cdn_ftp_password = '$www-app$'
 cdn_ftp_path = 'getmyad'
@@ -40,24 +40,15 @@ def _mongo_connection():
         connection = pymongo.Connection(host=MONGO_HOST)
     return connection
 
+
 def _mongo_main_db():
     ''' Возвращает подключение к базе данных MongoDB '''
     return _mongo_connection()[MONGO_DATABASE]
 
-def _get_channel():
-    """
-
-    Returns:
-
-    """
-    conn = amqp.Connection(host='localhost:5672', userid='guest', password='guest', virtual_host="/", insist=False)
-    ch = conn.channel()
-    ch.exchange_declare(exchange="indexator", type="topic", durable=False, auto_delete=True)
-    return ch
 
 def _get_worker_channel():
     ''' Подключается к брокеру mq '''
-    conn = amqp.Connection(host='rg.yottos.com',
+    conn = amqp.Connection(host='srv-4.yottos.com',
                            userid='worker',
                            password='worker',
                            virtual_host='worker',
@@ -65,18 +56,17 @@ def _get_worker_channel():
     ch = conn.channel()
     ch.exchange_declare(exchange="getmyad", type="topic", durable=False, auto_delete=True)
     return ch
-    
+
+
 def campaign_update(campaign_id):
     ''' Отправляет уведомление об обновлении рекламной кампании ``campaign_id`` '''
-    ch = _get_channel()
     ch_worker = _get_worker_channel()
     msg = amqp.Message(campaign_id)
-    ch.basic_publish(msg, exchange='getmyad', routing_key='campaign.update')
-    ch.close()
     ch_worker.basic_publish(msg, exchange='getmyad', routing_key='campaign.update')
     ch_worker.close()
     print "AMQP campaign_update", campaign_id
-    
+
+
 def mssql_connection_adload():
     """
 
@@ -96,10 +86,12 @@ def mssql_connection_adload():
 
 try:
     from pylons import config
+
     letter.TEMPLATES_DIRS = [os.path.join(config['pylons.paths']['templates'][0], 'mail')]
 except Exception:
     current_dir = os.path.dirname(__file__)
     letter.TEMPLATES_DIRS = [os.path.join(current_dir, '../templates/mail')]
+
 
 @task(max_retries=10, default_retry_delay=10)
 def registration_request_manager(**kwargs):
@@ -119,7 +111,7 @@ def registration_request_manager(**kwargs):
         letter.set_message(**kwargs)
         letter.send('mail.yottos.com', 25, 'support@yottos.com', '57fd8824')
     except Exception as ex:
-        print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries',0))
+        print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries', 0))
         registration_request_manager.retry(args=[], kwargs=kwargs, exc=ex)
     else:
         print "sendmail to %s ok" % email
@@ -143,7 +135,7 @@ def registration_request_user(email, **kwargs):
         letter.set_message(**kwargs)
         letter.send('mail.yottos.com', 25, 'support@yottos.com', '57fd8824')
     except Exception as ex:
-        print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries',0))
+        print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries', 0))
         registration_request_user.retry(args=[email], kwargs=kwargs, exc=ex)
     else:
         print "sendmail to %s ok" % email
@@ -186,7 +178,7 @@ def money_out_request(payment_type, email, **kwargs):
         letter.set_message(**kwargs)
         letter.send('mail.yottos.com', 25, 'support@yottos.com', '57fd8824')
     except Exception as ex:
-        print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries',0))
+        print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries', 0))
         money_out_request.retry(args=[payment_type, email], kwargs=kwargs, exc=ex)
     else:
         print "sendmail to %s ok" % email
@@ -210,11 +202,10 @@ def confirmation_email(email, **kwargs):
         letter.set_message(**kwargs)
         letter.send('mail.yottos.com', 25, 'support@yottos.com', '57fd8824')
     except Exception as ex:
-        print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries',0))
+        print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries', 0))
         confirmation_email.retry(args=[email], kwargs=kwargs, exc=ex)
     else:
         print "sendmail to %s ok" % email
-
 
 
 @task(max_retries=10, default_retry_delay=10, acks_late=True, ignore_result=True, queue='small-image')
@@ -230,8 +221,7 @@ def small_resize_image(res, campaign_id, work, **kwargs):
     resize_image(res, campaign_id, work, **kwargs)
 
 
-
-@task(max_retries=10, default_retry_delay=10, acks_late=True, ignore_result=True, queue='image')    
+@task(max_retries=10, default_retry_delay=10, acks_late=True, ignore_result=True, queue='image')
 def resize_image(res, campaign_id, work, **kwargs):
     """
 
@@ -244,20 +234,21 @@ def resize_image(res, campaign_id, work, **kwargs):
     print "------------------------------------------------"
     try:
         db = _mongo_main_db()
+
         def resize_and_upload_image(db, urls, trum_height, trum_width, logo):
             ''' Пережимает изображение по адресу ``url`` до размеров
                 ``height``x``width`` и заливает его на ftp для раздачи статики.
                 Возвращает url нового файла или пустую строку в случае ошибки.
             '''
             try:
-                def chdir(ftp, dir): 
+                def chdir(ftp, dir):
                     """
 
                     Args:
                         ftp:
                         dir:
                     """
-                    if directory_exists(ftp, dir) is False: # (or negate, whatever you prefer for readability)
+                    if directory_exists(ftp, dir) is False:  # (or negate, whatever you prefer for readability)
                         ftp.mkd(dir)
                     ftp.cwd(dir)
 
@@ -272,7 +263,7 @@ def resize_image(res, campaign_id, work, **kwargs):
 
                     """
                     filelist = []
-                    ftp.retrlines('LIST',filelist.append)
+                    ftp.retrlines('LIST', filelist.append)
                     for f in filelist:
                         if f.split()[-1] == dir and f.upper().startswith('D'):
                             return True
@@ -325,7 +316,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     f = cStringIO.StringIO(response.read())
                     i = Image.open(f).convert('RGBA')
                     width, height = i.size
-                    if logo != '': 
+                    if logo != '':
                         response = opener.open(logo)
                         f = cStringIO.StringIO(response.read())
                         l = Image.open(f).convert('RGBA')
@@ -335,7 +326,7 @@ def resize_image(res, campaign_id, work, **kwargs):
 
                     if width > height:
                         first_box = (0, 0, width, 1)
-                        second_box = (0, height-1, width, height)
+                        second_box = (0, height - 1, width, height)
                         mod = (width - height) % 2
                         if mod == 0:
                             attach_counter_r = (width - height) / 2
@@ -351,7 +342,7 @@ def resize_image(res, campaign_id, work, **kwargs):
 
                     elif width < height:
                         first_box = (0, 0, 1, height)
-                        second_box = (width-1, 0, width, height)
+                        second_box = (width - 1, 0, width, height)
                         mod = (height - width) % 2
                         if mod == 0:
                             attach_counter_r = (height - width) / 2
@@ -366,7 +357,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                         attach_counter = 0
                         ratio = 'c'
 
-                    image = Image.new("RGBA", size, (0,0,0))
+                    image = Image.new("RGBA", size, (0, 0, 0))
 
                     if ratio != 'c':
                         first_line = i.crop(first_box)
@@ -383,40 +374,39 @@ def resize_image(res, campaign_id, work, **kwargs):
                         color_count_second_line.sort(key=lambda x: x[0], reverse=True)
                         second_line = Image.new("RGBA", (cw, ch), color_count_second_line[0][1])
 
-
                     if ratio == 'v':
-                        image.paste(i, (0, attach_counter_r+1))
+                        image.paste(i, (0, attach_counter_r + 1))
                         counter = attach_counter_r
                         while counter > 0:
                             image.paste(first_line, (0, counter))
-                            counter -=1
+                            counter -= 1
                         counter = attach_counter_l
                         while counter > 0:
-                            image.paste(second_line, (0, size[1]-counter))
-                            counter -=1
+                            image.paste(second_line, (0, size[1] - counter))
+                            counter -= 1
                     elif ratio == 'vl':
                         image.paste(i, (0, 0))
                         counter = attach_counter_r + attach_counter_l
                         while counter > 0:
-                            image.paste(second_line, (0, size[1]-counter))
-                            counter -=1
+                            image.paste(second_line, (0, size[1] - counter))
+                            counter -= 1
                     elif ratio == 'h':
-                        image.paste(i, (attach_counter_r+1, 0))
+                        image.paste(i, (attach_counter_r + 1, 0))
                         counter = attach_counter_r
                         while counter > 0:
                             image.paste(first_line, (counter, 0))
-                            counter -=1
+                            counter -= 1
                         counter = attach_counter_l
                         while counter > 0:
-                            image.paste(second_line, (size[1]-counter, 0))
-                            counter -=1
+                            image.paste(second_line, (size[1] - counter, 0))
+                            counter -= 1
                     else:
                         image.paste(i, (0, 0))
                     if l is None:
                         image.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
                     else:
                         image.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
-                        image.paste(l,(image.size[0]-l.size[0],image.size[1]-l.size[1]),l)
+                        image.paste(l, (image.size[0] - l.size[0], image.size[1] - l.size[1]), l)
                     image = image.convert('RGB')
                     return [image, width, height]
 
@@ -428,36 +418,35 @@ def resize_image(res, campaign_id, work, **kwargs):
                 result = []
                 urlList = urls.split(',')
                 for url in urlList:
-                    rec = db.image.find_one({'src': url.strip(), size_key: {'$exists': True}, 'logo':logo})
+                    rec = db.image.find_one({'src': url.strip(), size_key: {'$exists': True}, 'logo': logo})
                     if rec:
                         old_url = rec[size_key].get('url', '')
                         if old_url != '':
                             result.append(old_url)
                             continue
 
-
                     image = resizer(url, trum_height, trum_width, logo)
 
                     buf_png = cStringIO.StringIO()
                     buf_webp = cStringIO.StringIO()
 
-                    image[0].save(buf_png, 'PNG')#, optimize=True)
-                    image[0].save(buf_webp, 'WebP')#, lossless=True)
+                    image[0].save(buf_png, 'PNG')  # , optimize=True)
+                    image[0].save(buf_webp, 'WebP')  # , lossless=True)
 
                     buf_png.seek(0)
                     buf_webp.seek(0)
 
                     new_filename = ftp_loader(buf_png, buf_webp)
                     new_url = cdn_server_url + 'imgn/' + new_filename[:2] + '/' + new_filename + '.png'
-                    db.image.update({'src': url,'logo':logo},
-                                                {'$set': {size_key: {'url': new_url,
-                                                                     'w': trum_width,
-                                                                     'h': trum_height,
-                                                                     'realWidth': image[1],
-                                                                     'realHeight': image[2],
-                                                                     'dt': datetime.datetime.now()
-                                                                     }}},
-                                                upsert=True, safe=True)
+                    db.image.update({'src': url, 'logo': logo},
+                                    {'$set': {size_key: {'url': new_url,
+                                                         'w': trum_width,
+                                                         'h': trum_height,
+                                                         'realWidth': image[1],
+                                                         'realHeight': image[2],
+                                                         'dt': datetime.datetime.now()
+                                                         }}},
+                                    upsert=True, safe=True)
                     result.append(new_url)
                 return " , ".join(result)
             except Exception as ex:
@@ -466,24 +455,24 @@ def resize_image(res, campaign_id, work, **kwargs):
                 print "image failed"
                 print "------------------------------------------------"
                 return ''
+
         for key, value in res.items():
             url, trum_height, trum_width, logo = value
             image = resize_and_upload_image(db, url, trum_height, trum_width, logo)
-            db.offer.update({'guid': key,},
-                {'$set':{"image": image}},
-                upsert=False)
+            db.offer.update({'guid': key, },
+                            {'$set': {"image": image}},
+                            upsert=False)
         if campaign_id is not None and work:
             campaign_update(campaign_id)
     except Exception as ex:
-        print "image failed to %s: %s (retry #%s)" % (campaign_id, ex, kwargs.get('task_retries',0))
+        print "image failed to %s: %s (retry #%s)" % (campaign_id, ex, kwargs.get('task_retries', 0))
         resize_image.retry(args=[res, campaign_id, work], kwargs=kwargs, exc=ex)
     else:
         print "image to %s ok" % campaign_id
         print "------------------------------------------------"
 
 
-
-@task(max_retries=10, ignore_result=True, acks_late=True, default_retry_delay=10)    
+@task(max_retries=10, ignore_result=True, acks_late=True, default_retry_delay=10)
 def campaign_offer_update(campaign_id, **kwargs):
     ''' Обновляет рекламную кампанию ``campaign_id``.
     
@@ -498,11 +487,10 @@ def campaign_offer_update(campaign_id, **kwargs):
         from getmyad.model.Campaign import Campaign
         from getmyad.model.Offer import Offer
         from getmyad.lib.adload_data import AdloadData
-       
+
         print "Create connection"
         db = _mongo_main_db()
         connection_adload = mssql_connection_adload()
-
 
         def check_image(urls, height, width, logo):
             ''' Пережимает изображение по адресу ``url`` до размеров
@@ -512,7 +500,7 @@ def campaign_offer_update(campaign_id, **kwargs):
             try:
                 print "-------------------------------"
                 print "Check image"
-                size_key = '%sx%s' % (height,width)
+                size_key = '%sx%s' % (height, width)
                 result = []
                 urlList = urls.split(',')
                 for url in urlList:
@@ -530,12 +518,11 @@ def campaign_offer_update(campaign_id, **kwargs):
                 print ex
                 print "-------------------------------"
                 return False
-        
-        
+
         a = datetime.datetime.now()
         campaign_id = campaign_id.lower()
         camp = Campaign(campaign_id, db)
-        
+
         try:
             camp.load()
         except Campaign.NotFoundError:
@@ -547,7 +534,7 @@ def campaign_offer_update(campaign_id, **kwargs):
         camp.update_status = 'start'
         work = camp.is_working()
         camp.save()
-        ad = AdloadData(connection_adload=connection_adload) 
+        ad = AdloadData(connection_adload=connection_adload)
         offers = ad.offers_list(campaign_id, camp.load_count)
         offers_len = len(offers)
         if offers_len < 1:
@@ -559,11 +546,11 @@ def campaign_offer_update(campaign_id, **kwargs):
         small = False
         if offers_len < 100:
             small = True
-        db.offer.remove({'campaignId': campaign_id, 'hash':{'$exists' : False}}, safe=True, w=3)
+        db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, safe=True, w=3)
         pipeline = [
-                {'$match':{'hash': {'$exists': True}, 'campaignId': campaign_id}},
-                {'$group':{'_id':'$hash'}}
-                ]
+            {'$match': {'hash': {'$exists': True}, 'campaignId': campaign_id}},
+            {'$group': {'_id': '$hash'}}
+        ]
         hashes = []
         cursor = db.offer.aggregate(pipeline=pipeline, cursor={})
         for doc in cursor:
@@ -590,23 +577,23 @@ def campaign_offer_update(campaign_id, **kwargs):
             offer.price = x['price']
             offer.url = x['url']
             offer.campaignTitle = campaignTitle
-            offer.image = image 
+            offer.image = image
             offer.description = x['description']
             offer.date_added = x['dateAdded']
             offer.campaign = campaign_id
-            offer.campaign_int = campaign_id_int 
+            offer.campaign_int = campaign_id_int
             offer.listAds = ['ALL']
             offer.isOnClick = True
             offer.type = 'teaser'
             offer.uniqueHits = uniqueHits_campaign
             offer.retargeting = retargeting_campaign
-            retarg = x.get('RetargetingID','')
+            retarg = x.get('RetargetingID', '')
             offer.RetargetingID = retarg.strip()
-            offer.Recommended = x.get('Recommended','')
+            offer.Recommended = x.get('Recommended', '')
             offer.width = -1
             offer.height = -1
-            offer.rating = round(((ctr * offer_cost)* 100000), 4)
-            offer.full_rating = round(((ctr * offer_cost)* 100000), 4)
+            offer.rating = round(((ctr * offer_cost) * 100000), 4)
+            offer.full_rating = round(((ctr * offer_cost) * 100000), 4)
             offer.cost = offer_cost
             offer.hash = offer.createOfferHash()
             if offer.hash not in hashes:
@@ -620,18 +607,18 @@ def campaign_offer_update(campaign_id, **kwargs):
                 else:
                     resize_image.delay(res_task_img, None, work)
                 res_task_img = {}
-        
+
         if small:
             small_resize_image.delay(res_task_img, campaign_id, work)
         else:
             resize_image.delay(res_task_img, campaign_id, work)
 
-        db.offer.remove({'campaignId': campaign_id, 'hash':{'$in' : hashes}}, safe=True, w=3)
+        db.offer.remove({'campaignId': campaign_id, 'hash': {'$in': hashes}}, safe=True, w=3)
         b = datetime.datetime.now()
         c = b - a
         print "Load", c.seconds
     except Exception as ex:
-        print "offer load failed to %s: %s (retry #%s)" % (campaign_id, ex, kwargs.get('task_retries',0))
+        print "offer load failed to %s: %s (retry #%s)" % (campaign_id, ex, kwargs.get('task_retries', 0))
         campaign_offer_update.retry(args=[campaign_id], kwargs=kwargs, exc=ex)
     else:
         camp.load()
@@ -640,12 +627,10 @@ def campaign_offer_update(campaign_id, **kwargs):
         camp.save()
         if work:
             campaign_update(campaign_id)
-        print "Finish load" , campaign_id
+        print "Finish load", campaign_id
 
 
-
-
-@task(max_retries=10, default_retry_delay=10)    
+@task(max_retries=10, default_retry_delay=10)
 def delete_account(login, **kwargs):
     """
 
@@ -656,14 +641,14 @@ def delete_account(login, **kwargs):
     try:
         print "Delete Account"
         db = _mongo_main_db()
-        informer_list = [ x['guid'] for x in db.informer.find({'user': login})]
+        informer_list = [x['guid'] for x in db.informer.find({'user': login})]
         domain_list = []
         for x in db.domain.find({'login': login}):
-            y = x.get('domains',{})
+            y = x.get('domains', {})
             for key, value in y.iteritems():
                 domain_list.append(value)
         for x in db.user.domains.find({'login': login}):
-            y = x.get('domains',[])
+            y = x.get('domains', [])
             for value in y:
                 domain_list.append(value)
         print db.stats_user_summary.remove({'user': login})
@@ -671,12 +656,12 @@ def delete_account(login, **kwargs):
         print db.informer.remove({'user': login})
         print db.domain.remove({'login': login})
         print db.user.domains.remove({'login': login})
-        print db.domain.categories.remove({'domain':{'$in':domain_list}})
+        print db.domain.categories.remove({'domain': {'$in': domain_list}})
         print db.money_out_request.remove({'user.login': login})
-        print db.stats_daily.rating.remove({'adv':{'$in':informer_list}})
+        print db.stats_daily.rating.remove({'adv': {'$in': informer_list}})
         print db.stats_daily_adv.remove({'user': login})
         print db.stats_daily_domain.remove({'user': login})
         print db.stats_daily_user.remove({'user': login})
     except Exception as ex:
-        print "account delete failed to %s: %s (retry #%s)" % (login, ex, kwargs.get('task_retries',0))
+        print "account delete failed to %s: %s (retry #%s)" % (login, ex, kwargs.get('task_retries', 0))
         delete_account.retry(args=[login], kwargs=kwargs, exc=ex)
