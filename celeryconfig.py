@@ -3,7 +3,7 @@ import sys
 
 sys.path.append('.')
 
-BROKER_HOST = "rg.yottos.com"
+BROKER_HOST = "srv-4.yottos.com"
 BROKER_PORT = 5672
 BROKER_USER = "getmyad_site"
 BROKER_PASSWORD = "123qwe"

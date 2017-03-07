@@ -101,7 +101,7 @@ class Offer(object):
                                            'RetargetingID': self.RetargetingID,
                                            'Recommended': self.Recommended
                                            }},
-                                 upsert=True, safe=False)
+                                 upsert=True, w=1)
         except Exception as e:
             print e
 
@@ -126,7 +126,7 @@ class Offer(object):
                                                'RetargetingID': self.RetargetingID,
                                                'Recommended': self.Recommended
                                                }},
-                                     False)
+                                     upsert=False, w=1)
             else:
                 self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
                                       'campaignId_int': long(self.campaign_int)},
@@ -146,7 +146,7 @@ class Offer(object):
                                                'RetargetingID': self.RetargetingID,
                                                'Recommended': self.Recommended
                                                }},
-                                     False)
+                                     upsert=False, w=1)
 
         except Exception as e:
             print e
