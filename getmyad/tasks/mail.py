@@ -289,7 +289,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                             ftp = ftplib.FTP(host=host, timeout=1200)
                             ftp.login(cdn_ftp_user, cdn_ftp_password)
                             chdir(ftp, cdn_ftp_path)
-                            chdir(ftp, 'imgn')
+                            chdir(ftp, 'imgn2')
                             chdir(ftp, new_filename[:2])
                             ftp.storbinary('STOR %s' % new_filename + '.png', buf_png)
                             ftp.storbinary('STOR %s' % new_filename + '.webp', buf_webp)
@@ -437,7 +437,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     buf_webp.seek(0)
 
                     new_filename = ftp_loader(buf_png, buf_webp)
-                    new_url = cdn_server_url + 'imgn/' + new_filename[:2] + '/' + new_filename + '.png'
+                    new_url = cdn_server_url + 'imgn2/' + new_filename[:2] + '/' + new_filename + '.png'
                     db.image.update({'src': url, 'logo': logo},
                                     {'$set': {size_key: {'url': new_url,
                                                          'w': trum_width,
