@@ -289,7 +289,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                             ftp = ftplib.FTP(host=host, timeout=1200)
                             ftp.login(cdn_ftp_user, cdn_ftp_password)
                             chdir(ftp, cdn_ftp_path)
-                            chdir(ftp, 'imgn')
+                            chdir(ftp, 'imgn2')
                             chdir(ftp, new_filename[:2])
                             ftp.storbinary('STOR %s' % new_filename + '.png', buf_png)
                             ftp.storbinary('STOR %s' % new_filename + '.webp', buf_webp)
@@ -437,7 +437,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     buf_webp.seek(0)
 
                     new_filename = ftp_loader(buf_png, buf_webp)
-                    new_url = cdn_server_url + 'imgn/' + new_filename[:2] + '/' + new_filename + '.png'
+                    new_url = cdn_server_url + 'imgn2/' + new_filename[:2] + '/' + new_filename + '.png'
                     db.image.update({'src': url, 'logo': logo},
                                     {'$set': {size_key: {'url': new_url,
                                                          'w': trum_width,
@@ -446,7 +446,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                                                          'realHeight': image[2],
                                                          'dt': datetime.datetime.now()
                                                          }}},
-                                    upsert=True, safe=True)
+                                    upsert=True, w=1)
                     result.append(new_url)
                 return " , ".join(result)
             except Exception as ex:
@@ -461,7 +461,7 @@ def resize_image(res, campaign_id, work, **kwargs):
             image = resize_and_upload_image(db, url, trum_height, trum_width, logo)
             db.offer.update({'guid': key, },
                             {'$set': {"image": image}},
-                            upsert=False)
+                            upsert=False, w=1)
         if campaign_id is not None and work:
             campaign_update(campaign_id)
     except Exception as ex:
@@ -546,7 +546,8 @@ def campaign_offer_update(campaign_id, **kwargs):
         small = False
         if offers_len < 100:
             small = True
-        db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, safe=True, w=3)
+        print "Offers len", offers_len
+        db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, w=0)
         pipeline = [
             {'$match': {'hash': {'$exists': True}, 'campaignId': campaign_id}},
             {'$group': {'_id': '$hash'}}
@@ -562,6 +563,7 @@ def campaign_offer_update(campaign_id, **kwargs):
         retargeting_campaign = camp.retargeting
         campaignTitle = camp.title
         res_task_img = {}
+        print "Start offer processed"
         for x in offers:
             if offers_len < 10000:
                 image = check_image(x['image'], 210, 210, x['logo'])
@@ -612,8 +614,8 @@ def campaign_offer_update(campaign_id, **kwargs):
             small_resize_image.delay(res_task_img, campaign_id, work)
         else:
             resize_image.delay(res_task_img, campaign_id, work)
-
-        db.offer.remove({'campaignId': campaign_id, 'hash': {'$in': hashes}}, safe=True, w=3)
+        print "Start remove offers"
+        db.offer.remove({'campaignId': campaign_id, 'hash': {'$in': hashes}}, w=1)
         b = datetime.datetime.now()
         c = b - a
         print "Load", c.seconds
