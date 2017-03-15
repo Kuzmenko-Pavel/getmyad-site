@@ -21,6 +21,7 @@ setup(
         "celery==3.1.7",
         "WebOb==1.3.1",
         "slimit==0.8.1",
+        "ply==3.4",
         "Pillow==3.0.0",
         "pylibmc==1.5.1",
         "urlfetch==1.0.2"

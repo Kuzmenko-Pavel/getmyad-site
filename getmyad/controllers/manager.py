@@ -3257,6 +3257,7 @@ class ManagerController(BaseController):
         c.edit_prepayment = edit_account.prepayment
         c.edit_account_blocked = edit_account.blocked or ''
         c.time_filter_click = edit_account.time_filter_click
+        c.cost_percent_click = edit_account.cost_percent_click
         c.account_domains = edit_account.domains.list()
         c.domains_categories = {}
         for x in c.account_domains:
@@ -3560,6 +3561,7 @@ class ManagerController(BaseController):
 
             edit_account.blocked = request.params.get('edit_account_blocked', False)
             edit_account.time_filter_click = int(request.params.get('edit_time_filter_click', 15))
+            edit_account.cost_percent_click = int(request.params.get('edit_cost_percent_click', 100))
 
             if request.params.get('edit_manager_get') is not None:
                 edit_account.manager_get = request.params.get('edit_manager_get')

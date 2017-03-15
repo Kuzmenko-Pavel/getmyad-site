@@ -291,6 +291,7 @@ class Account(object):
         #:     'banned': аккаунт заблокирован полностью (за нарушение) 
         self.blocked = False
         self.time_filter_click = 15
+        self.cost_percent_click = 100
         
     def register(self):
         ''' Регистрирует пользователя '''
@@ -389,6 +390,7 @@ class Account(object):
                                   'prepayment': self.prepayment,
                                   'blocked': self.blocked,
                                   'time_filter_click': self.time_filter_click,
+                                  'cost_percent_click': self.cost_percent_click,
                                   'range_short_term': float(self.range_short_term),
                                   'range_long_term': float(self.range_long_term),
                                   'range_context': float(self.range_context),
@@ -452,6 +454,7 @@ class Account(object):
         self.money_yandex = 'yandex' in self.money_out_paymentType
         self.blocked = record.get('blocked', False)
         self.time_filter_click = record.get('time_filter_click', 15)
+        self.cost_percent_click = record.get('cost_percent_click', 100)
         acc_type = record.get('accountType', 'user')
         if acc_type == 'manager':
             self.account_type = Account.Manager

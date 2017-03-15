@@ -240,7 +240,20 @@ span.psw-error-message, span.fields-error-message {
                         % endif
                         секунд
 					</td>
-				</tr>	
+				</tr>
+                <tr>
+                    <td>Цена рекламодателя: </td>
+					<td>
+                        % if c.account.account_type == Account.Administrator:
+						${h.select(name="edit_cost_percent_click", selected_values=c.cost_percent_click,
+							options=[(x,x) for x in xrange(5,101)])}
+                        % else:
+						${h.select(name="edit_cost_percent_click", selected_values=c.cost_percent_click,
+							options=[(x,x) for x in xrange(5,101)], disabled=True)}
+                        % endif
+                        процентов
+					</td>
+				</tr>
 				
 			</table>
 
