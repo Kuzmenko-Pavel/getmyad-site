@@ -62,7 +62,7 @@ class Campaign(object):
         'Загружает кампанию из базы данных'
         c = self.db.campaign.find_one({'guid': self.id})
         if not c:
-            raise Campaign.NotFoundError(self.id)
+            raise Campaign.NotFoundError(self.id, self.db)
         self.id = c.get('guid')
         self.id_int = c.get('guid_int',0)
         self.title = c.get('title')
