@@ -67,6 +67,15 @@ def campaign_update(campaign_id):
     print "AMQP campaign_update", campaign_id
 
 
+def campaign_stop(campaign_id):
+    ''' Отправляет уведомление об обновлении рекламной кампании ``campaign_id`` '''
+    ch_worker = _get_worker_channel()
+    msg = amqp.Message(campaign_id)
+    ch_worker.basic_publish(msg, exchange='getmyad', routing_key='campaign.stop')
+    ch_worker.close()
+    print "AMQP campaign_update", campaign_id
+
+
 def mssql_connection_adload():
     """
 
@@ -528,7 +537,7 @@ def campaign_offer_update(campaign_id, **kwargs):
         except Campaign.NotFoundError:
             print 'Campaign is not running'
             return
-
+        campaign_stop(campaign_id)
         camp.last_update = datetime.datetime.now()
         camp.project = 'adload'
         camp.update_status = 'start'
