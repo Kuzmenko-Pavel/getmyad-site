@@ -546,8 +546,19 @@ def campaign_offer_update(campaign_id, **kwargs):
         small = False
         if offers_len < 100:
             small = True
+        elif offers_len > 50000:
+            db.offer.remove({'campaignId': campaign_id}, w=3, j=True)
         print "Offers len", offers_len
-        db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, w=0)
+        db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, w=1)
+
+        ctr = 0.06
+        uniqueHits_campaign = camp.UnicImpressionLot
+        campaign_id_int = camp.id_int
+        contextOnly_campaign = camp.contextOnly
+        retargeting_campaign = camp.retargeting
+        campaignTitle = camp.title
+        res_task_img = {}
+
         pipeline = [
             {'$match': {'hash': {'$exists': True}, 'campaignId': campaign_id}},
             {'$group': {'_id': '$hash'}}
@@ -556,13 +567,7 @@ def campaign_offer_update(campaign_id, **kwargs):
         cursor = db.offer.aggregate(pipeline=pipeline, cursor={})
         for doc in cursor:
             hashes.append(doc['_id'])
-        ctr = 0.06
-        uniqueHits_campaign = camp.UnicImpressionLot
-        campaign_id_int = camp.id_int
-        contextOnly_campaign = camp.contextOnly
-        retargeting_campaign = camp.retargeting
-        campaignTitle = camp.title
-        res_task_img = {}
+
         print "Start offer processed"
         for x in offers:
             if offers_len < 10000:
