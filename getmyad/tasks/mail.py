@@ -73,7 +73,7 @@ def campaign_stop(campaign_id):
     msg = amqp.Message(campaign_id)
     ch_worker.basic_publish(msg, exchange='getmyad', routing_key='campaign.stop')
     ch_worker.close()
-    print "AMQP campaign_update", campaign_id
+    print "AMQP campaign_stop", campaign_id
 
 
 def mssql_connection_adload():
