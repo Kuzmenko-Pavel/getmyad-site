@@ -5,6 +5,7 @@ import StringIO
 import datetime
 import logging
 from binascii import crc32
+import json
 
 from getmyad.config.social_ads import social_ads
 from getmyad.lib.helpers import progressBar
@@ -300,6 +301,7 @@ class Informer:
         return template.render_unicode(parseInt=parseInt, **options)
 #        return minify_css( template.render_unicode(parseInt=h.parseInt, **opt) )
 
+
 class InformerFtpUploader:
     """ Заливает необходимое для работы информера файлы на сервер раздачи
         статики:
@@ -333,11 +335,21 @@ class InformerFtpUploader:
                 loader = StringIO.StringIO()
                 loader.write(self._generate_informer_loader_ssl())
                 loader.seek(0)
-                # TODO: Приведение к UPPER-CASE нужно будет убрать, когда
-                #       на сервере будет реализована case-insensitive раздача
-                #       статических файлов (задача #58).
                 ftp.storlines('STOR %s.js' % self.informer_id.lower(), loader)
-                ftp.storlines('STOR %s.js' % self.informer_id.upper(), loader)
+                ftp.quit()
+                loader.close()
+            except Exception, ex:
+                logging.error(ex)
+            try:
+
+                ftp = FTP(host=config.get('informer_loader_ftp'),
+                          user=config.get('informer_loader_ftp_user'),
+                          passwd=config.get('informer_loader_ftp_password'))
+                ftp.cwd(config.get('informer_loader_ftp_path_new'))
+                loader = StringIO.StringIO()
+                loader.write(self._generate_informer_loader_json())
+                loader.seek(0)
+                ftp.storlines('STOR %s.json' % self.informer_id.lower(), loader)
                 ftp.quit()
                 loader.close()
             except Exception, ex:
@@ -376,6 +388,31 @@ class InformerFtpUploader:
             prog.updateAmount(i)
             print "Saving informer %s... \t\t\t %s" % (adv['guid'], prog)
             InformerFtpUploader(adv['guid']).upload()
+
+    def _generate_informer_loader_json(self):
+        adv = self.db.informer.find_one({'guid': self.informer_id})
+        if not adv:
+            return json.dumps({'h': '', 'w': width, 'm': last_modified})
+        try:
+            width = int(re.match('[0-9]+',
+                        adv['admaker']['Main']['width']).group(0))
+            height = int(re.match('[0-9]+',
+                         adv['admaker']['Main']['height']).group(0))
+        except:
+            raise Exception("Incorrect size dimensions for informer %s" %
+                             self.informer_id)
+        try:
+            border = int(re.match('[0-9]+',
+                         adv['admaker']['Main']['borderWidth']).group(0))
+        except:
+            border = 1
+        width += border * 2
+        height += border * 2
+        last_modified = adv.get('lastModified')
+        last_modified = last_modified.strftime("%Y%m%d%H%M%S")
+
+        return json.dumps({'h': height, 'w': width, 'm': last_modified})
+
 
     def _generate_informer_loader_ssl(self):
         ''' Возвращает код javascript-загрузчика информера '''
