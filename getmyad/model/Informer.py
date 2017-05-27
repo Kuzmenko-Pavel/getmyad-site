@@ -350,6 +350,11 @@ class InformerFtpUploader:
                 loader.write(self._generate_informer_loader_json())
                 loader.seek(0)
                 ftp.storlines('STOR %s.json' % self.informer_id.lower(), loader)
+                loader.close()
+                loader = StringIO.StringIO()
+                loader.write(self._generate_informer_loader_js())
+                loader.seek(0)
+                ftp.storlines('STOR %s.js' % self.informer_id.lower(), loader)
                 ftp.quit()
                 loader.close()
             except Exception, ex:
@@ -392,7 +397,7 @@ class InformerFtpUploader:
     def _generate_informer_loader_json(self):
         adv = self.db.informer.find_one({'guid': self.informer_id})
         if not adv:
-            return json.dumps({'h': '', 'w': width, 'm': last_modified})
+            return json.dumps({'h': 'auto', 'w': 'auto', 'm': ''})
         try:
             width = int(re.match('[0-9]+',
                         adv['admaker']['Main']['width']).group(0))
@@ -413,6 +418,33 @@ class InformerFtpUploader:
 
         return json.dumps({'h': height, 'w': width, 'm': last_modified})
 
+    def _generate_informer_loader_js(self):
+        adv = self.db.informer.find_one({'guid': self.informer_id})
+        if not adv:
+            return ""
+        try:
+            guid = adv['guid']
+            width = int(re.match('[0-9]+',
+                        adv['admaker']['Main']['width']).group(0))
+            height = int(re.match('[0-9]+',
+                         adv['admaker']['Main']['height']).group(0))
+        except:
+            raise Exception("Incorrect size dimensions for informer %s" %
+                             self.informer_id)
+        try:
+            border = int(re.match('[0-9]+',
+                         adv['admaker']['Main']['borderWidth']).group(0))
+        except:
+            border = 1
+        width += border * 2
+        height += border * 2
+        last_modified = adv.get('lastModified')
+        last_modified = last_modified.strftime("%Y%m%d%H%M%S")
+        script = (ur"""
+        adsbyyottos.block_settings.cache['%(guid)s'] = {"h": %(height)s, "m": "%(last_modified)s", "w": %(width)s};
+        """) % {'guid': guid, 'width': width, 'height': height, 'last_modified': last_modified}
+
+        return """//<![CDATA[\n""" + minifier.minify(script.encode('utf-8'), mangle=False) + """\n//]]>"""
 
     def _generate_informer_loader_ssl(self):
         ''' Возвращает код javascript-загрузчика информера '''

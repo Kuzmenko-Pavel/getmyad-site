@@ -30,6 +30,34 @@ def _generate_informer_loader_json(informer_id, db):
     return json.dumps({'h': height, 'w': width, 'm': last_modified})
 
 
+def _generate_informer_loader_js(informer_id, db):
+    adv = db.informer.find_one({'guid': informer_id})
+    if not adv:
+        return ""
+    try:
+        guid = adv['guid']
+        width = int(re.match('[0-9]+',
+                    adv['admaker']['Main']['width']).group(0))
+        height = int(re.match('[0-9]+',
+                     adv['admaker']['Main']['height']).group(0))
+    except:
+        raise Exception("Incorrect size dimensions for informer %s" % informer_id)
+    try:
+        border = int(re.match('[0-9]+',
+                     adv['admaker']['Main']['borderWidth']).group(0))
+    except:
+        border = 1
+    width += border * 2
+    height += border * 2
+    last_modified = adv.get('lastModified')
+    last_modified = last_modified.strftime("%Y%m%d%H%M%S")
+    script = (ur"""
+    adsbyyottos.block_settings.cache['%(guid)s'] = {"h": %(height)s, "m": "%(last_modified)s", "w": %(width)s};
+    """) % {'guid': guid, 'width': width, 'height': height, 'last_modified': last_modified}
+
+    return """//<![CDATA[\n""" + minifier.minify(script.encode('utf-8'), mangle=False) + """\n//]]>"""
+
+
 def _generate_informer_loader_ssl(informer_id, db):
     ''' Возвращает код javascript-загрузчика информера '''
     adv = db.informer.find_one({'guid': informer_id})
@@ -316,6 +344,11 @@ def upload_all():
         loader.write(_generate_informer_loader_json(informer, db))
         loader.seek(0)
         ftp.storlines('STOR %s.json' % informer, loader)
+        loader.close()
+        loader = StringIO.StringIO()
+        loader.write(_generate_informer_loader_js(informer, db))
+        loader.seek(0)
+        ftp.storlines('STOR %s.js' % informer, loader)
         ftp.quit()
         loader.close()
 
