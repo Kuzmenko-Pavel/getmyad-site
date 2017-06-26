@@ -2,6 +2,7 @@
 import logging
 import datetime
 from uuid import uuid1
+from collections import defaultdict
 
 from pylons import request, session, tmpl_context as c, app_globals
 from pylons.controllers.util import abort, redirect
@@ -244,7 +245,6 @@ class AdloadController(BaseController):
                       [5, u'14001-16500'], [6, u'16501-19000'], [7, u'19001-25000'], [8, u'25001-∞']]
         c.contextOnly = showCondition.contextOnly
         c.retargeting = showCondition.retargeting
-        c.brending = showCondition.brending
         c.html_notification = showCondition.html_notification
         c.recomendet_types = [['all', u'Всегда'], ['min', u'По убыванию'], ['max', u'По возрастанию']]
         c.retargeting_types = [['offer', u'на помеченные товары'], ['account', u'на аккаунт']]
@@ -254,6 +254,17 @@ class AdloadController(BaseController):
         c.target = showCondition.target
         c.offer_by_campaign_unique = showCondition.offer_by_campaign_unique
         c.load_count = showCondition.load_count
+        c.brending = showCondition.brending
+        c.style_type = showCondition.style_type
+        c.style_types = [['default', u'динамически по умолчанию'], ['Block', u'как обычные предложения'],
+                         ['RetBlock', u'как ретаргетинговые предложения'],
+                         ['RecBlock', u'как рекомендованные предложения'],
+                         ['Style_1', u'Стиль с логотипом №1']]
+        style_data = defaultdict(str)
+        style_data['img'] = showCondition.style_data.get('img', 'https://cdnt.yottos.com/getmyad/logos/anonymous.gif')
+        style_data['head_title'] = showCondition.style_data.get('head_title', 'Подробнее')
+        style_data['button_title'] = showCondition.style_data.get('button_title', 'Подробнее')
+        c.style_data = style_data
         return render("/adload/campaign_settings.mako.html")
 
     def _campaign_settings_redirect(self):
@@ -386,7 +397,6 @@ class AdloadController(BaseController):
         showCondition.cost = int(request.params.get('cost', 0))
         showCondition.contextOnly = True if request.params.get('contextOnly') else False
         showCondition.retargeting = True if request.params.get('retargeting') else False
-        showCondition.brending = True if request.params.get('brending') else False
         showCondition.html_notification = True if request.params.get('html_notification') else False
         showCondition.recomendet_type = request.params.get('recomendet_type', 'all')
         showCondition.retargeting_type = request.params.get('retargeting_type', 'offer')
@@ -404,10 +414,16 @@ class AdloadController(BaseController):
             showCondition.load_count = int(load_count)
         else:
             showCondition.load_count = 100
+        showCondition.brending = True if request.params.get('brending') else False
+        showCondition.style_type = request.params.get('style_type', 'default')
+        style_data = defaultdict(str)
+        style_data['img'] = request.params.get('style_image', 'https://cdnt.yottos.com/getmyad/logos/anonymous.gif')
+        style_data['head_title'] = request.params.get('style_head_title', 'Подробнее')
+        style_data['button_title'] = request.params.get('style_button_title', 'Подробнее')
+        showCondition.style_data = style_data
         showCondition.save()
         campaign = Campaign(c.campaign_id)
         campaign.load()
-        print request.params
         campaign.disabled_retargiting_style = True if request.params.get('disabledRetargitingStyle') else False
         campaign.disabled_recomendet_style = True if request.params.get('disabledRecomendetStyle') else False
         campaign.social = True if request.params.get('socialCampaign') else False
@@ -931,12 +947,14 @@ class ShowCondition:
         self.load_count = 100
         self.contextOnly = False
         self.retargeting = False
-        self.brending = False
         self.html_notification = False
         self.recomendet_type = 'all'
         self.retargeting_type = 'offer'
         self.recomendet_count = 10
         self.target = ""
+        self.brending = False
+        self.style_type = 'default'
+        self.style_data = defaultdict(str)
 
     def load(self):
         ''' Загружает из базы данных настройки кампании.
@@ -981,12 +999,14 @@ class ShowCondition:
         self.offer_by_campaign_unique = cond.get('offer_by_campaign_unique', 1)
         self.load_count = cond.get('load_count', 100)
         self.retargeting = cond.get('retargeting', False)
-        self.brending = cond.get('brending', False)
         self.html_notification = cond.get('html_notification', False)
         self.target = cond.get('target', '')
         self.recomendet_type = cond.get('recomendet_type', 'all')
         self.retargeting_type = cond.get('retargeting_type', 'offer')
         self.recomendet_count = cond.get('recomendet_count', 10)
+        self.brending = cond.get('brending', False)
+        self.style_type = cond.get('style_type', 'default')
+        self.style_data = cond.get('style_data', {})
 
     def save(self):
         ''' Сохранение настроек кампании'''
@@ -1013,13 +1033,15 @@ class ShowCondition:
                          'offer_by_campaign_unique': self.offer_by_campaign_unique,
                          'load_count': self.load_count,
                          'retargeting': self.retargeting,
-                         'brending': self.brending,
                          'html_notification': self.html_notification,
                          'recomendet_type': self.recomendet_type,
                          'retargeting_type': self.retargeting_type,
                          'recomendet_count': self.recomendet_count,
                          'target': self.target,
-                         'contextOnly': self.contextOnly
+                         'contextOnly': self.contextOnly,
+                         'brending': self.brending,
+                         'style_type': self.style_type,
+                         'style_data': self.style_data
                          }
 
         app_globals.db_m.campaign.update({'guid': self.campaign_id},

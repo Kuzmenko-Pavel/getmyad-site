@@ -7,17 +7,17 @@ from pylons import app_globals
 
 class Campaign(object):
     "Класс описывает рекламную кампанию, запущенную в GetMyAd"
-    
+
     class NotFoundError(Exception):
         'Кампания не найдена'
+
         def __init__(self, id, db=None):
             self.id = id
             if db is None:
                 self.db = app_globals.db_m
             else:
                 self.db = db
-        
-    
+
     def __init__(self, id, db=None):
         if db is None:
             self.db = app_globals.db_m
@@ -50,6 +50,8 @@ class Campaign(object):
         self.contextOnly = False
         self.retargeting = False
         self.brending = False
+        self.style_type = 'default'
+        self.style_data = {}
         self.html_notification = False
         self.offer_by_campaign_unique = 1
         self.load_count = 100
@@ -57,14 +59,14 @@ class Campaign(object):
         self.update_status = 'complite'
         if self.exists():
             self.load()
-        
+
     def load(self):
         'Загружает кампанию из базы данных'
         c = self.db.campaign.find_one({'guid': self.id})
         if not c:
             raise Campaign.NotFoundError(self.id, self.db)
         self.id = c.get('guid')
-        self.id_int = c.get('guid_int',0)
+        self.id_int = c.get('guid_int', 0)
         self.title = c.get('title')
         self.account = c.get('account')
         self.manager = c.get('manager')
@@ -84,20 +86,23 @@ class Campaign(object):
             self.load_count = c['showConditions'].get('load_count', 100)
             self.contextOnly = c['showConditions'].get('contextOnly', False)
             self.retargeting = c['showConditions'].get('retargeting', False)
-            self.brending = c['showConditions'].get('brending', False)
             self.html_notification = c['showConditions'].get('html_notification', False)
-            self.target = c['showConditions'].get('target','')
+            self.target = c['showConditions'].get('target', '')
+            self.brending = c['showConditions'].get('brending', False)
+            self.style_type = c['showConditions'].get('style_type', 'default')
+            self.style_data = c['showConditions'].get('style_data', {})
         else:
             self.offer_by_campaign_unique = 1
             self.UnicImpressionLot = 1
             self.load_count = 100
             self.contextOnly = False
             self.retargeting = False
-            self.brending = False
             self.html_notification = False
             self.target = ''
+            self.brending = False
+            self.style_type = 'default'
+            self.style_data = {}
 
-    
     def restore_from_archive(self):
         'Пытается восстановить кампанию из архива. Возвращает true в случае успеха'
         c = self.db.campaign.archive.find_one({'guid': self.id})
@@ -106,9 +111,9 @@ class Campaign(object):
         self.delete()
         self.db.campaign.save(c)
         self.db.campaign.archive.remove({'guid': self.id, 'guid_int': long(self.id_int)}, safe=True)
-        
+
         return True
-    
+
     def save(self):
         'Сохраняет кампанию в базу данных'
         self.db.campaign.update(
@@ -129,14 +134,14 @@ class Campaign(object):
                       'update_status': self.update_status,
                       'status': self.status}},
             upsert=True, safe=True)
-    
+
     def exists(self):
         'Возвращает ``True``, если кампания с заданным ``id`` существует'
         return (self.db.campaign.find_one({'guid': self.id, 'guid_int': long(self.id_int)}) <> None)
-    
+
     def is_created(self):
         return self.status == 'created'
-    
+
     def is_started(self):
         return self.status == 'started'
 
@@ -154,23 +159,25 @@ class Campaign(object):
     def hold(self):
         self.status = 'hold'
         self.save()
-    
+
     def is_hold(self):
         return self.status == 'hold'
 
     def working(self):
         self.status = 'working'
         self.save()
-    
+
     def is_working(self):
         return self.status == 'working'
 
     def is_update(self):
         print self.update_status != 'complite'
-        print (self.last_update + datetime.timedelta(minutes=3)) >= (datetime.datetime.now() - datetime.timedelta(minutes=33))
+        print (self.last_update + datetime.timedelta(minutes=3)) >= (
+            datetime.datetime.now() - datetime.timedelta(minutes=33))
         print self.update_status
 
-        return (self.update_status != 'complite' and (self.last_update + datetime.timedelta(minutes=3)) >= (datetime.datetime.now() - datetime.timedelta(minutes=33)))
+        return (self.update_status != 'complite' and (self.last_update + datetime.timedelta(minutes=3)) >= (
+            datetime.datetime.now() - datetime.timedelta(minutes=33)))
 
     def is_stop(self):
         return self.status == 'stop'
@@ -182,7 +189,7 @@ class Campaign(object):
     def delete(self):
         'Удаляет кампанию'
         self.db.campaign.remove({'guid': self.id, 'guid_int': long(self.id_int)}, safe=True)
-    
+
     def move_to_archive(self):
         'Перемещает кампанию в архив'
         c = self.db.campaign.find_one({'guid': self.id, 'guid_int': long(self.id_int)})
