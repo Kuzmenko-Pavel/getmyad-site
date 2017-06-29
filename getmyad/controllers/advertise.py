@@ -91,6 +91,7 @@ class AdvertiseController(BaseController):
             informer = model.Informer()
             informer.loadGuid(id)
             informer.guid = id
+            informer.dynamic = False
             informer.user_login = user
             informer.admaker = object.get('options')
             informer.css = None
@@ -128,6 +129,45 @@ class AdvertiseController(BaseController):
             return h.JSON({'error': True, 'id': informer.guid,
                            'message': unicode(ex)})
 
+    def save_dynamic(self):
+        try:
+            user = session.get('user')
+            if not user:
+                return h.JSON({'error': True, 'message': u'Не выполнен вход'})
+            id = request.params.get('adv_id')
+            object = json.loads(request.body)
+            informer = model.Informer()
+            informer.loadGuid(id)
+            informer.guid = id
+            informer.dynamic = True
+            informer.user_login = user
+            informer.admaker = object.get('options')
+            informer.non_relevant = object.get('nonRelevant')
+            informer.css = ' '
+            informer.css_banner = ' '
+            informer.title = object.get('title')
+            informer.domain = object.get('domain')
+            informer.height = 1
+            informer.width = 1
+            informer.height_banner = 1
+            informer.width_banner = 1
+            informer.html_notification = True
+            informer.plase_branch = True
+            informer.retargeting_branch = True
+            informer.auto_reload = 0
+            informer.blinking = 0
+            informer.shake = 0
+            informer.rating_division = 1000
+            informer.blinking_reload = False
+            informer.shake_reload = False
+            informer.shake_mouse = False
+            informer.save()
+            return h.JSON({'error': False, 'id': informer.guid})
+        except Exception as ex:
+            log.debug("Error in advertise.save(): " + str(ex))
+            return h.JSON({'error': True, 'id': informer.guid,
+                           'message': unicode(ex)})
+
     def pattern_save(self):
         try:
             user = session.get('user')
@@ -149,7 +189,7 @@ class AdvertiseController(BaseController):
         user = session.get('user')
         if not user:
             return "Login!"
-        advertises = app_globals.db.informer.find().sort('user')
+        advertises = app_globals.db.informer.find({'dynamic': {'$ne':True}}).sort('user')
         data = [{'title': x['title'],
                  'guid': x['guid'],
                  'domain': x['domain'],
@@ -212,12 +252,12 @@ class AdvertiseController(BaseController):
     def _domainsAdvertises(self, domain):
         """ Возвращает выгрузки относящиеся к домену """
         if domain:
-            advertises = [(x['title'], x['guid'])
+            advertises = [(x['title'], x['guid'], x.get('dynamic', False))
                           for x in app_globals.db.informer.find({
                     'user': session.get('user'),
                     'domain': domain})]
         else:
-            advertises = [(x['title'], x['guid'])
+            advertises = [(x['title'], x['guid'], x.get('dynamic', False))
                           for x in app_globals.db.informer.find({
                     'user': session.get('user'),
                     'domain': {'$exists': False}})]
@@ -344,6 +384,16 @@ class AdvertiseController(BaseController):
         c.domains = model.Account(login=user).domains()
         return render("/create_adv.mako.html")
 
+    def create_dynamic(self):
+        """Создание выгрузки"""
+        user = session.get('user')
+        if not user:
+            redirect(url_for(controller='main', action='index'))
+        c.patterns = self._patterns()
+        c.advertise = None
+        c.domains = model.Account(login=user).domains()
+        return render("/create_adv_dynamic.mako.html")
+
     def edit(self):
         """Редактирование выгрузки"""
         user = session.get('user')
@@ -374,6 +424,37 @@ class AdvertiseController(BaseController):
         c.advertise = advertise
         c.domains = model.Account(login=user).domains()
         return render("/create_adv.mako.html")
+
+    def edit_dynamic(self):
+        """Редактирование выгрузки"""
+        user = session.get('user')
+        if not user:
+            redirect(url_for(controller='main', action='index'))
+        guid = request.params.get('ads_id')
+        x = app_globals.db.informer.find_one({'guid': guid})
+        if not x:
+            return u"Информер не найден!"
+
+        advertise = {'title': x['title'],
+                     'guid': x['guid'],
+                     'options': x.get('admaker', {}),
+                     'domain': x.get('domain', ''),
+                     'auto_reload': x.get('auto_reload', 0),
+                     'blinking': x.get('blinking', 0),
+                     'shake': x.get('shake', 0),
+                     'rating_division': x.get('rating_division', 1000),
+                     'non_relevant': x.get('nonRelevant', {}),
+                     'html_notification': bool(x.get('html_notification', False)),
+                     'blinking_reload': bool(x.get('blinking_reload', False)),
+                     'shake_reload': bool(x.get('shake_reload', False)),
+                     'shake_mouse': bool(x.get('shake_mouse', False))
+                     }
+        from webhelpers.html.builder import escape
+        advertise['non_relevant']['userCode'] = escape(advertise['non_relevant'].get('userCode', ''))
+        c.patterns = self._patterns()
+        c.advertise = advertise
+        c.domains = model.Account(login=user).domains()
+        return render("/create_adv_dynamic.mako.html")
 
     def _patterns(self):
         """Возвращает образцы выгрузок"""

@@ -7,7 +7,6 @@ import logging
 from binascii import crc32
 import json
 
-from getmyad.config.social_ads import social_ads
 from getmyad.lib.helpers import progressBar
 from getmyad.lib.admaker_validator import validate_admaker
 from getmyad.lib.template_convertor import js2mako
@@ -27,6 +26,7 @@ class Informer:
         """
         self.guid = None
         self.guid_int = 0
+        self.dynamic = False
         self.title = None
         self.admaker = None
         self.css = None
@@ -93,7 +93,8 @@ class Informer:
             update['range_context'] = self.range_context
             update['range_search'] = self.range_search
             update['retargeting_capacity'] = self.range_retargeting
-            
+
+        update['dynamic'] = self.dynamic
         if self.title:
             update['title'] = self.title
         if self.admaker:
@@ -186,6 +187,7 @@ class Informer:
             record = self.db.users.find_one({'login': mongo_record["user"]})
             self.guid = mongo_record['guid']
             self.guid_int = mongo_record['guid_int']
+            self.dynamic = mongo_record.get('dynamic', False)
             self.title = mongo_record['title']
             self.user_login = mongo_record["user"]
             self.admaker = mongo_record.get('admaker')
@@ -224,6 +226,7 @@ class Informer:
         informer = Informer()
         informer.guid = mongo_record['guid']
         informer.guid_int = mongo_record['guid_int']
+        informer.dynamic = mongo_record.get('dynamic', False)
         informer.title = mongo_record['title']
         informer.user_login = mongo_record["user"]
         db = app_globals.db
@@ -322,7 +325,6 @@ class InformerFtpUploader:
     def upload(self):
         """ Заливает через FTP загрузчик и заглушку информера """
         self.upload_loader()
-        self.upload_reserve()
 
     def upload_loader(self):
         ' Заливает загрузчик информера '
@@ -363,26 +365,6 @@ class InformerFtpUploader:
             logging.warning('informer_loader_ftp settings not set! '
                             'Check .ini file.')
 
-    def upload_reserve(self):
-        ' Заливает заглушку для информера '
-        if config.get('reserve_ftp'):
-            try:
-                ftp = FTP(config.get('reserve_ftp'))
-                ftp.login(config.get('reserve_ftp_user'),
-                          config.get('reserve_ftp_password'))
-                ftp.cwd(config.get('reserve_ftp_path'))
-                data = StringIO.StringIO()
-                data.write(self._generate_social_ads().encode('utf-8'))
-                data.seek(0)
-                ftp.storlines('STOR emergency-%s.html' % self.informer_id,
-                              data)
-                ftp.quit()
-                data.close()
-            except Exception, ex:
-                logging.error(ex)
-        else:
-            logging.warning('reserve_ftp settings not set! Check .ini file.')
-
     def uploadAll(self):
         """ Загружает на FTP скрипты для всех информеров """
         advertises = self.db.informer.find({}, {'guid': 1})
@@ -398,14 +380,20 @@ class InformerFtpUploader:
         adv = self.db.informer.find_one({'guid': self.informer_id})
         if not adv:
             return json.dumps({'h': 'auto', 'w': 'auto', 'm': ''})
+
+        last_modified = adv.get('lastModified')
+        last_modified = last_modified.strftime("%Y%m%d%H%M%S")
+        if adv.get('dynamic', False):
+            return json.dumps({'h': 'auto', 'w': 'auto', 'm': last_modified})
+
         try:
             width = int(re.match('[0-9]+',
                         adv['admaker']['Main']['width']).group(0))
             height = int(re.match('[0-9]+',
                          adv['admaker']['Main']['height']).group(0))
         except:
-            raise Exception("Incorrect size dimensions for informer %s" %
-                             self.informer_id)
+            width = 'auto'
+            height = 'auto'
         try:
             border = int(re.match('[0-9]+',
                          adv['admaker']['Main']['borderWidth']).group(0))
@@ -413,15 +401,23 @@ class InformerFtpUploader:
             border = 1
         width += border * 2
         height += border * 2
-        last_modified = adv.get('lastModified')
-        last_modified = last_modified.strftime("%Y%m%d%H%M%S")
-
         return json.dumps({'h': height, 'w': width, 'm': last_modified})
 
     def _generate_informer_loader_js(self):
         adv = self.db.informer.find_one({'guid': self.informer_id})
         if not adv:
             return ""
+
+        last_modified = adv.get('lastModified')
+        last_modified = last_modified.strftime("%Y%m%d%H%M%S")
+        if adv.get('dynamic', False):
+            guid = adv.get('guid', '')
+            script = (ur"""
+            adsbyyottos.block_settings.cache['%(guid)s'] = {"h": %(height)s, "m": "%(last_modified)s", "w": %(width)s};
+            """) % {'guid': guid, 'width': 'auto', 'height': 'auto', 'last_modified': last_modified}
+
+            return """//<![CDATA[\n""" + minifier.minify(script.encode('utf-8'), mangle=False) + """\n//]]>"""
+
         try:
             guid = adv['guid']
             width = int(re.match('[0-9]+',
@@ -429,8 +425,9 @@ class InformerFtpUploader:
             height = int(re.match('[0-9]+',
                          adv['admaker']['Main']['height']).group(0))
         except:
-            raise Exception("Incorrect size dimensions for informer %s" %
-                             self.informer_id)
+            width = 0
+            height = 0
+
         try:
             border = int(re.match('[0-9]+',
                          adv['admaker']['Main']['borderWidth']).group(0))
@@ -438,8 +435,7 @@ class InformerFtpUploader:
             border = 1
         width += border * 2
         height += border * 2
-        last_modified = adv.get('lastModified')
-        last_modified = last_modified.strftime("%Y%m%d%H%M%S")
+
         script = (ur"""
         adsbyyottos.block_settings.cache['%(guid)s'] = {"h": %(height)s, "m": "%(last_modified)s", "w": %(width)s};
         """) % {'guid': guid, 'width': width, 'height': height, 'last_modified': last_modified}
@@ -458,8 +454,8 @@ class InformerFtpUploader:
             height = int(re.match('[0-9]+',
                          adv['admaker']['Main']['height']).group(0))
         except:
-            raise Exception("Incorrect size dimensions for informer %s" %
-                             self.informer_id)
+            width = 0
+            height = 0
         try:
             border = int(re.match('[0-9]+',
                          adv['admaker']['Main']['borderWidth']).group(0))
@@ -703,44 +699,6 @@ class InformerFtpUploader:
         return """//<![CDATA[\n""" +  minifier.minify(script.encode('utf-8') , mangle=False) + """\n//]]>"""
         #return """//<![CDATA[\n""" + script.encode('utf-8') + """\n//]]>"""
         #eturn script.encode('utf-8')
-
-
-
-    def _generate_social_ads(self):
-        ''' Возвращает HTML-код заглушки с социальной рекламой,
-            которая будет показана при падении сервиса
-        '''
-        inf = self.db.informer.find_one({'guid': self.informer_id})
-        if not inf:
-            return
-
-        try:
-            items_count = int(inf['admaker']['Main']['itemsNumber'])
-        except:
-            items_count = 0
-
-        offers = ''
-        for i in xrange(0, items_count):
-            adv = social_ads[i % len(social_ads)]
-
-            offers += ('''<div class="advBlock"><a class="advHeader" href="%(url)s" target="_blank">''' +
-                       '''%(title)s</a><a class="advDescription" href="%(url)s" target="_blank">''' +
-                       '''%(description)s</a><a class="advCost" href="%(url)s" target="_blank"></a>''' +
-                       '''<a href="%(url)s" target="_blank"><img class="advImage" src="%(img)s" alt="%(title)s"/></a></div>'''
-                       ) % {'url': adv['url'], 'title': adv['title'], 'description': adv['description'], 'img': adv['image']}
-        return '''
-<html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="robots" content="nofollow" /><style type="text/css">html, body { padding: 0; margin: 0; border: 0; }</style><!--[if lte IE 6]><script type="text/javascript" src="//cdn.yottos.com/getmyad/supersleight-min.js"></script><![endif]-->
-%(css)s
-</head>
-<body>
-<div id='mainContainer'><div id="ads" style="position: absolute; left:0; top: 0">
-%(offers)s
-</div><div id='adInfo'><a href="https://yottos.com" target="_blank"></a></div>
-</body>
-</html>''' % {'css': inf.get('css'), 'offers': offers}
-
-
-
 
 
 def minify_css(css):

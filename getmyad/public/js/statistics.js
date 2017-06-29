@@ -271,7 +271,8 @@ $(document).ready(function() {
 				var row = $("#tableExistingInformers").jqGrid('getRowData', row_id);
 				if (row.Domain == 'Информеры, не привязанные к домену')
 					domain = '';
-				else domain = row.Domain	
+				else
+					domain = row.Domain
 				var url = '/advertise/domainsAdvertises?domain=' + domain;
 				$("#" + subgrid_table_id).jqGrid({
 		            url: url,
@@ -292,27 +293,37 @@ $(document).ready(function() {
 					loadComplete: function() {
 						for (var i = 0; i < $("#" + subgrid_table_id).getGridParam("reccount"); i++)
                         {
-                            
-							$("#" + subgrid_table_id).setCell(i + 1,'GuidR',"<input type='button' class='"+ subgrid_table_id +"-GuidR' data=" + $("#" + subgrid_table_id).getCell(i + 1,'GuidE') + " value='Удалить' />");
-							$("#" + subgrid_table_id).setCell(i + 1,'GuidE',"<input type='button' class='"+ subgrid_table_id +"-GuidE' data=" + $("#" + subgrid_table_id).getCell(i + 1,'GuidE') + " value='Править' />");
+                        	var guid = $("#" + subgrid_table_id).getCell(i + 1,'GuidE');
+                        	var dyn = $("#" + subgrid_table_id).getCell(i + 1,'GuidR');
+							$("#" + subgrid_table_id).setCell(i + 1,'GuidR',"<input type='button' class='"+ subgrid_table_id +"-GuidR' data=" + guid + " value='Удалить' />");
+							$("#" + subgrid_table_id).setCell(i + 1,'GuidE',"<input type='button' class='"+ subgrid_table_id +"-GuidE' data=" + guid + " dynamic=" + dyn + " value='Править' />");
 							//$("#" + subgrid_table_id).setCell(i + 1,'GuidR','<a href="/advertise/remove?ads_id=' + $("#" + subgrid_table_id).getCell(i + 1,'GuidE') + '">Удалить</a>');
 							//$("#" + subgrid_table_id).setCell(i + 1,'GuidE','<a href="/advertise/edit?ads_id=' + $("#" + subgrid_table_id).getCell(i + 1,'GuidE') + '#size">Править</a>');
-                        }	
+                        }
                         var editExistingInformers = $('.'+ subgrid_table_id +'-GuidE');
                         editExistingInformers.click(function(){
                             var id = $(this).attr('data');
-                            if (!id) 
+                            var dynamic = $(this).attr('dynamic');
+                            console.log(this);
+                            if (!id)
                                 return;
-                            window.open('/advertise/edit?ads_id=' + id + '#size','_blank');
+
+                            if (dynamic === 'true')
+							{
+								window.open('/advertise/edit_dynamic?ads_id=' + id + '#ready','_blank');
+							}
+							else{
+                            	window.open('/advertise/edit?ads_id=' + id + '#size','_blank');
+							}
                         });
-                        var editExistingInformers = $('.'+ subgrid_table_id +'-GuidR');
-                        editExistingInformers.click(function(){
+                        var removeExistingInformers = $('.'+ subgrid_table_id +'-GuidR');
+                        removeExistingInformers.click(function(){
                             var id = $(this).attr('data');
                             var form = $('#formRemoveBlock');
                             form.get(0).setAttribute('action', '/advertise/remove?ads_id=' + id );
 			                $("#dialogRemoveBlock").dialog('open');
                         });
-							
+
 					}
 
 				})

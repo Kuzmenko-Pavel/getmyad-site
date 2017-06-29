@@ -3737,7 +3737,8 @@ class ManagerController(BaseController):
                 height = get_int(inf['admaker']['Main']['height']) + 2 * get_int(inf['admaker']['Main']['borderWidth'])
                 valid = True
             except:
-                width = height = 0
+                width = 600
+                height = 200
                 valid = False
             lastModified = inf.get('lastModified')
             lastModified = lastModified.strftime("%Y%m%d%H%M%S")
