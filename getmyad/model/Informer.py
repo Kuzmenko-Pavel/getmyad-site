@@ -414,7 +414,7 @@ class InformerFtpUploader:
             guid = adv.get('guid', '')
             script = (ur"""
             adsbyyottos.block_settings.cache['%(guid)s'] = {"h": %(height)s, "m": "%(last_modified)s", "w": %(width)s};
-            """) % {'guid': guid, 'width': 'auto', 'height': 'auto', 'last_modified': last_modified}
+            """) % {'guid': guid, 'width': '"auto"', 'height': '"auto"', 'last_modified': last_modified}
 
             return """//<![CDATA[\n""" + minifier.minify(script.encode('utf-8'), mangle=False) + """\n//]]>"""
 
@@ -568,7 +568,7 @@ class InformerFtpUploader:
         var name_el = window[yt_temp_adv_name].shift();
         var div_el = document.getElementById(name_el);
 
-        ;el.src = src + 'block?scr=' + adv.guid + '&mod=' + adv.lastModified;
+        ;el.src = src + 'v1/pub?scr=' + adv.guid + '&mod=' + adv.lastModified;
         var moveShake = function(iframe)
         {
             var old_timeStamp = 0;
