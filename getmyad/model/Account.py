@@ -110,7 +110,7 @@ class Account(object):
                 self.db.domain.update({'login': self.account.login},
                                       {'$set': {('domains.' + str(uuid1())): domain}},
                                                safe=True, upsert=True)
-                
+                mq.MQ().account_update(self.account.login)
             except (pymongo.errors.OperationFailure):
                 raise Account.Domains.DomainAddError(self.account.login)
         
@@ -122,6 +122,7 @@ class Account(object):
                             {'categories': categories}
                             },
                         upsert=True)
+                mq.MQ().account_update(self.account.login)
             except (pymongo.errors.OperationFailure):
                 raise Account.Domains.DomainAddError(self.account.login)
                    
@@ -343,6 +344,7 @@ class Account(object):
                                   safe=True)
             log.info(vars(self))
             self.loaded = True
+            mq.MQ().account_update(self.login)
         except (pymongo.errors.DuplicateKeyError, pymongo.errors.OperationFailure):
             raise Account.AlreadyExistsError(self.login)
         

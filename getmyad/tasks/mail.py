@@ -76,6 +76,18 @@ def campaign_stop(campaign_id):
     print "AMQP campaign_stop", campaign_id
 
 
+def account_update(login):
+    ''' Отправляет уведомление об изменении в аккаунте ``login`` '''
+    ch_worker = _get_worker_channel()
+    msg = amqp.Message(login)
+    ch_worker.basic_publish(msg, exchange='getmyad', routing_key='account.update')
+    ch_worker.close()
+    try:
+        print "AMQP Account update %s" % login
+    except Exception as e:
+        print e
+
+
 def mssql_connection_adload():
     """
 
@@ -678,6 +690,7 @@ def delete_account(login, **kwargs):
         print db.stats_daily_adv.remove({'user': login})
         print db.stats_daily_domain.remove({'user': login})
         print db.stats_daily_user.remove({'user': login})
+        account_update(login)
     except Exception as ex:
         print "account delete failed to %s: %s (retry #%s)" % (login, ex, kwargs.get('task_retries', 0))
         delete_account.retry(args=[login], kwargs=kwargs, exc=ex)
