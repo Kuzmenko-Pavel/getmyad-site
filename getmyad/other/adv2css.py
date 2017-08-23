@@ -447,10 +447,10 @@ def adv_to_css(opt):
             mainwidth = 200  
       
         if mainwidth < 200:           
-            path = "background-image: url('http://cdnt.yottos.com/getmyad/logos/yot/"            
+            path = "background-image: url('http://cdn.yottos.com/logos/yot/"
             logoW = "45"
         else:            
-            path = "background-image: url('http://cdnt.yottos.com/getmyad/logos/"            
+            path = "background-image: url('http://cdn.yottos.com/logos/"
             logoW = "100"
             
         if NavLogoPosition == "top-right":  

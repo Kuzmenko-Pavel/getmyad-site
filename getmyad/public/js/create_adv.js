@@ -116,10 +116,10 @@ var AdvertiseEditor = AdvertiseEditor || (function () {
             o.Description.fontFamily = $('#textFont').val();
             o.Description.fontSize = TextfontSize;
             if (parseInt(o.Main.width) < 200) {
-                o.Nav.path = "//cdnt.yottos.com/getmyad/logos/yot/"
+                o.Nav.path = "//cdn.yottos.com/logos/yot/"
                 o.Nav.logoWidth = 45;
             } else {
-                o.Nav.path = "//cdnt.yottos.com/getmyad/logos/";
+                o.Nav.path = "//cdn.yottos.com/logos/";
                 o.Nav.logoWidth = 100;
             }
             var result = TrimPath.processDOMTemplate("styleTemplate", o);

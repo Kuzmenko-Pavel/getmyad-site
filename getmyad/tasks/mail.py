@@ -21,12 +21,12 @@ MONGO_DATABASE = 'getmyad_db'
 otype = type
 
 # Параметры FTP для заливки статических файлов на сервер CDN
-cdn_server_url = 'https://cdnt.yottos.com/getmyad/'
+cdn_server_url = 'https://cdn.yottos.com/'
 cdn_ftp = 'srv-3.yottos.com'
 cdn_ftp_list = ['srv-3.yottos.com', 'srv-6.yottos.com', 'srv-7.yottos.com', 'srv-8.yottos.com', 'srv-9.yottos.com']
 cdn_ftp_user = 'cdn'
 cdn_ftp_password = '$www-app$'
-cdn_ftp_path = 'getmyad'
+cdn_ftp_path = 'httpdocs'
 
 
 def _mongo_connection():
@@ -310,7 +310,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                             ftp = ftplib.FTP(host=host, timeout=1200)
                             ftp.login(cdn_ftp_user, cdn_ftp_password)
                             chdir(ftp, cdn_ftp_path)
-                            chdir(ftp, 'img4')
+                            chdir(ftp, 'img0')
                             chdir(ftp, new_filename[:2])
                             ftp.storbinary('STOR %s' % new_filename + '.png', buf_png)
                             ftp.storbinary('STOR %s' % new_filename + '.webp', buf_webp)
@@ -458,7 +458,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     buf_webp.seek(0)
 
                     new_filename = ftp_loader(buf_png, buf_webp)
-                    new_url = cdn_server_url + 'img4/' + new_filename[:2] + '/' + new_filename + '.png'
+                    new_url = cdn_server_url + 'img0/' + new_filename[:2] + '/' + new_filename + '.png'
                     db.image.update({'src': url, 'logo': logo},
                                     {'$set': {size_key: {'url': new_url,
                                                          'w': trum_width,

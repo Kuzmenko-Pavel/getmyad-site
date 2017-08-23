@@ -261,7 +261,7 @@ class AdloadController(BaseController):
                          ['RecBlock', u'как рекомендованные предложения'],
                          ['Style_1', u'Стиль с логотипом №1']]
         style_data = defaultdict(str)
-        style_data['img'] = showCondition.style_data.get('img', 'https://cdnt.yottos.com/getmyad/logos/anonymous.gif')
+        style_data['img'] = showCondition.style_data.get('img', 'https://cdn.yottos.com/logos/anonymous.gif')
         style_data['head_title'] = showCondition.style_data.get('head_title', 'Подробнее')
         style_data['button_title'] = showCondition.style_data.get('button_title', 'Подробнее')
         c.style_data = style_data
@@ -417,7 +417,7 @@ class AdloadController(BaseController):
         showCondition.brending = True if request.params.get('brending') else False
         showCondition.style_type = request.params.get('style_type', 'default')
         style_data = defaultdict(str)
-        style_data['img'] = request.params.get('style_image', 'https://cdnt.yottos.com/getmyad/logos/anonymous.gif')
+        style_data['img'] = request.params.get('style_image', 'https://cdn.yottos.com/logos/anonymous.gif')
         style_data['head_title'] = request.params.get('style_head_title', 'Подробнее')
         style_data['button_title'] = request.params.get('style_button_title', 'Подробнее')
         showCondition.style_data = style_data
