@@ -592,7 +592,7 @@ class AccountReports():
             if approved:
                 condition['approved'] = approved
             else:
-                condition['$or'] = [{"approved":{"$exists":approved}},{"approved":approved}]
+                condition['$or'] = [{"approved":{"$exists":approved}}, {"approved":approved}]
         data = self.db_m.money_out_request.find(condition)
         return list(data) 
 
