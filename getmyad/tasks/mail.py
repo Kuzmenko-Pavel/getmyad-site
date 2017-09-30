@@ -121,10 +121,10 @@ def registration_request_manager(**kwargs):
     Args:
         kwargs:
     """
-    email = 'getmyad@yottos.com'
+    email = 'Elena@yottos.com'
     try:
         letter = Letter()
-        letter.sender = 'elena@yottos.com'
+        letter.sender = 'support@yottos.com'
         letter.sender_name = 'Yottos GetMyAd'
         letter.recipients = email
         letter.subject = u'Заявка на регистрацию в GetMyAd'
