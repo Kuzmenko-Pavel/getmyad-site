@@ -217,8 +217,13 @@ class Account(object):
                 item['domains'] = domains
                 self.db.domain.save(item)
 
-            self.db.informer.remove({'domain':domain}, multi=True)
-            self.db.domain.categories.remove({'domain':domain}, multi=True)
+            for informer in self.db.informer.find({'domain': domain}):
+                informer_id = informer['guid']
+                self.db.informer.remove({'guid': informer_id}, multi=True)
+                mq.MQ().informer_stop(informer_id)
+
+            self.db.domain.categories.remove({'domain': domain}, multi=True)
+            mq.MQ().domain_stop(domain)
 
             self.db.user.domains.update({'login': self.account.login},
                                            {'$pull': {'domain': domain}},

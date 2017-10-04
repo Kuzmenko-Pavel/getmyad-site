@@ -25,9 +25,8 @@ class MQ(object):
                                virtual_host=config.get('amqp_virtual_host', '/'),
                                insist=True)
         ch = conn.channel()
-        ch.exchange_declare(exchange="getmyad", type="topic", durable=False, auto_delete=True)
+        ch.exchange_declare(exchange="getmyad", type="topic", durable=True, auto_delete=False, passive=False)
         return ch
-
 
     def campaign_start(self, campaign_id):
         ''' Отправляет уведомление о запуске рекламной кампании ``campaign_id`` '''
@@ -60,6 +59,22 @@ class MQ(object):
         ch.basic_publish(msg, exchange='getmyad', routing_key='informer.update')
         ch.close()
         print "AMQP Informer update %s" % informer_id
+
+    def informer_stop(self, informer_id):
+        ''' Отправляет уведомление о том, что информер ``informer_id`` был удален '''
+        ch = self._get_channel()
+        msg = amqp.Message(informer_id)
+        ch.basic_publish(msg, exchange='getmyad', routing_key='informer.stop')
+        ch.close()
+        print "AMQP Informer deleted %s" % informer_id
+
+    def domain_stop(self, domain):
+        ''' Отправляет уведомление о том, что информер ``informer_id`` был удален '''
+        ch = self._get_channel()
+        msg = amqp.Message(domain)
+        ch.basic_publish(msg, exchange='getmyad', routing_key='domain.stop')
+        ch.close()
+        print "AMQP Site deleted %s" % domain
 
     def account_update(self, login):
         ''' Отправляет уведомление об изменении в аккаунте ``login`` '''
