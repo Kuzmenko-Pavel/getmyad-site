@@ -23,7 +23,7 @@ otype = type
 # Параметры FTP для заливки статических файлов на сервер CDN
 cdn_server_url = 'https://cdn.yottos.com/'
 cdn_ftp = 'srv-3.yottos.com'
-cdn_ftp_list = ['srv-3.yottos.com', 'srv-6.yottos.com', 'srv-7.yottos.com', 'srv-8.yottos.com', 'srv-9.yottos.com']
+cdn_ftp_list = ['srv-7.yottos.com', 'srv-8.yottos.com', 'srv-9.yottos.com']
 cdn_ftp_user = 'cdn'
 cdn_ftp_password = '$www-app$'
 cdn_ftp_path = 'httpdocs'
