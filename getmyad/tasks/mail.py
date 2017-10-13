@@ -431,29 +431,32 @@ def resize_image(res, campaign_id, work, **kwargs):
                             result.append(old_url)
                             continue
 
-                    image = resizer(url, trum_height, trum_width, logo)
+                    try:
+                        image = resizer(url, trum_height, trum_width, logo)
+                    except Exception as e:
+                        print "image failed %s %s" % (e, url)
+                    else:
+                        buf_png = cStringIO.StringIO()
+                        buf_webp = cStringIO.StringIO()
 
-                    buf_png = cStringIO.StringIO()
-                    buf_webp = cStringIO.StringIO()
+                        image[0].save(buf_png, 'PNG')  # , optimize=True)
+                        image[0].save(buf_webp, 'WebP')  # , lossless=True)
 
-                    image[0].save(buf_png, 'PNG')  # , optimize=True)
-                    image[0].save(buf_webp, 'WebP')  # , lossless=True)
+                        buf_png.seek(0)
+                        buf_webp.seek(0)
 
-                    buf_png.seek(0)
-                    buf_webp.seek(0)
-
-                    new_filename = ftp_loader(buf_png, buf_webp)
-                    new_url = cdn_server_url + 'img1/' + new_filename[:2] + '/' + new_filename + '.png'
-                    db.image.update({'src': url.strip(), 'logo': logo},
-                                    {'$set': {size_key: {'url': new_url,
-                                                         'w': trum_width,
-                                                         'h': trum_height,
-                                                         'realWidth': image[1],
-                                                         'realHeight': image[2],
-                                                         'dt': datetime.datetime.now()
-                                                         }}},
-                                    upsert=True, w=1)
-                    result.append(new_url)
+                        new_filename = ftp_loader(buf_png, buf_webp)
+                        new_url = cdn_server_url + 'img1/' + new_filename[:2] + '/' + new_filename + '.png'
+                        db.image.update({'src': url.strip(), 'logo': logo},
+                                        {'$set': {size_key: {'url': new_url,
+                                                             'w': trum_width,
+                                                             'h': trum_height,
+                                                             'realWidth': image[1],
+                                                             'realHeight': image[2],
+                                                             'dt': datetime.datetime.now()
+                                                             }}},
+                                        upsert=True, w=1)
+                        result.append(new_url)
                 return " , ".join(result)
             except Exception as ex:
                 print ex
