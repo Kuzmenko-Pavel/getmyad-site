@@ -269,26 +269,12 @@ def resize_image(res, campaign_id, work, **kwargs):
                         ftp:
                         dir:
                     """
-                    if directory_exists(ftp, dir) is False:  # (or negate, whatever you prefer for readability)
+                    try:
+                        ftp.cwd(dir)
+                    except ftplib.all_errors as e:
                         ftp.mkd(dir)
-                    ftp.cwd(dir)
-
-                def directory_exists(ftp, dir):
-                    """
-
-                    Args:
-                        ftp:
-                        dir:
-
-                    Returns:
-
-                    """
-                    filelist = []
-                    ftp.retrlines('LIST', filelist.append)
-                    for f in filelist:
-                        if f.split()[-1] == dir and f.upper().startswith('D'):
-                            return True
-                    return False
+                        print(e)
+                        ftp.cwd(dir)
 
                 def ftp_loader(png, webp):
                     """
@@ -307,10 +293,9 @@ def resize_image(res, campaign_id, work, **kwargs):
                         buf_png = png
                         buf_webp = webp
                         try:
-                            ftp = ftplib.FTP(host=host, timeout=1200)
-                            ftp.login(cdn_ftp_user, cdn_ftp_password)
+                            ftp = ftplib.FTP(host=host, timeout=1200, user=cdn_ftp_user, passwd=cdn_ftp_password)
                             chdir(ftp, cdn_ftp_path)
-                            chdir(ftp, 'img0')
+                            chdir(ftp, 'img1')
                             chdir(ftp, new_filename[:2])
                             ftp.storbinary('STOR %s' % new_filename + '.png', buf_png)
                             ftp.storbinary('STOR %s' % new_filename + '.webp', buf_webp)
@@ -431,7 +416,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     image = image.convert('RGB')
                     return [image, width, height]
 
-                if not cdn_server_url or not cdn_ftp:
+                if not cdn_server_url or not cdn_ftp_list:
                     print 'Не заданы настройки сервера CDN. Проверьте .ini файл.'
                     return ''
                 size_key = '%sx%s' % (trum_height, trum_width)
@@ -458,8 +443,8 @@ def resize_image(res, campaign_id, work, **kwargs):
                     buf_webp.seek(0)
 
                     new_filename = ftp_loader(buf_png, buf_webp)
-                    new_url = cdn_server_url + 'img0/' + new_filename[:2] + '/' + new_filename + '.png'
-                    db.image.update({'src': url, 'logo': logo},
+                    new_url = cdn_server_url + 'img1/' + new_filename[:2] + '/' + new_filename + '.png'
+                    db.image.update({'src': url.strip(), 'logo': logo},
                                     {'$set': {size_key: {'url': new_url,
                                                          'w': trum_width,
                                                          'h': trum_height,
@@ -629,7 +614,7 @@ def campaign_offer_update(campaign_id, **kwargs):
             else:
                 offer.update()
                 hashes.remove(offer.hash)
-            if len(res_task_img) >= 10:
+            if len(res_task_img) >= 2:
                 if small:
                     small_resize_image.delay(res_task_img, None, work)
                 else:
