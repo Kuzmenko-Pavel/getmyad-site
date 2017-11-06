@@ -6,6 +6,8 @@ import StringIO
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import redirect
 import os
+from recaptcha.client.captcha import displayhtml, submit
+
 from getmyad.lib.base import BaseController, render
 from getmyad.lib.capcha import Capcha
 from getmyad.tasks.mail import registration_request_manager, registration_request_user
@@ -22,6 +24,7 @@ class RegisterUserController(BaseController):
         c.user_phone = session.pop('user_phone', '')
         c.user_email = session.pop('user_email', '')
         c.capcha_error = session.pop('capcha_error', '')
+        c.recaptcha_script = displayhtml('6LdnYDcUAAAAAP4n7Yt3-eTNjwARbMFOifsW6WCb', True)
         session.save()
         return render('/register_user.mako.html')
 
@@ -42,13 +45,16 @@ class RegisterUserController(BaseController):
 
     def send(self):
         res = request.params
-        print "YES"
-        if res.get('Capcha') != session.get("register_capcha"):
+        ip = request.remote_addr
+        recaptcha_challenge_field = res.get('recaptcha_challenge_field', '')
+        recaptcha_response_field = res.get('recaptcha_response_field', '')
+        recaptcha_submit = submit(recaptcha_challenge_field, recaptcha_response_field, '6LdnYDcUAAAAAM7yg836bWJ-pwtlyZLeqy0dP0KR', ip)
+        if not recaptcha_submit.is_valid:
             session['user_name'] = res.get('UserNameText')
             session['user_url'] = res.get('SiteUrl')
             session['user_email'] = res.get('Email')
             session['user_phone'] = res.get('PhoneNumber')
-            session['capcha_error'] = u'Неверно введены цифры с картинки. Попробуйте ещё раз.'
+            session['capcha_error'] = u'Неверно введены символы с картинки. Попробуйте ещё раз.'
             session.save()
             return redirect(url(controller="register_user", action="index"))
 
