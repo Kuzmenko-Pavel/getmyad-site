@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import logging
+import requests
 
 from getmyad.lib.base import BaseController
 from getmyad.model import InformerFtpUploader, MoneyOutRequest
@@ -12,8 +13,21 @@ log = logging.getLogger(__name__)
 class AdminController(BaseController):
     def update_reserve(self):
         ''' Перезаливка заглушек на FTP '''
+        link = []
+        headers = {'X-Cache-Update': '1'}
+        cdns = ['cdn.srv-10.yottos.com', 'cdn.srv-11.yottos.com', 'cdn.srv-12.yottos.com']
         for i in app_globals.db.informer.find({}, ['guid']):
-            InformerFtpUploader(i['guid']).upload_reserve()
+            guid = i['guid']
+            print(guid)
+            InformerFtpUploader(guid).upload()
+            link.append('/block/%s.json' % guid)
+            link.append('/block/%s.js' % guid)
+            link.append('/getmyad/%s.js' % guid)
+        for item in link:
+            for cdn in cdns:
+                url = 'http://%s%s' % (cdn, item)
+                r = requests.get(url, headers=headers, verify=False)
+                print('%s - %s' % (url, r.status_code))
 
     def PendingMoneyOutRequests(self):
         ''' Список заявок на вывод средств, ожидающих подтверждения '''

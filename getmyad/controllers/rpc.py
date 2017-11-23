@@ -198,19 +198,6 @@ class RpcController(XMLRPCController):
                 'lastUpdate': c.last_update
                 }
 
-    def maintenance_uploadEmergencyAds(self):
-        ''' Загружает аварийные заглушки для всех информеров '''
-        from getmyad.model import InformerFtpUploader
-        uploaded_count = 0
-        failed_count = 0
-        for i in app_globals.db.informer.find({}, fields=['guid']):
-            try:
-                InformerFtpUploader(i['guid']).upload_reserve()
-                uploaded_count += 1
-            except:
-                failed_count += 1
-        return {'uploaded_informers': uploaded_count, 'failed': failed_count}
-
     def maintenance_uploadInformerLoaders(self):
         ''' Загружает javascript загрузчики для всех информеров '''
         from getmyad.model import InformerFtpUploader
