@@ -78,7 +78,7 @@ var AdvertiseEditor = AdvertiseEditor || (function () {
             $("#informer-code").val(
                 '<ins class="adsbyyottos" style="display:block" \n'+
                 'data-ad-client="'+ informerId +'"></ins> \n'+
-                '<script async src="https://cdn.yottos.com/loader.js"></script>'
+                '<script async defer src="https://cdn.yottos.com/adsbyyottos.js"></script>'
             );
         }
 
