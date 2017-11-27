@@ -460,16 +460,10 @@ var AdvertiseEditor = AdvertiseEditor || (function () {
 
         /** Составляет код рекламной выгрузки */
         function generateScriptCode(informerId) {
-            // $("#informer-code").val('<scr' + 'ipt type="text/javascript">\n' +
-            // 						'yottos_advertise = "' + informerId + '";\n' +
-            // 						'yottos_advertise_div_display = "none";\n' +
-            // 						'</scr' + 'ipt>\n' +
-            // 						'<script type="text/javascript" src="https://cdn.yottos.com/getmyad/_a.js">' +
-            // 						'</sc' + 'ript>');
             $("#informer-code").val(
                 '<ins class="adsbyyottos" style="display:block" \n'+
                 'data-ad-client="'+ informerId +'"></ins> \n'+
-                '<script async src="https://cdn.yottos.com/loader.js"></script>'
+                '<script async defer src="https://cdn.yottos.com/adsbyyottos.js"></script>'
             );
         }
 

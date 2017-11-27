@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import logging
-import requests
+# import requests
 
 from getmyad.lib.base import BaseController
 from getmyad.model import InformerFtpUploader, MoneyOutRequest
@@ -26,7 +26,7 @@ class AdminController(BaseController):
         for item in link:
             for cdn in cdns:
                 url = 'http://%s%s' % (cdn, item)
-                r = requests.get(url, headers=headers, verify=False)
+                # r = requests.get(url, headers=headers, verify=False)
                 print('%s - %s' % (url, r.status_code))
 
     def PendingMoneyOutRequests(self):

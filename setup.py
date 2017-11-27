@@ -26,8 +26,7 @@ setup(
         "Pillow==3.0.0",
         "pylibmc==1.5.1",
         "urlfetch==1.0.2",
-        "recaptcha-client",
-        'requests'
+        "recaptcha-client"
     ],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
