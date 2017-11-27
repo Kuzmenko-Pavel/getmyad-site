@@ -1,5 +1,5 @@
 CACHE MANIFEST
-#v0.6.0
+#v0.7.0
 CACHE:
 /css/style.css
 /lib/css/theme/jquery-ui-1.8.1.custom.css
@@ -34,8 +34,6 @@ CACHE:
 /img/example.jpg
 /img/regButton.png
 /font/PTF76F_W.woff
-/js/create_adv.js
-/js/create_adv_dynamic.js
 
 
 NETWORK:
