@@ -8,6 +8,10 @@ from pylons import app_globals
 class Offer(object):
     'Класс описывает рекламное предложение'
 
+    __slots__ = ['db', 'id', 'id_int', 'title', 'price', 'url', 'image', 'description', 'date_added', 'campaign',
+                 'campaign_int', 'campaignTitle', 'retargeting', 'rating', 'full_rating', 'hash', 'cost', 'accountId',
+                 'RetargetingID', 'Recommended']
+
     def __init__(self, id, db=None):
         if db is None:
             self.db = app_globals.db_m
@@ -19,51 +23,37 @@ class Offer(object):
         self.price = ''
         self.url = ''
         self.image = None
-        self.swf = None
-        self.html = None
         self.description = ''
         self.date_added = None
         self.campaign = ''
         self.campaign_int = 0
         self.campaignTitle = ''
-        self.uniqueHits = 1
-        self.contextOnly = False
         self.retargeting = False
-        self.keywords = []
-        self.phrases = []
-        self.exactly_phrases = []
-        self.minus_words = []
-        self.listAds = []
-        self.category = 0
-        self.isOnClick = True
-        self.type = ''
-        self.width = ''
-        self.height = ''
         self.rating = 0.0
         self.full_rating = 0.0
-        self.hash = ''
+        self.hash = None
         self.cost = 0
         self.accountId = ''
         self.RetargetingID = ''
         self.Recommended = ''
 
-    def offerHashes(self):
-        print
-
+    @property
     def createOfferHash(self):
+        if self.hash is not None:
+            return self.hash
         offerHash = {}
         offerHash['guid'] = self.id
         offerHash['guid_int'] = long(self.id_int)
         offerHash['title'] = self.title
+        offerHash['description'] = self.description
         offerHash['url'] = self.url
         offerHash['campaignId'] = self.campaign
         offerHash['campaignId_int'] = self.campaign_int
         offerHash['cost'] = self.cost
         offerHash['price'] = self.price
         offerHash['dateAdded'] = self.date_added
-
-        offerHash = str(h.md5(str(offerHash)).hexdigest())
-        return offerHash
+        self.hash = str(h.md5(str(offerHash)).hexdigest())
+        return self.hash
 
     def save(self):
         'Сохраняет предложение в базу данных'
@@ -73,26 +63,12 @@ class Offer(object):
                                            'price': self.price,
                                            'url': self.url,
                                            'image': self.image,
-                                           'swf': self.swf,
-                                           'html': self.html,
                                            'description': self._trim_by_words(self.description, 70),
                                            'dateAdded': self.date_added,
                                            'campaignId': self.campaign,
                                            'campaignId_int': long(self.campaign_int),
                                            'campaignTitle': self.campaignTitle,
-                                           'uniqueHits': self.uniqueHits,
-                                           'contextOnly': self.contextOnly,
                                            'retargeting': self.retargeting,
-                                           'keywords': self.keywords,
-                                           'phrases': self.phrases,
-                                           'exactly_phrases': self.exactly_phrases,
-                                           'minus_words': self.minus_words,
-                                           'listAds': self.listAds,
-                                           'category': long(self.category),
-                                           'isOnClick': self.isOnClick,
-                                           'type': self.type,
-                                           'width': self.width,
-                                           'height': self.height,
                                            'rating': self.rating,
                                            'full_rating': self.full_rating,
                                            'hash': self.hash,
@@ -111,18 +87,7 @@ class Offer(object):
             if self.image == "":
                 self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
                                       'campaignId_int': long(self.campaign_int)},
-                                     {'$set': {'swf': self.swf,
-                                               'html': self.html,
-                                               'uniqueHits': self.uniqueHits,
-                                               'contextOnly': self.contextOnly,
-                                               'retargeting': self.retargeting,
-                                               'listAds': self.listAds,
-                                               'isOnClick': self.isOnClick,
-                                               'type': self.type,
-                                               'width': self.width,
-                                               'height': self.height,
-                                               'cost': self.cost,
-                                               'accountId': self.accountId,
+                                     {'$set': {'retargeting': self.retargeting,
                                                'RetargetingID': self.RetargetingID,
                                                'Recommended': self.Recommended
                                                }},
@@ -131,18 +96,7 @@ class Offer(object):
                 self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
                                       'campaignId_int': long(self.campaign_int)},
                                      {'$set': {'image': self.image,
-                                               'swf': self.swf,
-                                               'html': self.html,
-                                               'uniqueHits': self.uniqueHits,
-                                               'contextOnly': self.contextOnly,
                                                'retargeting': self.retargeting,
-                                               'listAds': self.listAds,
-                                               'isOnClick': self.isOnClick,
-                                               'type': self.type,
-                                               'width': self.width,
-                                               'height': self.height,
-                                               'cost': self.cost,
-                                               'accountId': self.accountId,
                                                'RetargetingID': self.RetargetingID,
                                                'Recommended': self.Recommended
                                                }},

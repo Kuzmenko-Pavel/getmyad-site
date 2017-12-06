@@ -561,9 +561,7 @@ def campaign_offer_update(campaign_id, **kwargs):
         db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, w=1)
 
         ctr = 0.06
-        uniqueHits_campaign = camp.UnicImpressionLot
         campaign_id_int = camp.id_int
-        contextOnly_campaign = camp.contextOnly
         retargeting_campaign = camp.retargeting
         campaignTitle = camp.title
         res_task_img = {}
@@ -580,39 +578,30 @@ def campaign_offer_update(campaign_id, **kwargs):
         print "Start offer processed"
         for x in offers:
             if offers_len < 10000:
-                image = check_image(x['image'], 210, 210, x['logo'])
+                image = check_image(x.image, 210, 210, x.logo)
             else:
                 image = False
             if not image:
-                res_task_img[x['id']] = [x['image'], 210, 210, x['logo']]
+                res_task_img[x.id] = [x.image, 210, 210, x.logo]
                 image = ""
-            offer_cost = float(x.get('ClickCost', '0.0'))
-            offer = Offer(x['id'], db)
-            offer.accountId = x['accountId'].lower()
-            offer.title = x['title']
-            offer.price = x['price']
-            offer.url = x['url']
-            offer.campaignTitle = campaignTitle
+            offer = Offer(x.id, db)
+            offer.accountId = x.accountId.lower()
+            offer.title = x.title
+            offer.price = x.price
+            offer.url = x.url
             offer.image = image
-            offer.description = x['description']
-            offer.date_added = x['dateAdded']
+            offer.description = x.description
+            offer.date_added = x.dateAdded
+            offer.RetargetingID = x.RetargetingID
+            offer.Recommended = x.Recommended
+            offer.cost = x.ClickCost
+            offer.campaignTitle = campaignTitle
             offer.campaign = campaign_id
             offer.campaign_int = campaign_id_int
-            offer.listAds = ['ALL']
-            offer.isOnClick = True
-            offer.type = 'teaser'
-            offer.uniqueHits = uniqueHits_campaign
             offer.retargeting = retargeting_campaign
-            retarg = x.get('RetargetingID', '')
-            offer.RetargetingID = retarg.strip()
-            offer.Recommended = x.get('Recommended', '')
-            offer.width = -1
-            offer.height = -1
-            offer.rating = round(((ctr * offer_cost) * 100000), 4)
-            offer.full_rating = round(((ctr * offer_cost) * 100000), 4)
-            offer.cost = offer_cost
-            offer.hash = offer.createOfferHash()
-            if offer.hash not in hashes:
+            offer.rating = round(((ctr * offer.cost) * 100000), 4)
+            offer.full_rating = round(((ctr * offer.cost) * 100000), 4)
+            if offer.createOfferHash not in hashes:
                 offer.save()
             else:
                 offer.update()
