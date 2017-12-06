@@ -107,7 +107,7 @@ class AdloadData(object):
                 FROM Lot 
                 INNER JOIN LotByAdvertise ON LotByAdvertise.LotID = Lot.LotID
                 INNER JOIN Advertise ON Advertise.AdvertiseID = LotByAdvertise.AdvertiseID
-                WHERE Advertise.AdvertiseID = %S AND Lot.ExternalURL <> '' 
+                WHERE Advertise.AdvertiseID = %s AND Lot.ExternalURL <> '' 
                     AND Lot.isTest = 1 AND lot.isAdvertising = 1
                 ''', (load_count, campaign))
             for row in cursor_a:
@@ -229,7 +229,7 @@ class AdloadData(object):
             cursor.close()
             # app_globals.connection_adload.close()
             return {'ok': True, 'warning': 'Campaign already in getmyad'}
-        cursor.execute('INSERT INTO AdvertiseInGetMyAd(AdvertiseID) VALUES (%S)', campaign_id)
+        cursor.execute('INSERT INTO AdvertiseInGetMyAd(AdvertiseID) VALUES (%s)', campaign_id)
         cursor.close()
         # app_globals.connection_adload.close()
         return {'ok': True}
@@ -269,7 +269,7 @@ class AdloadData(object):
         ''' Устанавливает курс валюты ``currency`` равным ``cost``. '''
         cursor = self.connection_adload.cursor()
         cursor.execute('DELETE FROM GetMyAd_CurrencyCost WHERE currency=%s', (currency,))
-        cursor.execute('INSERT INTO GetMyAd_CurrencyCost (currency, cost) VALUES (%S, %S)', (currency, cost))
+        cursor.execute('INSERT INTO GetMyAd_CurrencyCost (currency, cost) VALUES (%s, %s)', (currency, cost))
         cursor.close()
         # app_globals.connection_adload.close()
         return True
