@@ -229,7 +229,7 @@ def confirmation_email(email, **kwargs):
         print "sendmail to %s ok" % email
 
 
-@task(max_retries=10, default_retry_delay=10, acks_late=True, ignore_result=True, queue='small-image')
+@task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='small-image')
 def small_resize_image(res, campaign_id, work, **kwargs):
     """
 
@@ -242,7 +242,7 @@ def small_resize_image(res, campaign_id, work, **kwargs):
     resize_image(res, campaign_id, work, **kwargs)
 
 
-@task(max_retries=10, default_retry_delay=10, acks_late=True, ignore_result=True, queue='image')
+@task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='image')
 def resize_image(res, campaign_id, work, **kwargs):
     """
 
