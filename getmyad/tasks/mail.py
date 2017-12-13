@@ -23,7 +23,8 @@ otype = type
 # Параметры FTP для заливки статических файлов на сервер CDN
 cdn_server_url = 'https://cdn.yottos.com/'
 cdn_ftp = 'srv-3.yottos.com'
-cdn_ftp_list = ['srv-7.yottos.com', 'srv-8.yottos.com', 'srv-9.yottos.com']
+cdn_ftp_list = ['srv-10.yottos.com', 'srv-11.yottos.com', 'srv-12.yottos.com', 'srv-7.yottos.com', 'srv-8.yottos.com', 'srv-9.yottos.com']
+cdn_ftp_list_old = ['srv-7.yottos.com', 'srv-8.yottos.com', 'srv-9.yottos.com']
 cdn_ftp_user = 'cdn'
 cdn_ftp_password = '$www-app$'
 cdn_ftp_path = 'httpdocs'
@@ -294,8 +295,9 @@ def resize_image(res, campaign_id, work, **kwargs):
                         buf_webp = webp
                         try:
                             ftp = ftplib.FTP(host=host, timeout=1200, user=cdn_ftp_user, passwd=cdn_ftp_password)
-                            chdir(ftp, cdn_ftp_path)
-                            chdir(ftp, 'img1')
+                            if host in cdn_ftp_list_old:
+                                chdir(ftp, cdn_ftp_path)
+                            chdir(ftp, 'img2')
                             chdir(ftp, new_filename[:2])
                             ftp.storbinary('STOR %s' % new_filename + '.png', buf_png)
                             ftp.storbinary('STOR %s' % new_filename + '.webp', buf_webp)
@@ -640,7 +642,8 @@ def delete_account(login, **kwargs):
     """
 
     Args:
-        login:
+        login:*
+
         kwargs:
     """
     try:
