@@ -448,7 +448,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                         buf_webp.seek(0)
 
                         new_filename = ftp_loader(buf_png, buf_webp)
-                        new_url = cdn_server_url + 'img1/' + new_filename[:2] + '/' + new_filename + '.png'
+                        new_url = cdn_server_url + 'img2/' + new_filename[:2] + '/' + new_filename + '.png'
                         db.image.update({'src': url.strip(), 'logo': logo},
                                         {'$set': {size_key: {'url': new_url,
                                                              'w': trum_width,
