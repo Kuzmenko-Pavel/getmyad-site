@@ -6,6 +6,7 @@ import ftplib
 import urllib2
 import datetime
 import pymssql
+import time
 
 import letter
 from letter import Letter
@@ -285,6 +286,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     Returns:
 
                     """
+                    start_time = time.time()
                     new_filename = uuid1().get_hex()
                     for host in cdn_ftp_list:
                         png.seek(0)
@@ -292,14 +294,17 @@ def resize_image(res, campaign_id, work, **kwargs):
                         buf_png = png
                         buf_webp = webp
                         try:
+                            start_time1 = time.time()
                             ftp = ftplib.FTP(host=host, timeout=1200, user=cdn_ftp_user, passwd=cdn_ftp_password)
                             chdir(ftp, 'img2')
                             chdir(ftp, new_filename[:2])
                             ftp.storbinary('STOR %s' % new_filename + '.png', buf_png)
                             ftp.storbinary('STOR %s' % new_filename + '.webp', buf_webp)
                             ftp.close()
+                            print("--- %s upload %s seconds ---" % (host, time.time() - start_time1))
                         except Exception as ex:
                             print "ftp:%s %s" % (host, ex)
+                    print("--- FTP upload %s seconds ---" % (time.time() - start_time))
                     return new_filename
 
                 def resizer(url, trum_height, trum_width, logo):
