@@ -18,15 +18,15 @@ setup(
         "pymongo==2.8",
         "amqplib==1.0.2",
         "pymssql==2.0.1",
-        "celery==3.1.7",
-        "kombu==3.0.30",
+        "celery==4.1.0",
         "WebOb==1.3.1",
         "slimit==0.8.1",
         "ply==3.4",
         "Pillow==3.0.0",
         "pylibmc==1.5.1",
         "urlfetch==1.0.2",
-        "recaptcha-client"
+        "recaptcha-client",
+        'eventlet'
     ],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
