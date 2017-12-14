@@ -2,8 +2,8 @@
 
 from uuid import uuid1
 import cStringIO
-import ftplib
-import urllib2
+from eventlet.green import urllib2
+from eventlet.green import ftplib
 import datetime
 import pymssql
 import time
@@ -274,7 +274,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     except ftplib.all_errors as e:
                         ftp.mkd(dir)
                         print(e)
-                        ftp.cwd(dir)
+                        chdir(ftp, dir)
 
                 def ftp_loader(png, webp):
                     """
@@ -287,6 +287,7 @@ def resize_image(res, campaign_id, work, **kwargs):
 
                     """
                     start_time = time.time()
+                    print("--- Start FTP upload ---")
                     new_filename = uuid1().get_hex()
                     for host in cdn_ftp_list:
                         png.seek(0)
@@ -295,6 +296,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                         buf_webp = webp
                         try:
                             start_time1 = time.time()
+                            print("--- Start upload for %s ---" % (host,))
                             ftp = ftplib.FTP(host=host, timeout=1200, user=cdn_ftp_user, passwd=cdn_ftp_password)
                             chdir(ftp, 'img2')
                             chdir(ftp, new_filename[:2])
@@ -321,12 +323,22 @@ def resize_image(res, campaign_id, work, **kwargs):
                     """
                     opener = urllib2.build_opener()
                     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-                    response = opener.open(url)
+                    try:
+                        response = opener.open(url)
+                    except urllib2.HTTPError, e:
+                        raise Exception('HTTPError = ' + str(e.code))
+                    except urllib2.URLError, e:
+                        raise Exception('URLError = ' + str(e.reason))
                     f = cStringIO.StringIO(response.read())
                     i = Image.open(f).convert('RGBA')
                     width, height = i.size
                     if logo != '':
-                        response = opener.open(logo)
+                        try:
+                            response = opener.open(url)
+                        except urllib2.HTTPError, e:
+                            raise Exception('HTTPError = ' + str(e.code))
+                        except urllib2.URLError, e:
+                            raise Exception('URLError = ' + str(e.reason))
                         f = cStringIO.StringIO(response.read())
                         l = Image.open(f).convert('RGBA')
                         l.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
