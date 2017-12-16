@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+import linecache
+import sys
+import traceback
 from uuid import uuid1
 import cStringIO
 from eventlet.green import urllib2
@@ -313,7 +315,6 @@ def resize_image(res, campaign_id, work, **kwargs):
         work:
         kwargs:
     """
-    print "------------------------------------------------"
     try:
         db = _mongo_main_db()
 
@@ -325,20 +326,14 @@ def resize_image(res, campaign_id, work, **kwargs):
             try:
 
                 def cdn_loader(png, webp):
-                    start_time = time.time()
-                    print("--- Start CDN upload ---")
                     new_filename = uuid1().get_hex()
                     for host in cdn_api_list:
-                        start_time1 = time.time()
-                        print("--- Start upload for %s ---" % (host,))
                         png.seek(0)
                         webp.seek(0)
-                        send_png_url = 'http://%s/img4/%s/%s.png' % (host, new_filename[:2], new_filename)
-                        send_webp_url = 'http://%s/img4/%s/%s.webp' % (host, new_filename[:2], new_filename)
+                        send_png_url = 'http://%s/img1/%s/%s.png' % (host, new_filename[:2], new_filename)
+                        send_webp_url = 'http://%s/img1/%s/%s.webp' % (host, new_filename[:2], new_filename)
                         send(send_png_url, '%s.png' % new_filename, png)
                         send(send_webp_url, '%s.webp' % new_filename, webp)
-                        print("--- %s upload %s seconds ---" % (host, time.time() - start_time1))
-                    print("--- CDN upload %s seconds ---" % (time.time() - start_time))
                     return new_filename
 
                 def resizer(url, trum_height, trum_width, logo):
@@ -416,14 +411,14 @@ def resize_image(res, campaign_id, work, **kwargs):
                         first_line = i.crop(first_box)
                         cw, ch = first_line.size
                         percent = ((cw * ch) / 100.0)
-                        color_count_first_line = first_line.getcolors(1024)
+                        color_count_first_line = first_line.getcolors(max(width, height))
                         color_count_first_line.sort(key=lambda x: x[0], reverse=True)
                         first_line = Image.new("RGBA", (cw, ch), color_count_first_line[0][1])
 
                         second_line = i.crop(second_box)
                         cw, ch = second_line.size
                         percent = ((cw * ch) / 100.0)
-                        color_count_second_line = second_line.getcolors(1024)
+                        color_count_second_line = second_line.getcolors(max(width, height))
                         color_count_second_line.sort(key=lambda x: x[0], reverse=True)
                         second_line = Image.new("RGBA", (cw, ch), color_count_second_line[0][1])
 
@@ -480,8 +475,19 @@ def resize_image(res, campaign_id, work, **kwargs):
 
                     try:
                         image = resizer(url, trum_height, trum_width, logo)
-                    except Exception as e:
-                        print "image failed %s %s" % (e, url)
+                    except Exception as ex:
+                        exc_type, exc_obj, tb = sys.exc_info()
+                        f = tb.tb_frame
+                        trace = ''.join(traceback.format_tb(tb))
+                        lineno = tb.tb_lineno
+                        filename = f.f_code.co_filename
+                        linecache.checkcache(filename)
+                        line = linecache.getline(filename, lineno, f.f_globals)
+                        print('----------------------------------------------')
+                        print("image failed", url, ex)
+                        print(
+                        'EXCEPTION IN ({}, LINE {} "{}"): {} {}'.format(filename, lineno, line.strip(), exc_obj, trace))
+                        print('----------------------------------------------')
                     else:
                         buf_png = cStringIO.StringIO()
                         buf_webp = cStringIO.StringIO()
@@ -493,7 +499,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                         buf_webp.seek(0)
 
                         new_filename = cdn_loader(buf_png, buf_webp)
-                        new_url = cdn_server_url + 'img4/' + new_filename[:2] + '/' + new_filename + '.png'
+                        new_url = cdn_server_url + 'img1/' + new_filename[:2] + '/' + new_filename + '.png'
                         db.image.update({'src': url.strip(), 'logo': logo},
                                         {'$set': {size_key: {'url': new_url,
                                                              'w': trum_width,
@@ -506,10 +512,16 @@ def resize_image(res, campaign_id, work, **kwargs):
                         result.append(new_url)
                 return " , ".join(result)
             except Exception as ex:
-                print ex
-                print url
-                print "image failed"
-                print "------------------------------------------------"
+                exc_type, exc_obj, tb = sys.exc_info()
+                f = tb.tb_frame
+                trace = ''.join(traceback.format_tb(tb))
+                lineno = tb.tb_lineno
+                filename = f.f_code.co_filename
+                linecache.checkcache(filename)
+                line = linecache.getline(filename, lineno, f.f_globals)
+                print('----------------------------------------------')
+                print('EXCEPTION IN ({}, LINE {} "{}"): {} {}'.format(filename, lineno, line.strip(), exc_obj, trace))
+                print('----------------------------------------------')
                 return ''
 
         for key, value in res.items():
@@ -521,11 +533,18 @@ def resize_image(res, campaign_id, work, **kwargs):
         if campaign_id is not None and work:
             campaign_update(campaign_id)
     except Exception as ex:
+        exc_type, exc_obj, tb = sys.exc_info()
+        f = tb.tb_frame
+        trace = ''.join(traceback.format_tb(tb))
+        lineno = tb.tb_lineno
+        filename = f.f_code.co_filename
+        linecache.checkcache(filename)
+        line = linecache.getline(filename, lineno, f.f_globals)
+        print('----------------------------------------------')
         print "image failed to %s: %s (retry #%s)" % (campaign_id, ex, kwargs.get('task_retries', 0))
+        print('EXCEPTION IN ({}, LINE {} "{}"): {} {}'.format(filename, lineno, line.strip(), exc_obj, trace))
+        print('----------------------------------------------')
         resize_image.retry(args=[res, campaign_id, work], kwargs=kwargs, exc=ex)
-    else:
-        print "image to %s ok" % campaign_id
-        print "------------------------------------------------"
 
 
 @task(max_retries=10, ignore_result=True, acks_late=True, default_retry_delay=10)
@@ -611,7 +630,6 @@ def campaign_offer_update(campaign_id, **kwargs):
         campaign_id_int = camp.id_int
         retargeting_campaign = camp.retargeting
         campaignTitle = camp.title
-        res_task_img = {}
 
         pipeline = [
             {'$match': {'hash': {'$exists': True}, 'campaignId': campaign_id}},
@@ -624,6 +642,7 @@ def campaign_offer_update(campaign_id, **kwargs):
 
         print "Start offer processed"
         for x in offers:
+            res_task_img = {}
             if offers_len < 10000:
                 image = check_image(x.image, 210, 210, x.logo)
             else:
@@ -653,17 +672,15 @@ def campaign_offer_update(campaign_id, **kwargs):
             else:
                 offer.update()
                 hashes.remove(offer.hash)
-            if len(res_task_img) >= 2:
-                if small:
-                    small_resize_image.delay(res_task_img, None, work)
-                else:
-                    resize_image.delay(res_task_img, None, work)
-                res_task_img = {}
+            if small:
+                small_resize_image.delay(res_task_img, None, work)
+            else:
+                resize_image.delay(res_task_img, None, work)
 
         if small:
-            small_resize_image.delay(res_task_img, campaign_id, work)
+            small_resize_image.delay({}, campaign_id, work)
         else:
-            resize_image.delay(res_task_img, campaign_id, work)
+            resize_image.delay({}, campaign_id, work)
         print "Start remove offers"
         db.offer.remove({'campaignId': campaign_id, 'hash': {'$in': hashes}}, w=1)
         b = datetime.datetime.now()
