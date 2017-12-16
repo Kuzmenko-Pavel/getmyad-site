@@ -3,10 +3,13 @@
 from uuid import uuid1
 import cStringIO
 from eventlet.green import urllib2
-from eventlet.green import ftplib
 import datetime
 import pymssql
 import time
+
+import itertools
+import mimetools
+import mimetypes
 
 import letter
 from letter import Letter
@@ -19,14 +22,72 @@ from amqplib import client_0_8 as amqp
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
 MONGO_HOST = 'srv-5.yottos.com:27018,srv-5.yottos.com:27020,srv-5.yottos.com:27019'
 MONGO_DATABASE = 'getmyad_db'
-otype = type
 
 # Параметры FTP для заливки статических файлов на сервер CDN
 cdn_server_url = 'https://cdn.yottos.com/'
-cdn_ftp = 'srv-3.yottos.com'
-cdn_ftp_list = ['srv-10.yottos.com', 'srv-11.yottos.com', 'srv-12.yottos.com']
-cdn_ftp_user = 'cdn'
-cdn_ftp_password = '$www-app$'
+cdn_api_list = ['cdn.api.srv-10.yottos.com', 'cdn.api.srv-11.yottos.com', 'cdn.api.srv-12.yottos.com']
+
+
+class MultiPartForm(object):
+    __slots__ = ['files', 'boundary']
+
+    def __init__(self):
+        self.files = []
+        self.boundary = mimetools.choose_boundary()
+        return
+
+    def get_content_type(self):
+        return 'multipart/form-data; boundary=%s' % self.boundary
+
+    def add_file(self, fieldname, filename, fileHandle, mimetype=None):
+        body = fileHandle.read()
+        if mimetype is None:
+            mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        self.files.append((fieldname, filename, mimetype, body))
+        return
+
+    def __str__(self):
+        parts = []
+        part_boundary = '--' + self.boundary
+
+        parts.extend(
+            [part_boundary,
+             'Content-Disposition: file; name="%s"; filename="%s"' % \
+             (field_name, filename),
+             'Content-Type: %s' % content_type,
+             '',
+             body,
+             ]
+            for field_name, filename, content_type, body in self.files
+        )
+
+        flattened = list(itertools.chain(*parts))
+        flattened.append('--' + self.boundary + '--')
+        flattened.append('')
+        return '\r\n'.join(flattened)
+
+
+def send(url, filename, file, iteration=None):
+    try:
+        form = MultiPartForm()
+        form.add_file('file', filename, file)
+        body = str(form)
+        request = urllib2.Request(url)
+        request.add_header('X-Authentication', 'f9bf78b9a18ce6d46a0cd2b0b86df9da')
+        request.add_header('User-agent', 'Mozilla/5.0')
+        request.add_header('Content-type', form.get_content_type())
+        request.add_header('Content-length', len(body))
+        request.add_data(body)
+        urllib2.urlopen(request)
+    except Exception as e:
+        print(e)
+        if iteration is None:
+            iteration = 0
+        if iteration <= 5:
+            iteration += 1
+            send(url, filename, file, iteration)
+        else:
+            raise Exception(e)
 
 
 def _mongo_connection():
@@ -262,51 +323,22 @@ def resize_image(res, campaign_id, work, **kwargs):
                 Возвращает url нового файла или пустую строку в случае ошибки.
             '''
             try:
-                def chdir(ftp, dir):
-                    """
 
-                    Args:
-                        ftp:
-                        dir:
-                    """
-                    try:
-                        ftp.cwd(dir)
-                    except ftplib.all_errors as e:
-                        ftp.mkd(dir)
-                        print(e)
-                        chdir(ftp, dir)
-
-                def ftp_loader(png, webp):
-                    """
-
-                    Args:
-                        png:
-                        webp:
-
-                    Returns:
-
-                    """
+                def cdn_loader(png, webp):
                     start_time = time.time()
-                    print("--- Start FTP upload ---")
+                    print("--- Start CDN upload ---")
                     new_filename = uuid1().get_hex()
-                    for host in cdn_ftp_list:
+                    for host in cdn_api_list:
+                        start_time1 = time.time()
+                        print("--- Start upload for %s ---" % (host,))
                         png.seek(0)
                         webp.seek(0)
-                        buf_png = png
-                        buf_webp = webp
-                        try:
-                            start_time1 = time.time()
-                            print("--- Start upload for %s ---" % (host,))
-                            ftp = ftplib.FTP(host=host, timeout=1200, user=cdn_ftp_user, passwd=cdn_ftp_password)
-                            chdir(ftp, 'img2')
-                            chdir(ftp, new_filename[:2])
-                            ftp.storbinary('STOR %s' % new_filename + '.png', buf_png)
-                            ftp.storbinary('STOR %s' % new_filename + '.webp', buf_webp)
-                            ftp.close()
-                            print("--- %s upload %s seconds ---" % (host, time.time() - start_time1))
-                        except Exception as ex:
-                            print "ftp:%s %s" % (host, ex)
-                    print("--- FTP upload %s seconds ---" % (time.time() - start_time))
+                        send_png_url = 'http://%s/img4/%s/%s.png' % (host, new_filename[:2], new_filename)
+                        send_webp_url = 'http://%s/img4/%s/%s.webp' % (host, new_filename[:2], new_filename)
+                        send(send_png_url, '%s.png' % new_filename, png)
+                        send(send_webp_url, '%s.webp' % new_filename, webp)
+                        print("--- %s upload %s seconds ---" % (host, time.time() - start_time1))
+                    print("--- CDN upload %s seconds ---" % (time.time() - start_time))
                     return new_filename
 
                 def resizer(url, trum_height, trum_width, logo):
@@ -431,7 +463,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     image = image.convert('RGB')
                     return [image, width, height]
 
-                if not cdn_server_url or not cdn_ftp_list:
+                if not cdn_server_url or not cdn_api_list:
                     print 'Не заданы настройки сервера CDN. Проверьте .ini файл.'
                     return ''
                 size_key = '%sx%s' % (trum_height, trum_width)
@@ -460,8 +492,8 @@ def resize_image(res, campaign_id, work, **kwargs):
                         buf_png.seek(0)
                         buf_webp.seek(0)
 
-                        new_filename = ftp_loader(buf_png, buf_webp)
-                        new_url = cdn_server_url + 'img2/' + new_filename[:2] + '/' + new_filename + '.png'
+                        new_filename = cdn_loader(buf_png, buf_webp)
+                        new_url = cdn_server_url + 'img4/' + new_filename[:2] + '/' + new_filename + '.png'
                         db.image.update({'src': url.strip(), 'logo': logo},
                                         {'$set': {size_key: {'url': new_url,
                                                              'w': trum_width,
