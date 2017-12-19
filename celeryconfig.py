@@ -3,11 +3,7 @@ import sys
 
 sys.path.append('.')
 
-BROKER_HOST = "srv-4.yottos.com"
-BROKER_PORT = 5672
-BROKER_USER = "getmyad_site"
-BROKER_PASSWORD = "123qwe"
-BROKER_VHOST = "getmyad_site_celery"
+BROKER_URL = 'librabbitmq://getmyad_site:123qwe@srv-4.yottos.com:5672/getmyad_site_celery'
 BROKER_CONNECTION_MAX_RETRIES = 0
 BROKER_HEARTBEAT = 0
 CELERY_TASK_IGNORE_RESULT = True
