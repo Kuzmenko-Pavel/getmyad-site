@@ -9,44 +9,45 @@ class StatisticReport():
     
     def allAdvertiseScriptsSummary(self, user_login, dateStart = None, dateEnd = None):
         """Возвращает суммарную статистику по всем площадкам пользователя user_id"""
-        reduce = '''function(o,p) {
-                p.advTitle = (o.domain || " ") + (o.title || " ");
-                p.clicks += o.clicks || 0;
-                p.social_clicks += o.social_clicks || 0;
-                p.view_seconds += o.view_seconds || 0;
-                p.unique += o.clicksUnique || 0
-                p.impressions_block += o.impressions_block || 0;
-                p.impressions_block_not_valid += o.impressions_block_not_valid || 0;
-                p.totalCost += o.totalCost || 0;
-                var difference_impressions_block = 100.0;
-                if (p.impressions_block_not_valid > p.impressions_block && p.impressions_block_not_valid > 0)
-                {
-                    difference_impressions_block = difference_impressions_block * (p.impressions_block / p.impressions_block_not_valid)
-                }
-                p.difference_impressions_block = difference_impressions_block;
-            }'''
+        res = []
         condition = {'user': user_login}
         dateCondition = {}
         if dateStart <> None: dateCondition['$gte'] = dateStart
         if dateEnd <> None:   dateCondition['$lte'] = dateEnd
         if len(dateCondition) > 0:
             condition['date'] = dateCondition
-        
-        res = self.db.stats.daily.adv.group(['adv'],
-                                       condition,
-                                       {'advTitle': '',
-                                        'clicks':0,
-                                        'social_clicks':0,
-                                        'view_seconds':0,
-                                        'unique':0,
-                                        'impressions_block':0,
-                                        'impressions_block_not_valid':0,
-                                        'difference_impressions_block':0,
-                                        'totalCost':0},
-                                       reduce)
+        pipeline = [{'$match': condition},
+                    {'$group': {
+                        '_id': '$adv',
+                        'domain': {'$last': '$domain'},
+                        'title': {'$last': '$title'},
+                        'clicks': {'$sum': '$clicks'},
+                        'social_clicks': {'$sum': '$social_clicks'},
+                        'view_seconds': {'$sum': '$view_seconds'},
+                        'unique': {'$sum': '$clicksUnique'},
+                        'impressions_block': {'$sum': '$impressions_block'},
+                        'impressions_block_not_valid': {'$sum': '$impressions_block_not_valid'},
+                        'totalCost': {'$sum': '$totalCost'}
+                    }}
+                    ]
+        cursor = self.db.stats.daily.adv.aggregate(pipeline=pipeline)
+        for x in cursor:
+            d = {}
+            d['adv'] = x['_id']
+            d['advTitle'] = x['domain'] + x['title']
+            d['clicks'] = float(x['clicks'])
+            d['social_clicks'] = float(x['social_clicks'])
+            d['view_seconds'] = float(x['view_seconds'])
+            d['unique'] = float(x['unique'])
+            d['impressions_block'] = float(x['impressions_block'])
+            d['impressions_block_not_valid'] = float(x['impressions_block_not_valid'])
+            d['totalCost'] = float(x['totalCost'])
+            d['difference_impressions_block'] = 100.0
+            if d['impressions_block_not_valid'] > d['impressions_block'] and d['impressions_block_not_valid'] > 0:
+                d['difference_impressions_block'] = d['difference_impressions_block'] * (d['impressions_block'] / d['impressions_block_not_valid'])
+            res.append(d)
         return res
 
-    
     def statUserGroupedByDate(self, user, dateStart = None, dateEnd = None):
         """ Возвращает список {дата,уникальных,кликов,показов,сумма} 
             для пользователя или списка пользователей.
@@ -60,52 +61,44 @@ class StatisticReport():
                  'summ': float}
         
         """
-         
-        reduce = '''function(o,p) {
-                p.domain = o.domain || " ";
-                p.title = o.title || " ";
-                p.clicks += o.clicks || 0;
-                p.social_clicks += o.social_clicks || 0;
-                p.view_seconds += o.view_seconds || 0;
-                p.unique += o.clicksUnique || 0
-                p.impressions_block += o.impressions_block || 0;
-                p.impressions_block_not_valid += o.impressions_block_not_valid || 0;
-                p.summ += o.totalCost || 0;
-                var difference_impressions_block = 100.0;
-                if (p.impressions_block_not_valid > p.impressions_block && p.impressions_block_not_valid > 0)
-                {
-                    difference_impressions_block = difference_impressions_block * (p.impressions_block / p.impressions_block_not_valid)
-                }
-                p.difference_impressions_block = difference_impressions_block;
-            }'''
-        
+        res = []
         condition = {'user': {'$in': user if isinstance(user, list) else [user]}}
         dateCondition = {}
         if dateStart <> None: dateCondition['$gte'] = dateStart
         if dateEnd <> None:   dateCondition['$lte'] = dateEnd
         if len(dateCondition) > 0:
             condition['date'] = dateCondition
-        return [{'date': x['date'],
-                 'unique': x['unique'],
-                 'clicks': x['clicks'],
-                 'social_clicks': x['social_clicks'],
-                 'view_seconds': x['view_seconds'],
-                 'impressions_block': x['impressions_block'],
-                 'impressions_block_not_valid': x['impressions_block_not_valid'],
-                 'difference_impressions_block': x['difference_impressions_block'],
-                 'summ': x['summ']}
-                 for x in self.db.stats.daily.user.group(['date'],
-                                                   condition,
-                                                   {'clicks':0,
-                                                    'social_clicks':0,
-                                                    'view_seconds':0,
-                                                    'unique':0,
-                                                    'impressions_block':0,
-                                                    'impressions_block_not_valid':0,
-                                                    'difference_impressions_block':0,
-                                                    'summ':0},
-                                                   reduce)]
-    
+
+        pipeline = [{'$match': condition},
+                    {'$group': {
+                        '_id': '$date',
+                        'clicks': {'$sum': '$clicks'},
+                        'social_clicks': {'$sum': '$social_clicks'},
+                        'view_seconds': {'$sum': '$view_seconds'},
+                        'unique': {'$sum': '$clicksUnique'},
+                        'impressions_block': {'$sum': '$impressions_block'},
+                        'impressions_block_not_valid': {'$sum': '$impressions_block_not_valid'},
+                        'summ': {'$sum': '$totalCost'}
+                    }}
+                    ]
+        cursor = self.db.stats.daily.user.aggregate(pipeline=pipeline)
+        for x in cursor:
+            d = {}
+            d['date'] = x['_id']
+            d['clicks'] = float(x['clicks'])
+            d['social_clicks'] = float(x['social_clicks'])
+            d['view_seconds'] = float(x['view_seconds'])
+            d['unique'] = float(x['unique'])
+            d['impressions_block'] = float(x['impressions_block'])
+            d['impressions_block_not_valid'] = float(x['impressions_block_not_valid'])
+            d['summ'] = float(x['summ'])
+            d['difference_impressions_block'] = 100.0
+            if d['impressions_block_not_valid'] > d['impressions_block'] and d['impressions_block_not_valid'] > 0:
+                d['difference_impressions_block'] = d['difference_impressions_block'] * (
+                d['impressions_block'] / d['impressions_block_not_valid'])
+            res.append(d)
+
+        return res
 
     def statAdvGroupedByDate(self, adv_guid, dateStart = None, dateEnd = None):
         """ Возвращает список {дата,уникальных,кликов,показов,сумма} 
@@ -122,55 +115,45 @@ class StatisticReport():
             Параметр adv_guid -- коды одного РБ,
             по которым будет считаться статистика.
         """
-         
-        reduce = '''function(o,p) {
-                p.domain = o.domain || " ";
-                p.title = o.title || " ";
-                p.clicks += o.clicks || 0;
-                p.social_clicks += o.social_clicks || 0;
-                p.view_seconds += o.view_seconds || 0;
-                p.unique += o.clicksUnique || 0
-                p.impressions_block += o.impressions_block || 0;
-                p.impressions_block_not_valid += o.impressions_block_not_valid || 0;
-                p.summ += o.totalCost || 0;
-                var difference_impressions_block = 100.0;
-                if (p.impressions_block_not_valid > p.impressions_block && p.impressions_block_not_valid > 0)
-                {
-                    difference_impressions_block = difference_impressions_block * (p.impressions_block / p.impressions_block_not_valid)
-                }
-                p.difference_impressions_block = difference_impressions_block;
-            }'''
-        
-
+        res = []
         condition = {'adv': adv_guid }
         dateCondition = {}
         if dateStart <> None: dateCondition['$gte'] = dateStart
         if dateEnd <> None:   dateCondition['$lte'] = dateEnd
         if len(dateCondition) > 0:
             condition['date'] = dateCondition
-    
-        return [{'date': x['date'],
-                 'unique': x['unique'],
-                 'clicks': x['clicks'],
-                 'social_clicks': x['social_clicks'],
-                 'view_seconds': x['view_seconds'],
-                 'impressions_block': x['impressions_block'],
-                 'impressions_block_not_valid': x['impressions_block_not_valid'],
-                 'difference_impressions_block': x['difference_impressions_block'],
-                 'summ': x['summ']}
-                 for x in self.db.stats.daily.adv.group(['date'],
-                                                   condition,
-                                                   {'clicks':0,
-                                                    'social_clicks':0,
-                                                    'view_seconds':0,
-                                                    'unique':0,
-                                                    'impressions_block':0,
-                                                    'impressions_block_not_valid':0,
-                                                    'difference_impressions_block':0,
-                                                    'summ':0},
-                                                   reduce)]
 
-    
+        pipeline = [{'$match': condition},
+                    {'$group': {
+                        '_id': '$date',
+                        'clicks': {'$sum': '$clicks'},
+                        'social_clicks': {'$sum': '$social_clicks'},
+                        'view_seconds': {'$sum': '$view_seconds'},
+                        'unique': {'$sum': '$clicksUnique'},
+                        'impressions_block': {'$sum': '$impressions_block'},
+                        'impressions_block_not_valid': {'$sum': '$impressions_block_not_valid'},
+                        'summ': {'$sum': '$totalCost'}
+                    }}
+                    ]
+        cursor = self.db.stats.daily.adv.aggregate(pipeline=pipeline)
+        for x in cursor:
+            d = {}
+            d['date'] = x['_id']
+            d['clicks'] = float(x['clicks'])
+            d['social_clicks'] = float(x['social_clicks'])
+            d['view_seconds'] = float(x['view_seconds'])
+            d['unique'] = float(x['unique'])
+            d['impressions_block'] = float(x['impressions_block'])
+            d['impressions_block_not_valid'] = float(x['impressions_block_not_valid'])
+            d['summ'] = float(x['summ'])
+            d['difference_impressions_block'] = 100.0
+            if d['impressions_block_not_valid'] > d['impressions_block'] and d['impressions_block_not_valid'] > 0:
+                d['difference_impressions_block'] = d['difference_impressions_block'] * (
+                    d['impressions_block'] / d['impressions_block_not_valid'])
+            res.append(d)
+
+        return res
+
     def statAdvByDate(self, user, dateStart = None, dateEnd = None):
         """ Возвращает список {дата,уникальных,кликов,показов,сумма} 
             для пользователя.
@@ -186,27 +169,29 @@ class StatisticReport():
             Параметр adv_guid -- нескольких РБ,
             по которым будет считаться статистика.
         """
-         
-        reduce = '''function(o,p) {
-                p.clicks += o.clicks || 0;
-                p.domain = o.domain || " ";
-                p.title = o.title || " ";
-                p.data.push([ (o.date) ,(o.totalCost || 0)]);
-            }''' 
-        
-
+        res = []
         condition = {'user': user}
         dateCondition = {}
         if dateStart <> None: dateCondition['$gte'] = dateStart
         if dateEnd <> None:   dateCondition['$lte'] = dateEnd
         if len(dateCondition) > 0:
             condition['date'] = dateCondition
-    
-        return [{'guid': x['adv'],
+
+        pipeline = [{'$match': condition},
+                    {'$group': {
+                        '_id': '$adv',
+                        'clicks': {'$sum': '$clicks'},
+                        'domain': {'$last': '$domain'},
+                        'title': {'$last': '$title'},
+                        'data': {'$push': {'date':'$date', 'totalCost': '$totalCost'}}
+                    }}]
+        cursor = self.db.stats.daily.adv.aggregate(pipeline=pipeline)
+        for x in cursor:
+            res.append(
+                {'guid': x['_id'],
                  'domain': x['domain'],
                  'title': x['title'],
-                 'data': x['data']}
-                 for x in self.db.stats.daily.adv.group(['adv'],
-                                                   condition,
-                                                   {'title': '', 'domain': '', 'data': []},
-                                                   reduce)]
+                 'data': [ [i['date'], i['totalCost']] for i in x['data']]
+            }
+            )
+        return res

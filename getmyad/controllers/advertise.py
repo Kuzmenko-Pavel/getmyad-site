@@ -1,16 +1,17 @@
 # -*- coding: UTF-8 -*-
-from datetime import datetime
 import json
 import logging
 import time
+from datetime import datetime
 
-from getmyad.lib.base import BaseController, render
+import bson.json_util
 from pylons import request, session, tmpl_context as c, app_globals
 from pylons.controllers.util import redirect
 from routes.util import url_for
+
 import getmyad.lib.helpers as h
 import getmyad.model as model
-import bson.json_util
+from getmyad.lib.base import BaseController, render
 
 log = logging.getLogger(__name__)
 
@@ -189,7 +190,7 @@ class AdvertiseController(BaseController):
         user = session.get('user')
         if not user:
             return "Login!"
-        advertises = app_globals.db.informer.find({'dynamic': {'$ne':True}}).sort('user')
+        advertises = app_globals.db.informer.find({'dynamic': {'$ne': True}}).sort('user')
         data = [{'title': x['title'],
                  'guid': x['guid'],
                  'domain': x['domain'],
@@ -297,7 +298,7 @@ class AdvertiseController(BaseController):
                           if x['impressions_block_not_valid'] else 0),
                          '%.3f%%' % x['difference_impressions_block'],
                          h.secontToString((float(x['view_seconds']) / (x['clicks'] + x['social_clicks']) if (
-                         (x['clicks'] + x['social_clicks']) > 0) else 0), "{m}m : {s}s"),
+                             (x['clicks'] + x['social_clicks']) > 0) else 0), "{m}m : {s}s"),
                          '%.2f грн' %
                          ((round(x['summ'] / x['unique'], 3)
                            if x['unique'] > 0 else 0)),
@@ -329,24 +330,31 @@ class AdvertiseController(BaseController):
                      r['advTitle'],
                      r['impressions_block_not_valid'],
                      r['unique'],
-                     '%.3f%%' % round(r['unique'] * 100 / r['impressions_block_not_valid'], 3)
+                     '%.3f%%' % round(r['unique'] * 100.0 / r['impressions_block_not_valid'], 3)
                      if r['impressions_block_not_valid'] else 0,
                      '%.3f%%' % r['difference_impressions_block'],
                      h.secontToString((float(r['view_seconds']) / (r['clicks'] + r['social_clicks']) if (
-                     (r['clicks'] + r['social_clicks']) > 0) else 0), "{m}m : {s}s"),
+                         (r['clicks'] + r['social_clicks']) > 0) else 0), "{m}m : {s}s"),
                      '%.2f грн' %
                      ((round(r['totalCost'] / r['unique'], 3)
                        if r['unique'] > 0 else 0)),
                      '%.2f грн' % round(r['totalCost'], 2)
                  ]}
                 for index, r in enumerate(reportData)]
+
         totalImpressions = sum([r['impressions_block'] for r in reportData if 'impressions_block' in r])
+
         impressions_block_not_valid = sum(
             [r['impressions_block_not_valid'] for r in reportData if 'impressions_block_not_valid' in r])
+
         totalUnique = sum([r['unique'] for r in reportData if 'unique' in r])
+
         totalCost = sum([r['totalCost'] for r in reportData if 'totalCost' in r])
+
         view_seconds = sum([r['view_seconds'] for r in reportData if 'view_seconds' in r])
+
         clicks = sum([r['clicks'] for r in reportData if 'clicks' in r])
+
         social_clicks = sum([r['social_clicks'] for r in reportData if 'social_clicks' in r])
 
         result = {
@@ -359,7 +367,7 @@ class AdvertiseController(BaseController):
                 "Impressions": impressions_block_not_valid,
                 "Clicks": totalUnique,
                 "CTR": '%.3f%%' % \
-                       round(totalUnique * 100 / impressions_block_not_valid, 3) \
+                       round(totalUnique * 100.0 / impressions_block_not_valid, 3) \
                     if impressions_block_not_valid else 0,
                 "ViewPort": '%.3f%%' % \
                             (round(100.0 * totalImpressions / impressions_block_not_valid, 3) \

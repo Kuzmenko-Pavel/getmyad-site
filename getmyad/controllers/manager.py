@@ -1,24 +1,25 @@
 # -*- coding: UTF-8 -*-
 
-from datetime import datetime, timedelta
-from uuid import uuid1
 import json
 import logging
+import os
+import re
+from datetime import datetime, timedelta
+from uuid import uuid1
 
+import formencode
+import pymongo
 from formencode import Schema, validators as v
+from pylons import request, response, session, tmpl_context as c, url, \
+    app_globals, config, cache
+from pylons.controllers.util import redirect
+from pymongo import DESCENDING, ASCENDING
+
+import getmyad.tasks.mail as mail
 from getmyad import model
 from getmyad.lib import helpers as h
 from getmyad.lib.base import BaseController, render
 from getmyad.model import Account, AccountReports, ManagerReports, Permission, mq
-from pylons import request, response, session, tmpl_context as c, url, \
-    app_globals, config, cache
-from pylons.controllers.util import redirect
-import formencode
-import os
-import pymongo
-from pymongo import DESCENDING, ASCENDING
-import re
-import getmyad.tasks.mail as mail
 
 
 def current_user_check(f):
@@ -2184,7 +2185,8 @@ class ManagerController(BaseController):
     def ratingForInformers(self):
         ''' Возвращает данные для js таблицы рейтинг товаров'''
         page = int(request.params.get('page', 0))
-        _search = bool(request.params.get('_search', False))
+        _search = request.params.get('_search', 'false')
+        _search = True if _search == 'true' else False
         limit = int(request.params.get('rows', 20))
         skip = (limit * page) - limit
         if skip < 0:
@@ -2237,65 +2239,36 @@ class ManagerController(BaseController):
                              str(offer.get('last_full_rating_update')),
                              full_ctr))
         else:
+            ads = []
+            query = {'full_rating': {'$exists': True}}
             if _search:
-                pipeline = [
-                    {'$match': {
-                        'full_rating': {'$exists': True},
-                        'adv_domain': {'$regex': request.params.get('title', '')}
-                    }
-                    },
-                    {'$group': {
-                        '_id': '$adv',
-                        'domain': {'$last': '$adv_domain'},
-                        'title': {'$last': '$adv_title'}}},
-                    {'$sort': {"domain": pymongo.ASCENDING}},
-                    {'$skip': skip},
-                    {'$limit': limit}
-                ]
-                pipelinec = [
-                    {'$match': {
-                        'full_rating': {'$exists': True},
-                        'adv_domain': {'$regex': request.params.get('title', '')}
-                    }
-                    },
-                    {'$group': {
-                        '_id': '$adv',
-                    }
-                    },
-                ]
-            else:
-                pipeline = [
-                    {'$match': {
-                        'full_rating': {'$exists': True},
-                    }
-                    },
-                    {'$group': {
-                        '_id': '$adv',
-                        'domain': {'$last': '$adv_domain'},
-                        'title': {'$last': '$adv_title'}}},
-                    {'$sort': {"domain": pymongo.ASCENDING}},
-                    {'$skip': skip},
-                    {'$limit': limit}
-                ]
-                pipelinec = [
-                    {'$match': {
-                        'full_rating': {'$exists': True},
-                    }
-                    },
-                    {'$group': {
-                        '_id': '$adv',
-                    }
-                    },
-                ]
-            infs = app_globals.db.stats_daily.rating.aggregate(pipeline=pipelinec)
-            infs = infs.get('result', [])
-            count = len(infs)
-            infs = app_globals.db.stats_daily.rating.aggregate(pipeline=pipeline)
-            infs = infs.get('result', [])
+                query['adv_domain'] = {'$regex': request.params.get('title', '')}
+
+            pipeline = [
+                {'$match': query},
+                {'$group': {'_id': '$adv_int', 'adv_domain': {'$first': '$adv_domain'}}},
+                {'$sort': {"adv_domain": pymongo.ASCENDING}}
+            ]
+            cursor = app_globals.db.stats_daily.rating.aggregate(pipeline=pipeline)
+            for item in cursor:
+                ads.append(item['_id'])
+
+            count = len(ads)
             if count > 0 and limit > 0:
                 total_pages = int(count / limit)
-            for item in infs:
-                data.append((item['_id'], ' - '.join((item.get('domain', ''), item.get('title', '')))))
+
+            pipeline = [
+                {'$match': {'adv_int': {'$in': ads[skip: skip + limit]}}},
+                {'$group': {
+                    '_id': '$adv_int',
+                    'adv': {'$last': '$adv'},
+                    'domain': {'$last': '$adv_domain'},
+                    'title': {'$last': '$adv_title'}}},
+                {'$sort': {"adv_domain": pymongo.ASCENDING}}
+            ]
+            cursor = app_globals.db.stats_daily.rating.aggregate(pipeline=pipeline)
+            for item in cursor:
+                data.append((item['adv'], ' - '.join((item.get('domain', ''), item.get('title', '')))))
 
         return h.jgridDataWrapper(data, page=page, count=count, total_pages=total_pages)
 
@@ -2564,15 +2537,20 @@ class ManagerController(BaseController):
     # @cache.region('long_term')
     def notApprovedActiveMoneyOutRequests(self):
         ''' Количество неодобреных заявок на вывод средств'''
-        count = 0
         today = datetime.today()
         three_days_ago = today - timedelta(days=3)
-        for x in app_globals.db.money_out_request.group([],
-                                                        {'approved': {'$ne': True},
-                                                         'date': {'$gt': three_days_ago}},
-                                                        {'count': 0},
-                                                        'function(o,p) {p.count += 1};'):
-            count = x['count']
+        pipeline = [{'$match': {'approved': {'$ne': True}, 'date': {'$gt': three_days_ago}}},
+                    {'$group': {
+                        '_id': 'null',
+                        'count': {'$sum': 1}}
+                    }
+                    ]
+        cursor = app_globals.db.money_out_request.aggregate(pipeline=pipeline)
+        try:
+            count = cursor.next()
+            count = count.get('count', 0)
+        except StopIteration:
+            count = 0
         return str(int(count))
 
     #        return h.JSON({'count': count})
@@ -3062,7 +3040,7 @@ class ManagerController(BaseController):
                          '%.2f коп' % (click_cost_avg7 * 100),
                          '%.3f' % (
                              ((x.get('clicksUnique', 0) / ib) * 100) if (
-                             x.get('clicksUnique', 0) > 0 and ib > 0) else 0),
+                                 x.get('clicksUnique', 0) > 0 and ib > 0) else 0),
                          '%.3f' % (((x.get('clicksUnique_2', 0) / ib2) * 100) if (
                              x.get('clicksUnique_2', 0) > 0 and ib2 > 0) else 0),
                          '%.3f' % (((x.get('clicksUnique_7', 0) / ib7) * 100) if (
@@ -3102,20 +3080,24 @@ class ManagerController(BaseController):
 
     def account_current_CTR(self, user_login):
         ''' Текущий CTR аккаунта ``user_login`` '''
-        ads = [x['guid'] for x in app_globals.db.informer.find({'user': user_login})]
+        ads = [x['guid'] for x in app_globals.db.informer.find({'user': user_login}, {'guid': 1})]
         d = datetime.today()
         today = datetime(d.year, d.month, d.day)
         start_date = today - timedelta(days=7)
         date_cond = {'$gte': start_date, '$lte': today}
-
-        clicks_imp = app_globals.db.stats.daily.adv.group([],
-                                                          {'adv': {'$in': ads},
-                                                           'date': date_cond},
-                                                          {'clicksUnique': 0, 'impressions': 0},
-                                                          'function(o,p) {p.clicksUnique += o.clicksUnique; p.impressions += o.impressions;}')
+        pipeline = [{'$match': {'adv': {'$in': ads}, 'date': date_cond}},
+                    {'$group': {
+                        '_id': 'null',
+                        'clicksUnique': {'$sum': '$clicksUnique'},
+                        'impressions': {'$sum': '$impressions'}
+                    }
+                    }
+                    ]
+        cursor = app_globals.db.money_out_request.aggregate(pipeline=pipeline)
         try:
-            ctr = float(100 * clicks_imp[0].get('clicksUnique')) / float(clicks_imp[0].get('impressions'))
-        except:
+            clicks_imp = cursor.next()
+            ctr = float(100 * clicks_imp.get('clicksUnique')) / float(clicks_imp.get('impressions'))
+        except StopIteration:
             ctr = 0
         return ctr
 
@@ -3335,7 +3317,6 @@ class ManagerController(BaseController):
             record['summ'] += x.get('totalCost', 0)
             record['soc_clicks'] += x.get('social_clicks', 0)
             record['soc_imp'] += x.get('social_impressions', 0)
-
 
         # Сортировка
         raw_data = data_by_date_and_domain.items()

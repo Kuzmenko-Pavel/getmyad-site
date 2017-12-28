@@ -5,7 +5,7 @@ from __future__ import absolute_import
 import logging
 from beaker.cache import CacheManager
 from beaker.util import parse_cache_config_options
-from pymongo.mongo_replica_set_client import MongoReplicaSetClient
+from pymongo import MongoClient
 from pymongo.read_preferences import ReadPreference
 from getmyad.lib import mongodb_proxy
 import xmlrpclib
@@ -34,17 +34,17 @@ class Globals(object):
 
     def create_mongo_connection(self):
         ''' Подключается к монге, возвращает объект подключения '''
-        c = mongodb_proxy.MongoProxy(MongoReplicaSetClient(host=self.config.get('mongo_host', 'localhost'),
-                replicaSet=self.config.get('mongo_replica_set', 'vsrv'),
-                read_preference=ReadPreference.SECONDARY_PREFERRED), log)
+        c = mongodb_proxy.MongoProxy(MongoClient(host=self.config.get('mongo_host', 'localhost'),
+                                                 replicaSet=self.config.get('mongo_replica_set', 'vsrv'),
+                                                 read_preference=ReadPreference.SECONDARY_PREFERRED), log)
         db = c[self.config.get('mongo_database', 'getmyad_db')]
         return db
 
     def create_master_mongo_connection(self):
         ''' Подключается к монге, возвращает объект подключения '''
-        c = mongodb_proxy.MongoProxy(MongoReplicaSetClient(host=self.config.get('mongo_host', 'localhost'),
-                replicaSet=self.config.get('mongo_replica_set', 'vsrv'),
-                read_preference=ReadPreference.PRIMARY_PREFERRED), log)
+        c = mongodb_proxy.MongoProxy(MongoClient(host=self.config.get('mongo_host', 'localhost'),
+                                                 replicaSet=self.config.get('mongo_replica_set', 'vsrv'),
+                                                 read_preference=ReadPreference.PRIMARY_PREFERRED), log)
         db = c[self.config.get('mongo_database', 'getmyad_db')]
         return db
 
@@ -62,7 +62,7 @@ class Globals(object):
     def partner_account_enable(self):
         ''' Включон или выключен доступ для партнёрских аккаунтов '''
         return config.get('partner_account_enable',True) in ['True','true']
-    
+
     @property
     def connection_adload(self):
         pymssql.set_max_connections(450)

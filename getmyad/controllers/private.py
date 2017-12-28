@@ -139,20 +139,27 @@ class PrivateController(BaseController):
     @current_user_check
     def accountIncome(self):
         """Возвращает данные о начислении денег на счёт"""
-        ads = [x.guid for x in model.Account(c.user).informers()]
-        db = app_globals.db
-        data = db.stats.daily.adv.group(['date'],
-                                        {'user': c.user},
-                                        {
-                                            'sum': 0,
-                                            'unique': 0,
-                                            'impressions_block': 0,
-                                        },
-                                        '''function(o,p) {
-                                          p.sum += o.totalCost || 0;
-                                          p.impressions_block += o.impressions_block || 0;
-                                          p.unique += o.clicksUnique || 0;
-                                        }''')
+        data = []
+        pipeline = [{'$match': {'user': c.user}},
+                    {'$group': {
+                        '_id': '$date',
+                        'sum': {'$sum': '$totalCost'},
+                        'impressions_block': {'$sum': '$impressions_block'},
+                        'unique': {'$sum': '$clicksUnique'}
+                    }
+                    }
+                    ]
+        cursor = app_globals.db.stats.daily.user.aggregate(pipeline=pipeline)
+        for x in cursor:
+            data.append(
+                {
+                    'date': x['_id'],
+                    'sum': x['sum'],
+                    'impressions_block': x['impressions_block'],
+                    'unique': x['unique'],
+                }
+            )
+
         data.sort(key=lambda x: x['date'])
         data.reverse()
 

@@ -17,7 +17,6 @@ Copyright 2013 Gustav Arngarden
 
 import time
 
-import pymongo
 
 
 def get_methods(*objs):
@@ -29,35 +28,11 @@ def get_methods(*objs):
            and hasattr(getattr(obj, attr), '__call__')
     )
 
-try:
-    # will fail to import from older versions of pymongo
-    from pymongo import MongoClient
-except ImportError:
-    MongoClient = None
-try:
-    # will fail to import from older versions of pymongo
-    from pymongo import MongoReplicaSetClient
-except ImportError:
-    MongoReplicaSetClient = None
-
-try:
-    # will fail to import from older versions of pymongo
-    from pymongo import Connection
-except ImportError:
-    Connection = None
-
-try:
-    # will fail to import from older versions of pymongo
-    from pymongo import ReplicaSetConnection
-except ImportError:
-    ReplicaSetConnection = None
+import pymongo
 
 EXECUTABLE_MONGO_METHODS = get_methods(pymongo.collection.Collection,
                                        pymongo.database.Database,
-                                       Connection,
-                                       ReplicaSetConnection,
-                                       MongoClient,
-                                       MongoReplicaSetClient,
+                                       pymongo.MongoClient,
                                        pymongo)
 
 
@@ -69,11 +44,6 @@ class Executable:
     def __init__(self, method, logger, wait_time=None):
         self.method = method
         self.logger = logger
-        # MongoDB's documentation claims that replicaset elections
-        # shouldn't take more than a minute. In our experience, we've
-        # seen them take as long as a minute and a half, so regardless
-        # of what the documentation says, we're going to give the
-        # connection two minutes to recover.
         self.wait_time = wait_time or 60
 
     def __call__(self, *args, **kwargs):
@@ -83,7 +53,15 @@ class Executable:
         i = 0
         while True:
             try:
-                return self.method(*args, **kwargs)
+                start_time = time.time()
+                res = self.method(*args, **kwargs)
+                t = time.time() - start_time
+                if t > 0.9:
+                    print(self.method)
+                    print(args)
+                    print(kwargs)
+                    print("--- %s seconds ---" % (t))
+                return res
             except pymongo.errors.AutoReconnect:
                 end = time.time()
                 delta = end - start
@@ -106,6 +84,7 @@ class Executable:
     def __repr__(self):
         return self.method.__repr__()
 
+
 class MongoProxy:
     """ Proxy for MongoDB connection.
     Methods that are executable, i.e find, insert etc, get wrapped in an
@@ -123,7 +102,6 @@ class MongoProxy:
         self.conn = conn
         self.logger = logger
         self.wait_time = wait_time
-
 
     def __getitem__(self, key):
         """ Create and return proxy around the method in the connection
