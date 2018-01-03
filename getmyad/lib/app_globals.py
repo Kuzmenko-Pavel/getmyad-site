@@ -36,7 +36,7 @@ class Globals(object):
         ''' Подключается к монге, возвращает объект подключения '''
         c = mongodb_proxy.MongoProxy(MongoClient(host=self.config.get('mongo_host', 'localhost'),
                                                  replicaSet=self.config.get('mongo_replica_set', 'vsrv'),
-                                                 read_preference=ReadPreference.SECONDARY_PREFERRED), log)
+                                                 read_preference=ReadPreference.SECONDARY_PREFERRED, connect=False), log)
         db = c[self.config.get('mongo_database', 'getmyad_db')]
         return db
 
@@ -44,7 +44,7 @@ class Globals(object):
         ''' Подключается к монге, возвращает объект подключения '''
         c = mongodb_proxy.MongoProxy(MongoClient(host=self.config.get('mongo_host', 'localhost'),
                                                  replicaSet=self.config.get('mongo_replica_set', 'vsrv'),
-                                                 read_preference=ReadPreference.PRIMARY_PREFERRED), log)
+                                                 read_preference=ReadPreference.PRIMARY_PREFERRED, connect=False), log)
         db = c[self.config.get('mongo_database', 'getmyad_db')]
         return db
 
