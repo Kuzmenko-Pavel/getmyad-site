@@ -2268,7 +2268,10 @@ class ManagerController(BaseController):
             ]
             cursor = app_globals.db.stats_daily.rating.aggregate(pipeline=pipeline)
             for item in cursor:
-                data.append((item['adv'], ' - '.join((item.get('domain', ''), item.get('title', '')))))
+                domain = item.get('domain', '')
+                title = item.get('title', '')
+                if domain is not None and title is not None:
+                    data.append((item['adv'], ' - '.join((domain, title))))
 
         return h.jgridDataWrapper(data, page=page, count=count, total_pages=total_pages)
 
