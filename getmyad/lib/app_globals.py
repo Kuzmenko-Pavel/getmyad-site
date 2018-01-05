@@ -54,11 +54,6 @@ class Globals(object):
         return xmlrpclib.ServerProxy(config['getmyad_xmlrpc_server'], use_datetime=True)
 
     @property
-    def getmyad_banner_rpc(self):
-        ''' Возвращает объект ServerProxy для GetMyAd '''
-        return xmlrpclib.ServerProxy(config['getmyad_banner_xmlrpc_server'], use_datetime=True)
-
-    @property
     def partner_account_enable(self):
         ''' Включон или выключен доступ для партнёрских аккаунтов '''
         return config.get('partner_account_enable',True) in ['True','true']

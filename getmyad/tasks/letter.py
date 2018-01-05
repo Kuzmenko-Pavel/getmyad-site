@@ -90,10 +90,8 @@ class Letter(object):
         if self._message_props:
             self.set_message(self._message_props)
 
-
     def __init__(self):
         pass
-
 
     def send(self, server, port, login='', password=''):
         self._outer['Subject'] = self.subject
@@ -109,7 +107,6 @@ class Letter(object):
         s.ehlo()
         s.login(login, password)
         s.sendmail(self.sender, self.recipients, self._outer.as_string())
-
 
     def set_message(self, *args, **kwargs):
         if 'type' not in kwargs:
@@ -131,14 +128,12 @@ class Letter(object):
                 self._outer.attach(msg)
         else:
             self._outer = msg
-            
 
     def attach(self, file_name):
         """
         if not self._outer:
         """
         raise NotImplementedError('attach not implemented')
-
 
     def _email_is_valid(self, address):
         qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]'
@@ -157,13 +152,3 @@ class Letter(object):
         email_address = re.compile('\A%s\Z' % addr_spec)
 
         return email_address.match(address)
-
-
-if __name__ == "__main__":
-    letter = Letter()
-    letter.subject = 'testing message'
-    letter.sender = 'support@yottos.com'
-    letter.recipients = ['sgorlumel@gmail.com']
-    letter.template = 'sometemplate.mako.html'
-    letter.set_message(content=u'проверка связи2', type='html')
-    letter.send()

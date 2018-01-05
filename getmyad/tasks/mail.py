@@ -95,12 +95,11 @@ def send(url, filename, file, iteration=None):
 def _mongo_connection():
     ''' Возвращает Connection к серверу MongoDB '''
     try:
-        connection = pymongo.Connection(host=MONGO_HOST)
+        connection = pymongo.MongoClient(host=MONGO_HOST)
     except pymongo.errors.AutoReconnect:
         # Пауза и повторная попытка подключиться
-        from time import sleep
-        sleep(1)
-        connection = pymongo.Connection(host=MONGO_HOST)
+        time.sleep(1)
+        connection = pymongo.MongoClient(host=MONGO_HOST)
     return connection
 
 
