@@ -2601,12 +2601,10 @@ class ManagerController(BaseController):
             money_out_request['protectionDate'] = datetime.now() + timedelta(days=int(protectionPeriod)) if len(
                 protectionPeriod) else ''
 
-        db.money_out_request.save(money_out_request, safe=True)
+        db.money_out_request.save(money_out_request)
 
         # Обновляем последний метод вывода средств для пользователя 
-        db.users.update({'login': user},
-                        {'$set': {'lastPaymentType': money_out_request.get('paymentType', '')}},
-                        safe=True)
+        db.users.update({'login': user}, {'$set': {'lastPaymentType': money_out_request.get('paymentType', '')}})
 
         user_account = Account(money_out_request['user']['login'])
         user_account.load()
@@ -2772,7 +2770,7 @@ class ManagerController(BaseController):
                                            'date': {'$gte': date,
                                                     '$lte': (date + timedelta(seconds=60))}})
         money_out_request['manager_agreed'] = approved
-        db.money_out_request.save(money_out_request, safe=True)
+        db.money_out_request.save(money_out_request)
 
         return h.JSON({'error': False, 'ok': True,
                        'date': date.strftime("%d.%m.%Y %H:%M"),
@@ -3671,7 +3669,7 @@ class ManagerController(BaseController):
 
             if obj.get('approved', False):
                 return h.JSON({'error': True, 'msg': u'Эта заявка уже была выполнена'})
-            app_globals.db.money_out_request.remove(obj, safe=True)
+            app_globals.db.money_out_request.remove(obj)
         except Exception as ex:
             print ex
             return h.JSON({'error': True, 'ok': False})
@@ -3778,7 +3776,7 @@ class ManagerController(BaseController):
         money_out_request['protectionCode'] = protectionCode
         money_out_request['protectionDate'] = datetime.now() + timedelta(days=int(protectionPeriod)) if len(
             protectionPeriod) else ''
-        db.money_out_request.save(money_out_request, safe=True)
+        db.money_out_request.save(money_out_request)
 
         user_account = Account(money_out_request['user']['login'])
         user_account.load()

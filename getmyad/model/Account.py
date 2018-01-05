@@ -115,8 +115,7 @@ class Account(object):
                     domain = domain[4:]
 
                 self.db.domain.update({'login': self.account.login},
-                                      {'$set': {('domains.' + str(uuid1())): domain}},
-                                      safe=True, upsert=True)
+                                      {'$set': {('domains.' + str(uuid1())): domain}}, upsert=True)
                 mq.MQ().account_update(self.account.login)
             except (pymongo.errors.OperationFailure):
                 raise Account.Domains.DomainAddError(self.account.login)
@@ -161,8 +160,7 @@ class Account(object):
                 raise Account.Domains.AlreadyExistsError(self.account.login)
 
             self.db.domain.update({'login': self.account.login},
-                                  {'$addToSet': {'requests': domain}},
-                                  safe=True, upsert=True)
+                                  {'$addToSet': {'requests': domain}}, upsert=True)
 
         def approve_request(self, url):
             """ Одобряет заявку на добавление домена """
@@ -190,8 +188,7 @@ class Account(object):
             if domain.startswith('www.'):
                 domain = domain[4:]
             self.db.domain.update({'login': self.account.login},
-                                  {'$pull': {'requests': domain}},
-                                  safe=True, upsert=True)
+                                  {'$pull': {'requests': domain}}, upsert=True)
 
         def reject_request(self, url):
             domain = url
@@ -204,8 +201,7 @@ class Account(object):
             if not self.db.domain.find_one({'login': self.account.login, 'requests': domain}):
                 return False
             self.db.domain.update({'login': self.account.login},
-                                  {'$addToSet': {'rejected': domain}},
-                                  safe=True, upsert=True)
+                                  {'$addToSet': {'rejected': domain}}, upsert=True)
             self.remove_request(domain)
 
         def remove(self, url):
@@ -234,8 +230,7 @@ class Account(object):
             mq.MQ().domain_stop(domain)
 
             self.db.user.domains.update({'login': self.account.login},
-                                        {'$pull': {'domain': domain}},
-                                        safe=True, upsert=True)
+                                        {'$pull': {'domain': domain}}, upsert=True)
             mq.MQ().account_update(self.account.login)
 
     def get_login(self):
@@ -356,8 +351,7 @@ class Account(object):
                                   'range_context': float(self.range_context),
                                   'range_search': float(self.range_search),
                                   'range_retargeting': float(self.range_retargeting),
-                                  },
-                                 safe=True)
+                                  })
             log.info(vars(self))
             self.loaded = True
             mq.MQ().account_update(self.login)
@@ -414,8 +408,7 @@ class Account(object):
                                      'range_context': float(self.range_context),
                                      'range_search': float(self.range_search),
                                      'range_retargeting': float(self.range_retargeting),
-                                 }},
-                                 safe=True)
+                                 }})
 
             # При блокировании менеджера, снимаем ответственного менеджера с сайта
             if self._account_type == Account.Manager and self.blocked == 'banned':
@@ -752,6 +745,5 @@ class Permission():
         if not self.has(permission):
             raise Permission.InsufficientRightsError
         self.db.users.update({'login': account.login},
-                             {'$addToSet': {'permissions': permission}},
-                             safe=True)
+                             {'$addToSet': {'permissions': permission}})
         self.permissions.add(permission)

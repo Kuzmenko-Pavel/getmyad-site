@@ -110,7 +110,7 @@ class Campaign(object):
             return False
         self.delete()
         self.db.campaign.save(c)
-        self.db.campaign.archive.remove({'guid': self.id, 'guid_int': long(self.id_int)}, safe=True)
+        self.db.campaign.archive.remove({'guid': self.id, 'guid_int': long(self.id_int)})
 
         return True
 
@@ -133,7 +133,7 @@ class Campaign(object):
                       'lastUpdate': self.last_update,
                       'update_status': self.update_status,
                       'status': self.status}},
-            upsert=True, safe=True)
+            upsert=True)
 
     def exists(self):
         'Возвращает ``True``, если кампания с заданным ``id`` существует'
@@ -188,12 +188,12 @@ class Campaign(object):
 
     def delete(self):
         'Удаляет кампанию'
-        self.db.campaign.remove({'guid': self.id, 'guid_int': long(self.id_int)}, safe=True)
+        self.db.campaign.remove({'guid': self.id, 'guid_int': long(self.id_int)})
 
     def move_to_archive(self):
         'Перемещает кампанию в архив'
         c = self.db.campaign.find_one({'guid': self.id, 'guid_int': long(self.id_int)})
         if not c: return
         self.db.campaign.archive.remove({'guid': self.id, 'guid_int': long(self.id_int)})
-        self.db.campaign.archive.save(c, safe=True)
+        self.db.campaign.archive.save(c)
         self.delete()

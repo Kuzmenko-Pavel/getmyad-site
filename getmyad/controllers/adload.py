@@ -599,8 +599,7 @@ class AdloadController(BaseController):
             accounts = request.params.getall('common-accounts-list')
             for account in accounts:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.allowed.accounts': account}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.allowed.accounts': account}}, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')
@@ -615,8 +614,7 @@ class AdloadController(BaseController):
             accounts = request.params.getall('common-accounts-list')
             for account in accounts:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.ignored.accounts': account}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.ignored.accounts': account}}, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')
@@ -645,8 +643,7 @@ class AdloadController(BaseController):
             domains = request.params.getall('common-domains-list')
             for domain in domains:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.ignored.domains': domain}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.ignored.domains': domain}}, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')
@@ -660,8 +657,7 @@ class AdloadController(BaseController):
             advs = request.params.getall('common-adv-list')
             for adv in advs:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.allowed.informers': adv}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.allowed.informers': adv}}, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')
@@ -675,8 +671,7 @@ class AdloadController(BaseController):
             advs = request.params.getall('common-adv-list')
             for adv in advs:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.ignored.informers': adv}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.ignored.informers': adv}}, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')

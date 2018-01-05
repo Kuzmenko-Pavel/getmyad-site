@@ -167,8 +167,7 @@ class Informer:
 
         self.db.informer.update({'guid': self.guid, 'guid_int': long(self.guid_int)},
                                        {'$set': update},
-                                       upsert=True,
-                                       safe=True)
+                                       upsert=True)
         InformerFtpUploader(self.guid).upload()
         mq.MQ().informer_update(self.guid)
 
@@ -502,8 +501,7 @@ class InformerPattern:
 
         self.db.informer.patterns.update({'guid': self.guid},
                                        {'$set': update},
-                                       upsert=True,
-                                       safe=True)
+                                       upsert=True)
 
     def load(self, id):
         """

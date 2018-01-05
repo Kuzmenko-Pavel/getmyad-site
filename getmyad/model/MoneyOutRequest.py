@@ -44,7 +44,7 @@ class MoneyOutRequest(object):
         payment_details = self._get_payment_details()
         assert isinstance(payment_details, dict)
         req.update(payment_details)
-        app_globals.db.money_out_request.save(req, safe=True)
+        app_globals.db.money_out_request.save(req)
         print "Saving: %s" % req
     
     def _get_payment_details(self):

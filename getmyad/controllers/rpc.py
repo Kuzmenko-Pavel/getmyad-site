@@ -55,8 +55,8 @@ class RpcController(XMLRPCController):
         campaign_id = campaign_id.lower()
         camp = Campaign(campaign_id)
         camp.stop()
-        app_globals.db_m.offer.remove({'campaignId': campaign_id}, safe=True)
-        app_globals.db_m.stats_daily.rating.remove({'campaignId': campaign_id}, safe=True)
+        app_globals.db_m.offer.remove({'campaignId': campaign_id})
+        app_globals.db_m.stats_daily.rating.remove({'campaignId': campaign_id})
         camp.move_to_archive()
         mq.MQ().campaign_stop(campaign_id)  # Отправляем сообщение 
         return "ok"

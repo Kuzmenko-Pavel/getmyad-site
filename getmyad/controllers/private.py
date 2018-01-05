@@ -604,7 +604,7 @@ class PrivateController(BaseController):
             if obj.get('approved', False):
                 return h.JSON({'error': True,
                                'msg': u'Эта заявка уже была выполнена'})
-            app_globals.db.money_out_request.remove(obj, safe=True)
+            app_globals.db.money_out_request.remove(obj)
         except Exception as e:
             print e
             return h.JSON({'error': True, 'ok': False})
@@ -681,7 +681,7 @@ class PrivateController(BaseController):
                     <h2>Заявка уже была подтверждена!</h2>''')
 
             money_out_request['user_confirmed'] = True
-            app_globals.db.money_out_request.save(money_out_request, safe=True)
+            app_globals.db.money_out_request.save(money_out_request)
 
         except UserWarning as ex:
             c.text_message = unicode(ex)
