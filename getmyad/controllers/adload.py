@@ -798,7 +798,7 @@ class AdloadController(BaseController):
 
                 social = '<span style="color:#05AA26">Несоциальная</span>'
                 if camp.get('social', False):
-                    social = '<span style="color:#CACACE">Несоциальная</span>'
+                    social = '<span style="color:#CACACE">Cоциальная</span>'
 
                 c.campaigns.append(
                     {
