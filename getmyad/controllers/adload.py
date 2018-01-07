@@ -759,43 +759,77 @@ class AdloadController(BaseController):
     def adload_campaign_list(self):
         '''Возвращает список всех кампаний, запущенных в AdLoad'''
         ad = AdloadData()
-        c.campaigns = ad.campaigns_list()
-        c.camp_setings = {}
-        for item in c.campaigns:
+        ad_campaigns = ad.campaigns_list()
+        get_campaigns = {}
+        for item in app_globals.db.campaign.find({}, {'_id': 0, 'status': 1, 'guid': 1, 'manager': 1, 'title': 1,
+                                                      'update_status': 1, 'social': 1,
+                                                      'lastUpdate': 1, 'showConditions.retargeting': 1,
+                                                      'showConditions.UnicImpressionLot': 1,
+                                                      'showConditions.offer_by_campaign_unique': 1,
+                                                      'showConditions.load_count': 1}):
+            get_campaigns[item['guid']] = item
+
+        c.campaigns = []
+        for item in ad_campaigns:
             try:
-                if item.get('getmyad', False):
-                    camp = Campaign(item['id'])
-                    camp.load()
-                    offers_count = app_globals.db_m.offer.find({'campaignId': camp.id}).count()
-                    status = 'style="color: #05AA26"> Запушена'
-                    if camp.status == 'hold':
-                        status = 'style="color: #AA5D05"> Заморожена (HOLD)'
-                        if camp.update_status == 'start':
-                            status = 'style="color: #E20505"> Обнавляеться'
-                    elif camp.status == 'working':
-                        status = 'style="color: #05AA26"> Запушена'
-                        if camp.update_status == 'start':
-                            status = 'style="color: #4C6BDF"> Обнавляеться'
-                    elif camp.status == 'configured':
-                        status = 'style="color: #C1C1C1"> Ненастроена'
-                    else:
-                        status = 'style="color: #F10606"> Незапушена'
-                    c.camp_setings[camp.id] = {
-                        'social': camp.social,
-                        'manager': item.get('manager', ''),
+                camp = get_campaigns.get(item['id'], {})
+                if len(camp) > 0:
+                    offers_count = app_globals.db_m.offer.find({'campaignId': camp.get('guid', '')}).count()
+                    del get_campaigns[item['id']]
+                else:
+                    offers_count = 0
+                status = '<span style="color: #05AA26">Запушена</span>'
+                if camp.get('status') == 'hold':
+                    status = '<span style="color: #AA5D05">Заморожена (HOLD)</span>'
+                    if camp.get('update_status') == 'start':
+                        status = '<span style="color: #E20505">Обнавляеться</span>'
+                elif camp.get('status') == 'working':
+                    status = '<span style="color: #05AA26">Запушена</span>'
+                    if camp.get('update_status') == 'start':
+                        status = '<span style="color: #4C6BDF">Обнавляеться</span>'
+                elif camp.get('status') == 'configured':
+                    status = '<span style="color: #C1C1C1">Ненастроена</span>'
+                else:
+                    status = '<span style="color: #F10606">Незапушена</span>'
+
+                retargeting = '<span></span>'
+                if camp.get('showConditions', {}).get('retargeting', False):
+                    retargeting = '<span style="color:#F10606">Ретаргетинг</span>'
+
+                social = '<span style="color:#05AA26">Несоциальная</span>'
+                if camp.get('social', False):
+                    social = '<span style="color:#CACACE">Несоциальная</span>'
+
+                c.campaigns.append(
+                    {
+                        'title': '<a href="%s">%s</a>' % (h.url_for(controller='adload', action='campaign_overview', id=item['id']), item['title']),
+                        'manager': item['manager'],
+                        'user_name': item['user_name'],
+                        'getmyad': 'getmyad' if item.get('getmyad', False) else '',
                         'status': status,
-                        'yottos_partner_marker': camp.yottos_partner_marker,
-                        'last_update': camp.last_update,
-                        'UnicImpressionLot': camp.UnicImpressionLot,
-                        'contextOnly': camp.contextOnly,
-                        'retargeting': camp.retargeting,
-                        'offer_by_campaign_unique': camp.offer_by_campaign_unique,
-                        'load_count': camp.load_count,
-                        'offers_count': offers_count,
+                        'last_update': str(camp.get('lastUpdate')),
+                        'offers_count': int(offers_count),
+                        'social': social,
+                        'retargeting': retargeting,
+                        'UnicImpressionLot': int(camp.get('showConditions', {}).get('UnicImpressionLot', 0)),
+                        'offer_by_campaign_unique': int(camp.get('showConditions', {}).get('offer_by_campaign_unique', 0)),
+                        'load_count': int(camp.get('showConditions', {}).get('load_count', 0)),
                     }
+                )
             except Exception as ex:
                 print ex
                 pass
+
+        c.get_campaigns = []
+        for x in get_campaigns.values():
+            item = {
+                'title':  '<a href="%s">%s</a>' % (h.url_for(controller='adload', action='campaign_overview', id=x['guid']), x['title']),
+                'manager': x['manager'],
+                'status': x['status'],
+                'update': str(x['lastUpdate'])
+
+            }
+            c.get_campaigns.append(item)
         return render('/adload/campaign_list.mako.html')
 
     #   @current_user_check

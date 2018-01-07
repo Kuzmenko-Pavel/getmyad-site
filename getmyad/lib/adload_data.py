@@ -42,7 +42,6 @@ class AdloadData(object):
         else:
             self.connection_adload = connection_adload
 
-
     def offer_count(self, campaign):
         print 'Count Offers from ', campaign
         try:
@@ -159,7 +158,7 @@ class AdloadData(object):
             adv = {'id': str(row['AdvertiseID']).lower(),
                    'user': str(row['UserID']).lower(),
                    'user_name': row['Login'],
-                   'manager': row.get('Manager', ''),
+                   'manager': row['Manager'],
                    'title': row['Title'],
                    'getmyad': bool(row['InGetMyAd'])
                    }

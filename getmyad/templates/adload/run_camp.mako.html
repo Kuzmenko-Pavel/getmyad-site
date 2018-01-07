@@ -1,0 +1,95 @@
+<h2>Активные рекламные кампании:</h2>
+<table id="run_camp"></table>
+<div id="pager_run_camp"></div>
+<script type="text/javascript">
+    var run_camp = ${h.JSON(c.campaigns)};
+	$("#run_camp").jqGrid({
+                data: run_camp,
+	            datatype: "local",
+                colNames: ['Название </br> компании', 'Менеджер', 'Название </br> рекламодателя',
+                           'Разрешена к </br> показу в GetMyAd', 'Запушена', 'Обнавлена', 'Кол-во </br> РП',
+                           'Социальная', 'Ретаргетинг', 'Уникальность', 'РП в блоке', 'Кол-во </br> загружаемых РП'],
+                colModel: [{
+                    name: 'title',
+                    index: 'title',
+                    align: 'center',
+                    sortable: true
+                }
+                ,{
+                    name: 'manager',
+                    index: 'manager',
+                    align: 'center',
+                    sortable: true
+                }
+                ,{
+                    name: 'user_name',
+                    index: 'user_name',
+                    align: 'center',
+                    sortable: true
+                }
+                ,{
+                    name: 'getmyad',
+                    index: 'getmyad',
+                    align: 'center',
+                    sortable: true
+                }
+                 ,{
+                    name: 'status',
+                    index: 'status',
+                    align: 'center',
+                    sortable: true
+                }
+                 ,{
+                    name: 'last_update',
+                    index: 'last_update',
+                    align: 'center',
+                    sortable: true
+                }
+                 ,{
+                    name: 'offers_count',
+                    index: 'offers_count',
+                        sorttype: 'int',
+                    align: 'center',
+                    sortable: true
+                }
+                 ,{
+                    name: 'social',
+                    index: 'social',
+                    align: 'center',
+                    sortable: true
+                }
+                 ,{
+                    name: 'retargeting',
+                    index: 'retargeting',
+                    align: 'center',
+                    sortable: true
+                }
+                 ,{
+                    name: 'UnicImpressionLot',
+                    index: 'UnicImpressionLot',
+                    align: 'center',
+                        sorttype: 'int',
+                    sortable: true
+                }
+                ,{
+                    name: 'offer_by_campaign_unique',
+                    index: 'offer_by_campaign_unique',
+                    align: 'center',
+                        sorttype: 'int',
+                    sortable: true
+                }
+                ,{
+                    name: 'load_count',
+                    index: 'load_count',
+                    align: 'center',
+                        sorttype: 'int',
+                    sortable: true
+                }],
+                caption: "Активные рекламные кампании",
+                rowNum: 20,
+                rowList: [10,20,30,40,50],
+                viewrecords: true,
+                height: 'auto',
+                pager: "#pager_run_camp"
+            });
+</script>

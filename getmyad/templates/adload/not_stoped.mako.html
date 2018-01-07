@@ -1,0 +1,41 @@
+<h2>Рекламные кампании остановленные в Adload но НЕ ОСТАНОВЛЕНЫ В Getmyad:</h2>
+<table id="not_stop"></table>
+<div id="pager_not_stop"></div>
+<script type="text/javascript">
+    var not_stop_data = ${h.JSON(c.get_campaigns)};
+	$("#not_stop").jqGrid({
+                data: not_stop_data,
+	            datatype: "local",
+                colNames: ['Название </br> компании','Менеджер','Запушена','Обнавлена'],
+                colModel: [{
+                    name: 'title',
+                    index: 'title',
+                    align: 'center',
+                    sortable: true
+                }
+                ,{
+                    name: 'manager',
+                    index: 'manager',
+                    align: 'center',
+                    sortable: true
+                }
+                ,{
+                    name: 'status',
+                    index: 'status',
+                    align: 'center',
+                    sortable: true
+                }
+                ,{
+                    name: 'update',
+                    index: 'update',
+                    align: 'center',
+                    sortable: true
+                }],
+                caption: "Рекламные кампании остановленные в Adload но НЕ ОСТАНОВЛЕНЫ В Getmyad",
+                rowNum: 5,
+                rowList: [5,10,20,30,40,50],
+                viewrecords: true,
+                height: 'auto',
+                pager: "#pager_not_stop"
+            });
+</script>
