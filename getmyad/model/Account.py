@@ -308,7 +308,6 @@ class Account(object):
         try:
             assert self.login, 'Login must be specified'
             assert self.db, 'Database connection must be assigned'
-            self.db.users.ensure_index('login', unique=True)
             if self.money_web_z:
                 self.money_out_paymentType.append(u'webmoney_z')
             if self.money_web_r:
@@ -355,7 +354,8 @@ class Account(object):
             log.info(vars(self))
             self.loaded = True
             mq.MQ().account_update(self.login)
-        except (pymongo.errors.DuplicateKeyError, pymongo.errors.OperationFailure):
+        except (pymongo.errors.DuplicateKeyError, pymongo.errors.OperationFailure) as e:
+            print(e)
             raise Account.AlreadyExistsError(self.login)
 
     def update(self):
