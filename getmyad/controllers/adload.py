@@ -926,14 +926,16 @@ class AdloadController(BaseController):
         user = request.environ.get('CURRENT_USER')
         if not user: return h.userNotAuthorizedError()
         if not id:
-            abort(404)
-        ad = AdloadData()
-        campaign = ad.campaign_details(id)
-        if not campaign:
             abort(404, comment='Кампания не найдена')
+        ad = AdloadData()
+        getmyad_details = Campaign(id)
+        campaign = ad.campaign_details(id)
+        if not campaign and not getmyad_details.exists():
+            redirect(url_for(controller="adload", action="adload_campaign_list"))
         c.campaign = campaign
-        c.getmyad_details = app_globals.getmyad_rpc.campaign.details(id)
-
+        c.getmyad_details = getmyad_details
+        c.offers_count = app_globals.db_m.offer.find({'campaignId': id}).count()
+        c.offers_count_image = app_globals.db_m.offer.find({'campaignId': id, 'image': {'$ne': ''}}).count()
         if 'message' in session:
             c.message = session.get("message")
             del session["message"]

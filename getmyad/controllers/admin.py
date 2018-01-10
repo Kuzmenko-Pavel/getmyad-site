@@ -18,7 +18,6 @@ class AdminController(BaseController):
         cdns = ['cdn.srv-10.yottos.com', 'cdn.srv-11.yottos.com', 'cdn.srv-12.yottos.com']
         for i in app_globals.db.informer.find({}, ['guid']):
             guid = i['guid']
-            print(guid)
             InformerFtpUploader(guid).upload()
             link.append('/block/%s.json' % guid)
             link.append('/block/%s.js' % guid)

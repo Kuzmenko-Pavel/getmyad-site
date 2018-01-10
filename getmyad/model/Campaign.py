@@ -137,7 +137,7 @@ class Campaign(object):
 
     def exists(self):
         'Возвращает ``True``, если кампания с заданным ``id`` существует'
-        return (self.db.campaign.find_one({'guid': self.id, 'guid_int': long(self.id_int)}) <> None)
+        return self.db.campaign.find_one({'guid': self.id}) is not None
 
     def is_created(self):
         return self.status == 'created'
@@ -171,11 +171,6 @@ class Campaign(object):
         return self.status == 'working'
 
     def is_update(self):
-        print self.update_status != 'complite'
-        print (self.last_update + datetime.timedelta(minutes=3)) >= (
-            datetime.datetime.now() - datetime.timedelta(minutes=33))
-        print self.update_status
-
         return (self.update_status != 'complite' and (self.last_update + datetime.timedelta(minutes=3)) >= (
             datetime.datetime.now() - datetime.timedelta(minutes=33)))
 
@@ -197,3 +192,6 @@ class Campaign(object):
         self.db.campaign.archive.remove({'guid': self.id, 'guid_int': long(self.id_int)})
         self.db.campaign.archive.save(c)
         self.delete()
+
+    def __getitem__(self, key):
+        return self.__dict__[key]

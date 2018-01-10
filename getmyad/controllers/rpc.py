@@ -40,7 +40,6 @@ class RpcController(XMLRPCController):
         campaign_id = campaign_id.lower()
         camp = Campaign(campaign_id)
         camp.project = 'adload'
-        print camp.is_hold()
         if not camp.exists():
             if not camp.restore_from_archive():
                 camp.save()  # Сохраняем пустую кампанию
