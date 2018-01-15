@@ -147,7 +147,6 @@ class AdloadData(object):
                     print (e)
                     data['ClickCost'] = 0.0
                 self.offers[data['id']] = data
-            self.offers.sync()
             cursor_a.close()
             # app_globals.connection_adload.close()
             print 'Connection Adload closed'
