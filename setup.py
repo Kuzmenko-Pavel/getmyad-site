@@ -14,7 +14,7 @@ setup(
     author_email='',
     url='',
     install_requires=[
-        "Pylons==1.0.2",
+        "Pylons>=1.0.2",
         "pymongo==3.6.0",
         "amqplib==1.0.2",
         "pymssql==2.0.1",
