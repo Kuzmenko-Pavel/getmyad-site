@@ -484,83 +484,83 @@ def campaign_offer_update(campaign_id, **kwargs):
         camp.update_status = 'start'
         work = camp.is_working()
         camp.save()
-        ad = AdloadData(connection_adload=connection_adload)
-        ad.offers_list(campaign_id, camp.load_count)
-        offers_len = len(ad.offers)
-        if offers_len < 1:
-            print "Offers not found"
-            camp.update_status = 'complite'
-            camp.last_update = datetime.datetime.now()
-            camp.save()
-            return
-        small = False
-        if offers_len < 100:
-            small = True
-        elif offers_len > 50000:
-            db.offer.remove({'campaignId': campaign_id}, w=3, j=True)
-        print "Offers len", offers_len
-        db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, w=1)
+        with AdloadData(connection_adload=connection_adload) as ad:
+            ad.offers_list(campaign_id, camp.load_count)
+            offers_len = len(ad.offers)
+            if offers_len < 1:
+                print "Offers not found"
+                camp.update_status = 'complite'
+                camp.last_update = datetime.datetime.now()
+                camp.save()
+                return
+            small = False
+            if offers_len < 100:
+                small = True
+            elif offers_len > 50000:
+                db.offer.remove({'campaignId': campaign_id}, w=3, j=True)
+            print "Offers len", offers_len
+            db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, w=1)
 
-        ctr = 0.06
-        campaign_id_int = camp.id_int
-        retargeting_campaign = camp.retargeting
-        campaignTitle = camp.title
+            ctr = 0.06
+            campaign_id_int = camp.id_int
+            retargeting_campaign = camp.retargeting
+            campaignTitle = camp.title
 
-        pipeline = [
-            {'$match': {'hash': {'$exists': True}, 'campaignId': campaign_id}},
-            {'$group': {'_id': '$hash'}}
-        ]
-        hashes = []
-        cursor = db.offer.aggregate(pipeline=pipeline, cursor={})
-        for doc in cursor:
-            hashes.append(doc['_id'])
+            pipeline = [
+                {'$match': {'hash': {'$exists': True}, 'campaignId': campaign_id}},
+                {'$group': {'_id': '$hash'}}
+            ]
+            hashes = []
+            cursor = db.offer.aggregate(pipeline=pipeline, cursor={})
+            for doc in cursor:
+                hashes.append(doc['_id'])
 
-        print "Start offer processed"
-        for x in ad.offers.values():
-            res_task_img = {}
-            if offers_len < 10000:
-                image = check_image(x['image'], 210, 210, x['logo'])
-            else:
-                image = False
-            if not image:
-                res_task_img[x['id']] = [x['image'], 210, 210, x['logo']]
-                image = ""
-            offer = Offer(x['id'], db)
-            offer.accountId = x['accountId']
-            offer.title = x['title']
-            offer.price = x['price']
-            offer.url = x['url']
-            offer.image = image
-            offer.description = x['description']
-            offer.date_added = x['dateAdded']
-            offer.RetargetingID = x['RetargetingID']
-            offer.Recommended = x['Recommended']
-            offer.cost = x['ClickCost']
-            offer.campaignTitle = campaignTitle
-            offer.campaign = campaign_id
-            offer.campaign_int = campaign_id_int
-            offer.retargeting = retargeting_campaign
-            offer.rating = round(((ctr * offer.cost) * 100000), 4)
-            offer.full_rating = round(((ctr * offer.cost) * 100000), 4)
-            if offer.createOfferHash not in hashes:
-                offer.save()
-            else:
-                offer.update()
-                hashes.remove(offer.hash)
+            print "Start offer processed"
+            for x in ad.offers.values():
+                res_task_img = {}
+                if offers_len < 10000:
+                    image = check_image(x['image'], 210, 210, x['logo'])
+                else:
+                    image = False
+                if not image:
+                    res_task_img[x['id']] = [x['image'], 210, 210, x['logo']]
+                    image = ""
+                offer = Offer(x['id'], db)
+                offer.accountId = x['accountId']
+                offer.title = x['title']
+                offer.price = x['price']
+                offer.url = x['url']
+                offer.image = image
+                offer.description = x['description']
+                offer.date_added = x['dateAdded']
+                offer.RetargetingID = x['RetargetingID']
+                offer.Recommended = x['Recommended']
+                offer.cost = x['ClickCost']
+                offer.campaignTitle = campaignTitle
+                offer.campaign = campaign_id
+                offer.campaign_int = campaign_id_int
+                offer.retargeting = retargeting_campaign
+                offer.rating = round(((ctr * offer.cost) * 100000), 4)
+                offer.full_rating = round(((ctr * offer.cost) * 100000), 4)
+                if offer.createOfferHash not in hashes:
+                    offer.save()
+                else:
+                    offer.update()
+                    hashes.remove(offer.hash)
+                if small:
+                    small_resize_image.delay(res_task_img, None, work)
+                else:
+                    resize_image.delay(res_task_img, None, work)
+
             if small:
-                small_resize_image.delay(res_task_img, None, work)
+                small_resize_image.delay({}, campaign_id, work)
             else:
-                resize_image.delay(res_task_img, None, work)
-
-        if small:
-            small_resize_image.delay({}, campaign_id, work)
-        else:
-            resize_image.delay({}, campaign_id, work)
-        print "Start remove offers"
-        db.offer.remove({'campaignId': campaign_id, 'hash': {'$in': hashes}}, w=1)
-        b = datetime.datetime.now()
-        c = b - a
-        print "Load", c.seconds
+                resize_image.delay({}, campaign_id, work)
+            print "Start remove offers"
+            db.offer.remove({'campaignId': campaign_id, 'hash': {'$in': hashes}}, w=1)
+            b = datetime.datetime.now()
+            c = b - a
+            print "Load", c.seconds
     except Exception as ex:
         print "offer load failed to %s: %s (retry #%s)" % (campaign_id, ex, kwargs.get('task_retries', 0))
         campaign_offer_update.retry(args=[campaign_id], kwargs=kwargs, exc=ex)
