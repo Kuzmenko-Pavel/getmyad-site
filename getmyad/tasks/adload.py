@@ -498,7 +498,7 @@ def campaign_offer_update(campaign_id, **kwargs):
                 small = True
             elif offers_len > 50000:
                 db.offer.remove({'campaignId': campaign_id}, w=3, j=True)
-            print "Offers len", offers_len
+            print "Offers len %s" % offers_len
             db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, w=1)
 
             ctr = 0.06
