@@ -602,8 +602,8 @@ def campaign_offer_update(campaign_id, **kwargs):
         except Campaign.NotFoundError:
             print 'Campaign is not running'
             return
-        if camp.is_update():
-            campaign_offer_update.retry(args=[campaign_id], countdown=360, kwargs=kwargs)
+        # if camp.is_update():
+        #     campaign_offer_update.retry(args=[campaign_id], countdown=360, kwargs=kwargs)
         campaign_stop(campaign_id)
         camp.last_update = datetime.datetime.now()
         camp.project = 'adload'
