@@ -21,9 +21,6 @@ import os
 import pymongo
 from amqplib import client_0_8 as amqp
 
-from getmyad.model.Campaign import Campaign
-from getmyad.model.Offer import Offer
-from getmyad.lib.adload_data import AdloadData
 
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
 MONGO_HOST = 'srv-5.yottos.com:27018,srv-5.yottos.com:27020,srv-5.yottos.com:27019'
@@ -562,6 +559,9 @@ def campaign_offer_update(campaign_id, **kwargs):
     Если в кампании нет активных предложений, она будет остановлена.
     '''
     try:
+        from getmyad.model.Campaign import Campaign
+        from getmyad.model.Offer import Offer
+        from getmyad.lib.adload_data import AdloadData
         print "Create connection"
         db = _mongo_main_db()
         connection_adload = mssql_connection_adload()
