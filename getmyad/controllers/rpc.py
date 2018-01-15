@@ -7,7 +7,7 @@ from getmyad.model import mq
 from pylons import app_globals
 from pylons.controllers import XMLRPCController
 from getmyad.lib.adload_data import AdloadData
-from getmyad.tasks.mail import campaign_offer_update
+from getmyad.tasks.adload import campaign_offer_update
 
 log = logging.getLogger(__name__)
 
@@ -131,7 +131,6 @@ class RpcController(XMLRPCController):
                    u"Замораживаю кампанию: %s" % result_stop
 
         campaign_offer_update.delay(campaign_id)
-        # campaign_offer_update(campaign_id)
         return 'ok'
 
     campaign_update.signature = [['string', 'string']]

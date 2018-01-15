@@ -1,6 +1,5 @@
 # This Python file uses the following encoding: utf-8
 from getmyad.model.Account import AccountReports, Account, ManagerReports
-#from getmyad.tasks.sendmail import sendmail
 import getmyad.tasks.mail as mail
 from pylons import app_globals
 import datetime

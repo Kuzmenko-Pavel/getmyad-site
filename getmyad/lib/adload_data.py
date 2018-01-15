@@ -1,46 +1,62 @@
 # -*- coding: UTF-8 -*-
 import logging
 import uuid
+import shelve
+import os
 
 from pylons import app_globals
 
 log = logging.getLogger(__name__)
 
 
-class AdOffer(object):
-    __slots__ = ['id', 'accountId', 'title', 'price', 'url', 'image', 'logo', 'description', 'dateAdded',
-                 'RetargetingID', 'Recommended', 'ClickCost']
-
-    def __init__(self, id, accountId, title, price, url, image, logo, description, dateAdded, RetargetingID,
-                 Recommended, ClickCost):
-        self.id = str(id).lower()
-        self.accountId = str(accountId).lower()
-        self.title = title
-        self.price = price
-        self.url = url
-        self.image = image
-        self.logo = logo
-        self.description = description
-        self.dateAdded = dateAdded
-        self.RetargetingID = RetargetingID.strip()
-        self.Recommended = Recommended
-        try:
-            self.ClickCost = float(ClickCost)
-        except Exception as e:
-            print (e)
-            self.ClickCost = 0.0
-
-
 class AdloadData(object):
     'Класс предоставляет интерфейс для взаимодействия и управления ``AdLoad``'
 
-    __slots__ = ['connection_adload']
+    __slots__ = ['connection_adload', '_shelve_file', 'offers']
 
     def __init__(self, connection_adload=None):
         if connection_adload is None:
             self.connection_adload = app_globals.connection_adload
         else:
             self.connection_adload = connection_adload
+        self._shelve_file = uuid.uuid4().get_hex() + '.shelve'
+        self.offers = shelve.open(self._shelve_file)
+
+    def __enter__(self):
+        """
+
+        Returns:
+
+        """
+        return self
+
+    def __exit__(self, ext_type, exc_value, traceback):
+        """
+
+        Args:
+            ext_type:
+            exc_value:
+            traceback:
+        """
+        try:
+            os.remove(self._shelve_file)
+        except OSError as e:
+            print e
+            pass
+
+    def __del__(self):
+        """
+
+        Args:
+            ext_type:
+            exc_value:
+            traceback:
+        """
+        try:
+            os.remove(self._shelve_file)
+        except OSError as e:
+            print e
+            pass
 
     def offer_count(self, campaign):
         print 'Count Offers from ', campaign
@@ -113,16 +129,28 @@ class AdloadData(object):
                 click_cost = float(row['ClickCost'])
                 if currency_cost > 0:
                     click_cost /= currency_cost
-                offers.append(AdOffer(
-                    row['LotID'], row['UserID'], row['Title'], row['Price'], row['UrlToMarket'], row['ImgURL'],
-                    row['Logo'], row['About'], row['DateAdvert'], row.get('RetargetingID', ''), row['Recommended'],
-                    str(click_cost)
-                )
-                )
+                data = {}
+                data['id'] = str(row['LotID']).lower()
+                data['accountId'] = str(row['UserID']).lower()
+                data['title'] = row['Title']
+                data['price'] = row['Price']
+                data['url'] = row['UrlToMarket']
+                data['image'] = row['ImgURL']
+                data['logo'] = row['Logo']
+                data['description'] = row['About']
+                data['dateAdded'] = row['DateAdvert']
+                data['RetargetingID'] = row.get('RetargetingID', '').strip()
+                data['Recommended'] = row['Recommended']
+                try:
+                    data['ClickCost'] = float(click_cost)
+                except Exception as e:
+                    print (e)
+                    data['ClickCost'] = 0.0
+                self.offers[data['id']] = data
+            self.offers.sync()
             cursor_a.close()
             # app_globals.connection_adload.close()
             print 'Connection Adload closed'
-            return offers
         except Exception, ex:
             raise
 
