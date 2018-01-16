@@ -333,7 +333,6 @@ def resize_image(res, campaign_id, work, **kwargs):
                     return [image, width, height]
 
                 if not cdn_server_url or not cdn_api_list:
-                    print u'Не заданы настройки сервера CDN. Проверьте .ini файл.'
                     return ''
                 size_key = '%sx%s' % (trum_height, trum_width)
 
@@ -350,18 +349,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     try:
                         image = resizer(url, trum_height, trum_width, logo)
                     except Exception as ex:
-                        exc_type, exc_obj, tb = sys.exc_info()
-                        f = tb.tb_frame
-                        trace = ''.join(traceback.format_tb(tb))
-                        lineno = tb.tb_lineno
-                        filename = f.f_code.co_filename
-                        linecache.checkcache(filename)
-                        line = linecache.getline(filename, lineno, f.f_globals)
-                        print('----------------------------------------------')
-                        print("image failed", url, ex)
-                        print(
-                        'EXCEPTION IN ({}, LINE {} "{}"): {} {}'.format(filename, lineno, line.strip(), exc_obj, trace))
-                        print('----------------------------------------------')
+                        print(ex)
                     else:
                         buf_png = cStringIO.StringIO()
                         buf_webp = cStringIO.StringIO()
@@ -386,16 +374,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                         result.append(new_url)
                 return " , ".join(result)
             except Exception as ex:
-                exc_type, exc_obj, tb = sys.exc_info()
-                f = tb.tb_frame
-                trace = ''.join(traceback.format_tb(tb))
-                lineno = tb.tb_lineno
-                filename = f.f_code.co_filename
-                linecache.checkcache(filename)
-                line = linecache.getline(filename, lineno, f.f_globals)
-                print('----------------------------------------------')
-                print('EXCEPTION IN ({}, LINE {} "{}"): {} {}'.format(filename, lineno, line.strip(), exc_obj, trace))
-                print('----------------------------------------------')
+                print(ex)
                 return ''
 
         for key, value in res.items():
@@ -407,17 +386,7 @@ def resize_image(res, campaign_id, work, **kwargs):
         if campaign_id is not None and work:
             campaign_update(campaign_id)
     except Exception as ex:
-        exc_type, exc_obj, tb = sys.exc_info()
-        f = tb.tb_frame
-        trace = ''.join(traceback.format_tb(tb))
-        lineno = tb.tb_lineno
-        filename = f.f_code.co_filename
-        linecache.checkcache(filename)
-        line = linecache.getline(filename, lineno, f.f_globals)
-        print('----------------------------------------------')
-        print "image failed to %s: %s (retry #%s)" % (campaign_id, ex, kwargs.get('task_retries', 0))
-        print('EXCEPTION IN ({}, LINE {} "{}"): {} {}'.format(filename, lineno, line.strip(), exc_obj, trace))
-        print('----------------------------------------------')
+        print(ex)
         resize_image.retry(args=[res, campaign_id, work], kwargs=kwargs, exc=ex)
 
 
@@ -436,7 +405,6 @@ def campaign_offer_update(campaign_id, **kwargs):
         from getmyad.model.Campaign import Campaign
         from getmyad.model.Offer import Offer
         from getmyad.lib.adload_data import AdloadData
-        print "Create connection"
         db = _mongo_main_db()
         connection_adload = mssql_connection_adload()
 
@@ -446,25 +414,19 @@ def campaign_offer_update(campaign_id, **kwargs):
                 Возвращает url нового файла или пустую строку в случае ошибки.
             '''
             try:
-                print "-------------------------------"
-                print "Check image"
                 size_key = '%sx%s' % (height, width)
                 result = []
                 urlList = urls.split(',')
                 for url in urlList:
                     rec = db.image.find_one({'src': url.strip(), size_key: {'$exists': True}, 'logo': logo})
                     if rec:
-                        print "Image Exist"
                         href = rec[size_key].get('url')
-                        print href
                         result.append(href)
-                        print "-------------------------------"
                 if len(result) == len(urlList):
                     return " , ".join(result)
                 return False
             except Exception as ex:
-                print ex
-                print "-------------------------------"
+                print(ex)
                 return False
 
         a = datetime.datetime.now()
@@ -474,7 +436,6 @@ def campaign_offer_update(campaign_id, **kwargs):
         try:
             camp.load()
         except Campaign.NotFoundError:
-            print 'Campaign is not running'
             return
         # if camp.is_update():
         #     campaign_offer_update.retry(args=[campaign_id], countdown=360, kwargs=kwargs)
@@ -488,7 +449,6 @@ def campaign_offer_update(campaign_id, **kwargs):
             ad.offers_list(campaign_id, camp.load_count)
             offers_len = len(ad.offers)
             if offers_len < 1:
-                print "Offers not found"
                 camp.update_status = 'complite'
                 camp.last_update = datetime.datetime.now()
                 camp.save()
@@ -498,7 +458,6 @@ def campaign_offer_update(campaign_id, **kwargs):
                 small = True
             elif offers_len > 50000:
                 db.offer.remove({'campaignId': campaign_id}, w=3, j=True)
-            print "Offers len %s" % offers_len
             db.offer.remove({'campaignId': campaign_id, 'hash': {'$exists': False}}, w=1)
 
             ctr = 0.06
@@ -515,7 +474,7 @@ def campaign_offer_update(campaign_id, **kwargs):
             for doc in cursor:
                 hashes.append(doc['_id'])
 
-            print "Start offer processed"
+
             for x in ad.offers.values():
                 res_task_img = {}
                 if offers_len < 10000:
@@ -556,13 +515,12 @@ def campaign_offer_update(campaign_id, **kwargs):
                 small_resize_image.delay({}, campaign_id, work)
             else:
                 resize_image.delay({}, campaign_id, work)
-            print "Start remove offers"
+
             db.offer.remove({'campaignId': campaign_id, 'hash': {'$in': hashes}}, w=1)
             b = datetime.datetime.now()
             c = b - a
-            print "Load", c.seconds
+
     except Exception as ex:
-        print "offer load failed to %s: %s (retry #%s)" % (campaign_id, ex, kwargs.get('task_retries', 0))
         campaign_offer_update.retry(args=[campaign_id], kwargs=kwargs, exc=ex)
     else:
         camp.load()
@@ -571,7 +529,6 @@ def campaign_offer_update(campaign_id, **kwargs):
         camp.save()
         if work:
             campaign_update(campaign_id)
-        print "Finish load", campaign_id
 
 
 @task(max_retries=10, default_retry_delay=10)
@@ -584,7 +541,6 @@ def delete_account(login, **kwargs):
         kwargs:
     """
     try:
-        print "Delete Account"
         db = _mongo_main_db()
         informer_list = [x['guid'] for x in db.informer.find({'user': login})]
         domain_list = []
@@ -609,5 +565,4 @@ def delete_account(login, **kwargs):
         print db.stats_daily_user.remove({'user': login})
         account_update(login)
     except Exception as ex:
-        print "account delete failed to %s: %s (retry #%s)" % (login, ex, kwargs.get('task_retries', 0))
         delete_account.retry(args=[login], kwargs=kwargs, exc=ex)
