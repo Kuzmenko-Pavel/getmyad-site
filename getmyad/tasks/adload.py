@@ -333,7 +333,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     return [image, width, height]
 
                 if not cdn_server_url or not cdn_api_list:
-                    print 'Не заданы настройки сервера CDN. Проверьте .ini файл.'
+                    print u'Не заданы настройки сервера CDN. Проверьте .ini файл.'
                     return ''
                 size_key = '%sx%s' % (trum_height, trum_width)
 
