@@ -106,7 +106,6 @@ class AdloadData(object):
          """
         try:
             currency_cost = self._currencyCostCached('$')
-            offers = []
             print 'Find Adload'
             cursor_a = self.connection_adload.cursor()
             # Частные предложения (информеры)

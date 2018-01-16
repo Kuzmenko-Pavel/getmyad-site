@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-import linecache
-import sys
-import traceback
 from uuid import uuid1
 import cStringIO
 from eventlet.green import urllib2
@@ -15,9 +12,11 @@ import mimetypes
 
 from celery.task import task
 from PIL import Image
-import os
 import pymongo
 from amqplib import client_0_8 as amqp
+from getmyad.model.Campaign import Campaign
+from getmyad.model.Offer import Offer
+from getmyad.lib.adload_data import AdloadData
 
 
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
@@ -27,6 +26,7 @@ MONGO_DATABASE = 'getmyad_db'
 # Параметры FTP для заливки статических файлов на сервер CDN
 cdn_server_url = 'https://cdn.yottos.com/'
 cdn_api_list = ['cdn.api.srv-10.yottos.com', 'cdn.api.srv-11.yottos.com', 'cdn.api.srv-12.yottos.com']
+img_folder = 'img2'
 
 
 class MultiPartForm(object):
@@ -204,8 +204,8 @@ def resize_image(res, campaign_id, work, **kwargs):
                     for host in cdn_api_list:
                         png.seek(0)
                         webp.seek(0)
-                        send_png_url = 'http://%s/img1/%s/%s.png' % (host, new_filename[:2], new_filename)
-                        send_webp_url = 'http://%s/img1/%s/%s.webp' % (host, new_filename[:2], new_filename)
+                        send_png_url = 'http://%s/%s/%s/%s.png' % (host, img_folder, new_filename[:2], new_filename)
+                        send_webp_url = 'http://%s/%s/%s/%s.webp' % (host, img_folder, new_filename[:2], new_filename)
                         send(send_png_url, '%s.png' % new_filename, png)
                         send(send_webp_url, '%s.webp' % new_filename, webp)
                     return new_filename
@@ -361,7 +361,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                         buf_webp.seek(0)
 
                         new_filename = cdn_loader(buf_png, buf_webp)
-                        new_url = cdn_server_url + 'img1/' + new_filename[:2] + '/' + new_filename + '.png'
+                        new_url = cdn_server_url + img_folder + '/' + new_filename[:2] + '/' + new_filename + '.png'
                         db.image.update({'src': url.strip(), 'logo': logo},
                                         {'$set': {size_key: {'url': new_url,
                                                              'w': trum_width,
@@ -402,17 +402,10 @@ def campaign_offer_update(campaign_id, **kwargs):
     Если в кампании нет активных предложений, она будет остановлена.
     '''
     try:
-        from getmyad.model.Campaign import Campaign
-        from getmyad.model.Offer import Offer
-        from getmyad.lib.adload_data import AdloadData
         db = _mongo_main_db()
         connection_adload = mssql_connection_adload()
 
         def check_image(urls, height, width, logo):
-            ''' Пережимает изображение по адресу ``url`` до размеров
-                ``height``x``width`` и заливает его на ftp для раздачи статики.
-                Возвращает url нового файла или пустую строку в случае ошибки.
-            '''
             try:
                 size_key = '%sx%s' % (height, width)
                 result = []
@@ -437,8 +430,7 @@ def campaign_offer_update(campaign_id, **kwargs):
             camp.load()
         except Campaign.NotFoundError:
             return
-        # if camp.is_update():
-        #     campaign_offer_update.retry(args=[campaign_id], countdown=360, kwargs=kwargs)
+
         campaign_stop(campaign_id)
         camp.last_update = datetime.datetime.now()
         camp.project = 'adload'
@@ -474,8 +466,7 @@ def campaign_offer_update(campaign_id, **kwargs):
             for doc in cursor:
                 hashes.append(doc['_id'])
 
-
-            for x in ad.offers.values():
+            for x in ad.offers.itervalues():
                 res_task_img = {}
                 if offers_len < 10000:
                     image = check_image(x['image'], 210, 210, x['logo'])

@@ -26,7 +26,8 @@ setup(
         "pylibmc==1.5.2",
         "urlfetch==1.0.2",
         "recaptcha-client",
-        'eventlet'
+        "eventlet==0.21.0"
+
     ],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
