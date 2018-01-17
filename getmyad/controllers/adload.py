@@ -770,6 +770,11 @@ class AdloadController(BaseController):
             get_campaigns[item['guid']] = item
 
         c.campaigns = []
+        campaigns = []
+        manager = set()
+        managerStr = ""
+        user_name = set()
+        user_nameStr = ""
         for item in ad_campaigns:
             try:
                 camp = get_campaigns.get(item['id'], {})
@@ -778,39 +783,21 @@ class AdloadController(BaseController):
                     del get_campaigns[item['id']]
                 else:
                     offers_count = 0
-                status = '<span style="color: #05AA26">Запушена</span>'
-                if camp.get('status') == 'hold':
-                    status = '<span style="color: #AA5D05">Заморожена (HOLD)</span>'
-                    if camp.get('update_status') == 'start':
-                        status = '<span style="color: #E20505">Обнавляеться</span>'
-                elif camp.get('status') == 'working':
-                    status = '<span style="color: #05AA26">Запушена</span>'
-                    if camp.get('update_status') == 'start':
-                        status = '<span style="color: #4C6BDF">Обнавляеться</span>'
-                elif camp.get('status') == 'configured':
-                    status = '<span style="color: #C1C1C1">Ненастроена</span>'
-                else:
-                    status = '<span style="color: #F10606">Незапушена</span>'
-
-                retargeting = '<span></span>'
-                if camp.get('showConditions', {}).get('retargeting', False):
-                    retargeting = '<span style="color:#F10606">Ретаргетинг</span>'
-
-                social = '<span style="color:#05AA26">Несоциальная</span>'
-                if camp.get('social', False):
-                    social = '<span style="color:#CACACE">Cоциальная</span>'
-
-                c.campaigns.append(
+                manager.add(item['manager'])
+                user_name.add(item['user_name'])
+                campaigns.append(
                     {
-                        'title': '<a href="%s">%s</a>' % (h.url_for(controller='adload', action='campaign_overview', id=item['id']), item['title']),
+                        'title': item['title'],
+                        'url': h.url_for(controller='adload', action='campaign_overview', id=item['id']),
                         'manager': item['manager'],
                         'user_name': item['user_name'],
-                        'getmyad': 'getmyad' if item.get('getmyad', False) else '',
-                        'status': status,
-                        'last_update': str(camp.get('lastUpdate')),
+                        'getmyad': item.get('getmyad', False),
+                        'status': camp.get('status'),
+                        'update_status': camp.get('update_status'),
+                        'last_update': camp.get('lastUpdate', datetime.datetime(1900, 1, 1, 0, 0)).strftime("%Y-%m-%d %H:%M:%S"),
                         'offers_count': int(offers_count),
-                        'social': social,
-                        'retargeting': retargeting,
+                        'social': camp.get('social', False),
+                        'retargeting': camp.get('showConditions', {}).get('retargeting', False),
                         'UnicImpressionLot': int(camp.get('showConditions', {}).get('UnicImpressionLot', 0)),
                         'offer_by_campaign_unique': int(camp.get('showConditions', {}).get('offer_by_campaign_unique', 0)),
                         'load_count': int(camp.get('showConditions', {}).get('load_count', 0)),
@@ -819,7 +806,20 @@ class AdloadController(BaseController):
             except Exception as ex:
                 print ex
                 pass
-
+        manager = list(manager)
+        manager.insert(0, 'ALL')
+        managerStr = ';'.join(['%s:%s' % (idx, val) if idx > 0 else '%s:%s' % ('', val) for idx, val in enumerate(manager)])
+        user_name = list(user_name)
+        user_name.insert(0, 'ALL')
+        user_nameStr = ';'.join(['%s:%s' % (idx, val) if idx > 0 else '%s:%s' % ('', val) for idx, val in enumerate(user_name)])
+        c.manager = manager
+        c.managerStr = managerStr
+        c.user_name = user_name
+        c.user_nameStr = user_nameStr
+        for item in  campaigns:
+            item['manager'] = manager.index(item['manager'])
+            item['user_name'] = user_name.index(item['user_name'])
+            c.campaigns.append(item)
         c.get_campaigns = []
         for x in get_campaigns.values():
             item = {

@@ -56,6 +56,7 @@ class Campaign(object):
         self.offer_by_campaign_unique = 1
         self.load_count = 100
         self.status = 'created'
+        self.day_of_holden = None
         self.update_status = 'complite'
         if self.exists():
             self.load()
@@ -79,6 +80,7 @@ class Campaign(object):
         self.yottos_hide_site_marker = c.get('yottosHideSiteMarker', False)
         self.status = c.get('status', 'working')
         self.last_update = c.get('lastUpdate', datetime.datetime.now())
+        self.day_of_holden = c.get('day_of_holden')
         self.update_status = c.get('update_status', 'complite')
         if c.has_key('showConditions'):
             self.offer_by_campaign_unique = c['showConditions'].get('offer_by_campaign_unique', 1)
@@ -131,6 +133,7 @@ class Campaign(object):
                       'offer_by_campaign_unique': self.offer_by_campaign_unique,
                       'load_count': self.load_count,
                       'lastUpdate': self.last_update,
+                      'day_of_holden': self.day_of_holden,
                       'update_status': self.update_status,
                       'status': self.status}},
             upsert=True)
@@ -195,3 +198,12 @@ class Campaign(object):
 
     def __getitem__(self, key):
         return self.__dict__[key]
+
+    def __setattr__(self, name, value):
+        if name == 'status':
+            if value == 'hold':
+                if self.day_of_holden is None:
+                    super(Campaign, self).__setattr__('day_of_holden', datetime.datetime.now())
+            else:
+                super(Campaign, self).__setattr__('day_of_holden', None)
+        super(Campaign, self).__setattr__(name, value)

@@ -2,94 +2,198 @@
 <table id="run_camp"></table>
 <div id="pager_run_camp"></div>
 <script type="text/javascript">
+    function statusFomatter(cellvalue, options, rowObject) {
+        var update_status =  rowObject['update_status'];
+        var status = '<span style="color: #F10606">Незапушена</span>';
+        if (cellvalue === 'hold'){
+            status = '<span style="color: #AA5D05">Заморожена (HOLD)</span>';
+            if (update_status === 'start'){
+                status = '<span style="color: #E20505">Обнавляеться</span>';
+            }
+        }
+        else if (cellvalue === 'working'){
+            status = '<span style="color: #05AA26">Запушена</span>';
+            if (update_status === 'start'){
+                status = '<span style="color: #4C6BDF">Обнавляеться</span>';
+            }
+        }
+        else if (cellvalue === 'configured'){
+            status = '<span style="color: #C1C1C1">Ненастроена</span>';
+        }
+        return status
+    }
+    function retargetingFomatter(cellvalue, options, rowObject) {
+        var status = '<span style="color:#CACACE">Места размещения</span>';
+        if (cellvalue){
+            status = '<span style="color:#F10606">Ретаргетинг</span>';
+        }
+        return status
+    }
+    function socialFomatter(cellvalue, options, rowObject) {
+        var status = '<span style="color:#05AA26">Несоциальная</span>';
+        if (cellvalue){
+            status = '<span style="color:#CACACE">Cоциальная</span>';
+        }
+        return status
+    }
+    function isGetmyadFomatter(cellvalue, options, rowObject) {
+        var status = '<span style="color: #F10606">Не разрешена</span>';
+        if (cellvalue){
+            status = '<span style="color: #05AA26">Разрешена</span>';
+        }
+        return status
+    }
+    function titleFomatter(cellvalue, options, rowObject) {
+        var url = rowObject['url'];
+        return '<a href="' + url +'">'+ cellvalue +'</a>';
+    }
+
     var run_camp = ${h.JSON(c.campaigns)};
-	$("#run_camp").jqGrid({
-                data: run_camp,
-	            datatype: "local",
-                colNames: ['Название </br> компании', 'Менеджер', 'Название </br> рекламодателя',
-                           'Разрешена к </br> показу в GetMyAd', 'Запушена', 'Обнавлена', 'Кол-во </br> РП',
-                           'Социальная', 'Ретаргетинг', 'Уникальность', 'РП в блоке', 'Кол-во </br> загружаемых РП'],
-                colModel: [{
-                    name: 'title',
-                    index: 'title',
-                    align: 'center',
-                    sortable: true
+    var manager = ${h.JSON(c.manager)};
+    var managerStr = ${h.JSON(c.managerStr)};
+    var user_name = ${h.JSON(c.user_name)};
+    var user_nameStr = ${h.JSON(c.user_nameStr)};
+    var grid = $("#run_camp").jqGrid({
+        data: run_camp,
+        datatype: "local",
+        colNames: ['Название </br> компании', '', 'Менеджер', 'Название </br> рекламодателя',
+            'Разрешена к </br> показу в GetMyAd', 'Запушена', '', 'Обнавлена', 'Кол-во </br> РП',
+            'Социальная', 'Ретаргетинг', 'Уникальность', 'РП в блоке', 'Кол-во </br> загружаемых РП'],
+        colModel: [
+            {
+                name: 'title',
+                index: 'title',
+                align: 'center',
+                formatter: titleFomatter,
+                sortable: true,
+                search:true,
+                stype:'text'
+            },
+            {
+                name: 'url',
+                index: 'url',
+                hidden:true
+            }
+            , {
+                name: 'manager',
+                index: 'manager',
+                align: 'center',
+                sortable: true,
+                formatter:'select',
+                stype: 'select',
+                sorttype: function(cell) {return manager[cell];},
+                editoptions: { value: managerStr },
+                edittype:'select',
+                searchoptions:{ sopt:['eq'], value: managerStr}
+            }
+            , {
+                name: 'user_name',
+                index: 'user_name',
+                align: 'center',
+                sortable: true,
+                formatter:'select',
+                stype: 'select',
+                sorttype: function(cell) {return user_name[cell];},
+                editoptions: { value: user_nameStr },
+                edittype:'select',
+                searchoptions:{ sopt:['eq'], value: user_nameStr}
+            }
+            , {
+                name: 'getmyad',
+                index: 'getmyad',
+                align: 'center',
+                formatter: isGetmyadFomatter,
+                sortable: true,
+                search: false
+            }
+            , {
+                name: 'status',
+                index: 'status',
+                align: 'center',
+                formatter: statusFomatter,
+                sortable: true,
+                search: false
+            }
+            , {
+                name: 'update_status',
+                index: 'update_status',
+                hidden:true,
+                search: false
+            }
+            , {
+                name: 'last_update',
+                index: 'last_update',
+                align: 'center',
+                sortable: true,
+                search: false
+            }
+            , {
+                name: 'offers_count',
+                index: 'offers_count',
+                sorttype: 'int',
+                align: 'center',
+                sortable: true,
+                search: false
+            }
+            , {
+                name: 'social',
+                index: 'social',
+                align: 'center',
+                formatter: socialFomatter,
+                sortable: true,
+                search: false
+            }
+            , {
+                name: 'retargeting',
+                index: 'retargeting',
+                align: 'center',
+                formatter: retargetingFomatter,
+                sortable: true,
+                search: false
+            }
+            , {
+                name: 'UnicImpressionLot',
+                index: 'UnicImpressionLot',
+                align: 'center',
+                sorttype: 'int',
+                sortable: true,
+                search: false
+            }
+            , {
+                name: 'offer_by_campaign_unique',
+                index: 'offer_by_campaign_unique',
+                align: 'center',
+                sorttype: 'int',
+                sortable: true,
+                search: false
+            }
+            , {
+                name: 'load_count',
+                index: 'load_count',
+                align: 'center',
+                sorttype: 'int',
+                sortable: true,
+                search: false
+            }],
+        caption: "Активные рекламные кампании",
+        rowNum: 20,
+        rowList: [10, 20, 30, 40, 50],
+        viewrecords: true,
+        height: 'auto',
+        pager: "#pager_run_camp"
+    });
+    grid.jqGrid('filterToolbar', {stringResult: true, searchOnEnter: false, defaultSearch : "cn", beforeSearch: function() {
+                var postData = grid.jqGrid('getGridParam','postData');
+                var searchData = jQuery.parseJSON(postData.filters);
+                for (var iRule=0; iRule<searchData.rules.length; iRule++) {
+                    if (searchData.rules[iRule].field === "title") {
+                        var valueToSearch = searchData.rules[iRule].data;
+                        if (valueToSearch.length < 3) {
+                            return true;
+                        }
+
+                    }
                 }
-                ,{
-                    name: 'manager',
-                    index: 'manager',
-                    align: 'center',
-                    sortable: true
-                }
-                ,{
-                    name: 'user_name',
-                    index: 'user_name',
-                    align: 'center',
-                    sortable: true
-                }
-                ,{
-                    name: 'getmyad',
-                    index: 'getmyad',
-                    align: 'center',
-                    sortable: true
-                }
-                 ,{
-                    name: 'status',
-                    index: 'status',
-                    align: 'center',
-                    sortable: true
-                }
-                 ,{
-                    name: 'last_update',
-                    index: 'last_update',
-                    align: 'center',
-                    sortable: true
-                }
-                 ,{
-                    name: 'offers_count',
-                    index: 'offers_count',
-                        sorttype: 'int',
-                    align: 'center',
-                    sortable: true
-                }
-                 ,{
-                    name: 'social',
-                    index: 'social',
-                    align: 'center',
-                    sortable: true
-                }
-                 ,{
-                    name: 'retargeting',
-                    index: 'retargeting',
-                    align: 'center',
-                    sortable: true
-                }
-                 ,{
-                    name: 'UnicImpressionLot',
-                    index: 'UnicImpressionLot',
-                    align: 'center',
-                        sorttype: 'int',
-                    sortable: true
-                }
-                ,{
-                    name: 'offer_by_campaign_unique',
-                    index: 'offer_by_campaign_unique',
-                    align: 'center',
-                        sorttype: 'int',
-                    sortable: true
-                }
-                ,{
-                    name: 'load_count',
-                    index: 'load_count',
-                    align: 'center',
-                        sorttype: 'int',
-                    sortable: true
-                }],
-                caption: "Активные рекламные кампании",
-                rowNum: 20,
-                rowList: [10,20,30,40,50],
-                viewrecords: true,
-                height: 'auto',
-                pager: "#pager_run_camp"
-            });
+                return false;
+            }});
 </script>
