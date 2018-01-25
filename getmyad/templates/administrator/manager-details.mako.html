@@ -43,18 +43,16 @@ span.psw-error-message, span.fields-error-message {
 }
 </style>
 
-% if c.permission.has(Permission.EDIT_USERS_ACCOUNT):
+% if c.permission.has():
 <div id="accordion">
   
 <h3><a href="#">Детали пользователя</a></h3>  
 <div id="userDetails">
 		<h2>${c.login}</h2>
         <button id="edit-psw-button" name="edit-psw-button" class="edit-psw-button">Изменить пароль</button>
-        % if c.account.account_type == Account.Administrator:
         <p>
         <button id="delete-account-button" name="delete-account-button" class="delete-account-button">Удалить аккаунт</button>
         </p>
-        % endif
 		<form action="/manager/saveUserDetails" method="post" id="user-details-${id}" name="user-details-${id}">
 		 <input type="hidden" name="token" id="token" value="${c.token}"/>
 		 <input type="hidden" id="login" name="login" value="${c.login}"/>

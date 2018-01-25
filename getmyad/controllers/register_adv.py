@@ -66,7 +66,7 @@ class RegisterAdvController(BaseController):
     def index(self):
         if not self.user: return h.userNotAuthorizedError()
         permission = Permission(Account(login=self.user))
-        if not permission.has(Permission.REGISTER_USERS_ACCOUNT):
+        if not permission.has():
             return h.userNotAuthorizedError()
         return render('/register_adv.mako.html')
 

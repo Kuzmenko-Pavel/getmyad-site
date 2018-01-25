@@ -701,7 +701,6 @@ class Permission():
     REGISTER_USERS_ACCOUNT = 'register users account'  # Может регистрировать пользовательские аккаунты
     EDIT_USERS_ACCOUNT = 'register users account'  # Может регистрировать пользовательские аккаунты
     MANAGE_USER_INFORMERS = 'manage user informers'  # Может настраивать информеры пользователей (в т.ч. и расширенные настройки)
-    ACCESS_ATTRACTOR = 'access attractor'  # Имеет доступ к Yottos Attractor
 
     class InsufficientRightsError(Exception):
         """ Недостаточно прав для выполнения операции """
@@ -713,37 +712,18 @@ class Permission():
             raise Account.NotFoundError(account)
         self.account = account
         self.permissions = set()
-        self.db = app_globals.db
-        user = self.db.users.find_one({'login': self.account.login})
-        for permission in user.get('permissions', []):
-            if permission in (self.VIEW_ALL_USERS_STATS,
-                              self.VIEW_MONEY_OUT,
-                              self.USER_DOMAINS_MODERATION,
-                              self.SET_CLICK_COST,
-                              self.REGISTER_USERS_ACCOUNT,
-                              self.EDIT_USERS_ACCOUNT,
-                              self.MANAGE_USER_INFORMERS,
-                              self.ACCESS_ATTRACTOR):
-                self.permissions.add(permission)
 
-    def has(self, right):
+    def has(self, right=None):
         ''' Возвращает ``True``, если пользователь имеет данное разрешение, иначе ``False`` '''
         if self.account.account_type == Account.Administrator:
             return True
         if self.account.account_type == Account.Manager:
             if right == self.EDIT_USERS_ACCOUNT:
                 return True
+            if right == self.SET_CLICK_COST:
+                return True
+            if right == self.REGISTER_USERS_ACCOUNT:
+                return True
         if right in self.permissions:
             return True
         return False
-
-    def grant_to(self, account, permission):
-        'Выдаёт разрешение ``permission`` аккаунту ``account`` (только в том случае, если дающий разрешение сам его имеет)'
-        assert account and isinstance(account, Account), "'account' must be an Account instance"
-        if not account.exists():
-            raise Account.NotFoundError(account)
-        if not self.has(permission):
-            raise Permission.InsufficientRightsError
-        self.db.users.update({'login': account.login},
-                             {'$addToSet': {'permissions': permission}})
-        self.permissions.add(permission)

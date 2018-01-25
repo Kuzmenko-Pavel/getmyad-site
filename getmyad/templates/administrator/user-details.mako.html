@@ -50,11 +50,9 @@ span.psw-error-message, span.fields-error-message {
 <div id="userDetails">
 		<h2>${c.login}</h2>
         <button id="edit-psw-button" name="edit-psw-button" class="edit-psw-button">Изменить пароль</button>
-        % if c.account.account_type == Account.Administrator:
         <p>
         <button id="delete-account-button" name="delete-account-button" class="delete-account-button">Удалить аккаунт</button>
         </p>
-        % endif
 		<form action="/manager/saveUserDetails" method="post" id="user-details-${id}" name="user-details-${id}">
 		 <input type="hidden" name="token" id="token" value="${c.token}"/>
 		 <input type="hidden" id="login" name="login" value="${c.login}"/>
@@ -99,31 +97,31 @@ span.psw-error-message, span.fields-error-message {
                      <td>и не более</td>
                      <td>${h.text('click_cost_max', value=c.click_cost_max, type="number")} грн</td>
                 </tr>
-                <tr class="header hide" >
-                    <th colspan="2">
-                        Настройки веток воркера <span>&rarr;</span>
-                    </th>
-                </tr>
-                <tr>
-                      <td>вес краткосрочной истории:</td>
-                      <td>${h.text('range_short_term', value=c.range_short_term, type="number")} %</td>
-                </tr>
-                <tr>
-                      <td>вес долгосрочной истории:</td>
-                      <td>${h.text('range_long_term', value=c.range_long_term, type="number")} %</td>
-                </tr>
-                <tr>
-                      <td>вес контекста:</td>
-                      <td>${h.text('range_context', value=c.range_context, type="number")} %</td>
-                </tr>
-                <tr>
-                      <td>вес поисковой истории:</td>
-                      <td>${h.text('range_search', value=c.range_search, type="number")} %</td>
-                </tr>
-                <tr>
-                      <td>вес ветки ретаргитенга:</td>
-                      <td>${h.text('range_retargeting', value=c.range_retargeting, type="number")} %</td>
-                </tr>
+##                 <tr class="header hide" >
+##                     <th colspan="2">
+##                         Настройки веток воркера <span>&rarr;</span>
+##                     </th>
+##                 </tr>
+##                 <tr>
+##                       <td>вес краткосрочной истории:</td>
+##                       <td>${h.text('range_short_term', value=c.range_short_term, type="number")} %</td>
+##                 </tr>
+##                 <tr>
+##                       <td>вес долгосрочной истории:</td>
+##                       <td>${h.text('range_long_term', value=c.range_long_term, type="number")} %</td>
+##                 </tr>
+##                 <tr>
+##                       <td>вес контекста:</td>
+##                       <td>${h.text('range_context', value=c.range_context, type="number")} %</td>
+##                 </tr>
+##                 <tr>
+##                       <td>вес поисковой истории:</td>
+##                       <td>${h.text('range_search', value=c.range_search, type="number")} %</td>
+##                 </tr>
+##                 <tr>
+##                       <td>вес ветки ретаргитенга:</td>
+##                       <td>${h.text('range_retargeting', value=c.range_retargeting, type="number")} %</td>
+##                 </tr>
                 <tr class="header hide">
                     <th colspan="2">
                         Вывод средств <span>&rarr;</span>
@@ -132,7 +130,7 @@ span.psw-error-message, span.fields-error-message {
 				<tr>
 					<td>Минимальная сумма вывода:</td>
 					<td>
-                        <select ${'disabled="disabled"' if c.account.account_type != 'administrator' else ''} name="edit_minsum" id="edit_minsum">
+                        <select name="edit_minsum" id="edit_minsum">
 							% for x in [800, 720, 640, 560, 480, 400, 320, 240, 160]:
 								 <option value="${x}">${x}</option>
 							% endfor
@@ -144,49 +142,49 @@ span.psw-error-message, span.fields-error-message {
 				</tr>
 				<tr>
 					<td> Работа по предоплате:</td>
-					<td>${h.checkbox('edit_prepayment', value=c.edit_prepayment, checked=c.edit_prepayment, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+					<td>${h.checkbox('edit_prepayment', value=c.edit_prepayment, checked=c.edit_prepayment)}</td>
 				</tr>
 				
 				<tr>
 					<td>Вывод на webmoney-z:</td>
-					<td>${h.checkbox('edit_money_web_z', value=c.edit_money_web_z, checked=c.edit_money_web_z, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+					<td>${h.checkbox('edit_money_web_z', value=c.edit_money_web_z, checked=c.edit_money_web_z)}</td>
 				</tr>
 					
 				<tr>
 					<td>Вывод на webmoney-r:</td>
-					<td>${h.checkbox('edit_money_web_r', value=c.edit_money_web_r, checked=c.edit_money_web_r, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+					<td>${h.checkbox('edit_money_web_r', value=c.edit_money_web_r, checked=c.edit_money_web_r)}</td>
 				</tr>
 					
 				<tr>
 					<td>Вывод на webmoney-u:</td>
-					<td>${h.checkbox('edit_money_web_u', value=c.edit_money_web_u, checked=c.edit_money_web_u, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+					<td>${h.checkbox('edit_money_web_u', value=c.edit_money_web_u, checked=c.edit_money_web_u)}</td>
 				</tr>
 					
 				<tr>
 					<td>Вывод наличкой:</td>
-                    <td>${h.checkbox('edit_money_cash', value=c.edit_money_cash, checked=c.edit_money_cash, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+                    <td>${h.checkbox('edit_money_cash', value=c.edit_money_cash, checked=c.edit_money_cash)}</td>
                 </tr>
 				<tr>
 					<td>Вывод на карточку:</td>
-                    <td>${h.checkbox('edit_money_card', value=c.edit_money_card, checked=c.edit_money_card, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+                    <td>${h.checkbox('edit_money_card', value=c.edit_money_card, checked=c.edit_money_card)}</td>
                 </tr>
 				<tr>
 					<td>Вывод на карточку Приват Банка UAH:</td>
-                    <td>${h.checkbox('edit_money_card_pb_ua', value=c.edit_money_card_pb_ua, checked=c.edit_money_card_pb_ua, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+                    <td>${h.checkbox('edit_money_card_pb_ua', value=c.edit_money_card_pb_ua, checked=c.edit_money_card_pb_ua)}</td>
                 </tr>
 				<tr>
 					<td>Вывод на карточку Приват Банка USD:</td>
-                    <td>${h.checkbox('edit_money_card_pb_us', value=c.edit_money_card_pb_us, checked=c.edit_money_card_pb_us, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+                    <td>${h.checkbox('edit_money_card_pb_us', value=c.edit_money_card_pb_us, checked=c.edit_money_card_pb_us)}</td>
                 </tr>
                 <tr>
                     <td>Вывод на Яндекс Деньги:</td>
-                    <td>${h.checkbox('edit_money_yandex', value=c.edit_money_yandex, checked=c.edit_money_yandex, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+                    <td>${h.checkbox('edit_money_yandex', value=c.edit_money_yandex, checked=c.edit_money_yandex)}</td>
                 </tr>
                 
 				
 				<tr>
                   <td>Вывод на счёт-фактуру:</td>
-                      <td>${h.checkbox('edit_money_factura', value=c.edit_money_factura, checked=c.edit_money_factura, readonly=c.notAdmin, disabled=c.notAdmin)}</td>
+                      <td>${h.checkbox('edit_money_factura', value=c.edit_money_factura, checked=c.edit_money_factura)}</td>
 				</tr>  
                 <tr class="header">
                     <th colspan="2">
@@ -195,7 +193,7 @@ span.psw-error-message, span.fields-error-message {
 				<tr>
 					<td> Ответственный менеджер: </td>
 					<td>
-                        <select ${'disabled="disabled"' if c.notAdmin else ''} name="edit_manager_get" id="edit_manager_get" class="user-details-manager-get">
+                        <select name="edit_manager_get" id="edit_manager_get" class="user-details-manager-get">
 							% for x in c.list_manager:
 								<option value="${x}">${x}</option>
 							% endfor
@@ -211,46 +209,30 @@ span.psw-error-message, span.fields-error-message {
 				<tr>
 					<td>Блокировка аккаунта: </td>
 					<td>
-                        % if c.account.account_type == Account.Administrator:
 						${h.select(name="edit_account_blocked", selected_values=c.edit_account_blocked,
 							options=[('', u'Аккаунт не заблокирован'),
 									 ('light', u'Временная приостановка'),
 									 ('filter', u'Фильтрация кликов'),
 									 ('banned', u'Полностью заблокирован') ])}
-                        % else:
-						${h.select(name="edit_account_blocked", selected_values=c.edit_account_blocked,
-							options=[('', u'Аккаунт не заблокирован'),
-									 ('light', u'Временная приостановка'),
-									 ('filter', u'Фильтрация кликов'),
-									 ('banned', u'Полностью заблокирован') ], disabled=True)}
-                        % endif
-						<acronym title="Временная приостановка используется для аккаунтов, которые перестали использовать наши информеры. Клики и показы по аккаунтам с такой блокировкой не учитываются, но пользователь может самостоятельно отменить её, зайдя в свой кабинет. Полная блокировка применяется для аккаунтов, замеченных в нарушениях и т.п. В этом случае, владелец полностью лишается своего аккаунта." 
-							style="font-size: smaller; border-bottom: 1px dashed gray"> в чём разница?</acrnonym>
+						<acronym title="Временная приостановка используется для аккаунтов, которые перестали использовать наши информеры.
+						Клики и показы по аккаунтам с такой блокировкой не учитываются, но пользователь может самостоятельно отменить её, зайдя в свой кабинет.
+						Полная блокировка применяется для аккаунтов, замеченных в нарушениях и т.п. В этом случае, владелец полностью лишается своего аккаунта."
+							style="font-size: smaller; border-bottom: 1px dashed gray"> в чём разница? </acrnonym>
 					</td>
 				</tr>	
 				<tr>
                     <td>Фильтрация кликов по времени: </td>
 					<td> не мельше
-                        % if c.account.account_type == Account.Administrator:
 						${h.select(name="edit_time_filter_click", selected_values=c.time_filter_click,
-							options=[(x,x) for x in xrange(5,31)])}
-                        % else:
-						${h.select(name="edit_time_filter_click", selected_values=c.time_filter_click,
-							options=[(x,x) for x in xrange(5,31)], disabled=True)}
-                        % endif
+							options=[(x,x) for x in xrange(5,500,15)])}
                         секунд
 					</td>
 				</tr>
                 <tr>
                     <td>Цена рекламодателя: </td>
 					<td>
-                        % if c.account.account_type == Account.Administrator:
 						${h.select(name="edit_cost_percent_click", selected_values=c.cost_percent_click,
 							options=[(x,x) for x in xrange(5,101)])}
-                        % else:
-						${h.select(name="edit_cost_percent_click", selected_values=c.cost_percent_click,
-							options=[(x,x) for x in xrange(5,101)], disabled=True)}
-                        % endif
                         процентов
 					</td>
 				</tr>
@@ -285,7 +267,6 @@ span.psw-error-message, span.fields-error-message {
 		</div>
 </div>
 
-% if c.account.account_type == Account.Administrator:
 <h3><a href="#">Домены</a></h3>
     <div id="edit_domain_categories">
       <form action="/manager/saveDomainCategories" method="post" id="save-domain-categories-${id}" name="save-domain-categories-${id}">
@@ -315,8 +296,7 @@ span.psw-error-message, span.fields-error-message {
         <button class="submit-button">Сохранить категории</button>
         <span id="categories-error-message" class="categories-error-message"></span>
       </form>
-  </div>    
-% endif
+  </div>
 
 <h3><a href="#">Цены кликов и показов для РБ</a></h3>
 <div id="cost_block_edit">

@@ -2410,7 +2410,7 @@ class ManagerController(BaseController):
             return string.join(res)
 
         if not c.user: return h.userNotAuthorizedError()
-        if not Permission(Account(login=c.user)).has(Permission.VIEW_MONEY_OUT):
+        if not Permission(Account(login=c.user)).has(Permission.EDIT_USERS_ACCOUNT):
             return h.JSON(None)
         data = []
         for x in data_from_db:
