@@ -3529,17 +3529,17 @@ class ManagerController(BaseController):
                 return h.JSON({'error': True, 'msg': u'Неправильные настройки цен \n' + '\n'.join(
                     [x.msg for x in error.error_dict.values()])})
 
-            schema = updateWorkerSettins()
-            try:
-                form_result = schema.to_python(dict(request.params))
-                edit_account.range_short_term = (int(form_result['range_short_term']) / 100.0)
-                edit_account.range_long_term = (int(form_result['range_long_term']) / 100.0)
-                edit_account.range_context = (int(form_result['range_context']) / 100.0)
-                edit_account.range_search = (int(form_result['range_search']) / 100.0)
-                edit_account.range_retargeting = (int(form_result['range_retargeting']) / 100.0)
-            except formencode.Invalid, error:
-                return h.JSON({'error': True, 'msg': u'Неправильные настройки веток воркера \n' + '\n'.join(
-                    [x.msg for x in error.error_dict.values()])})
+            # schema = updateWorkerSettins()
+            # try:
+            #     form_result = schema.to_python(dict(request.params))
+            #     edit_account.range_short_term = (int(form_result['range_short_term']) / 100.0)
+            #     edit_account.range_long_term = (int(form_result['range_long_term']) / 100.0)
+            #     edit_account.range_context = (int(form_result['range_context']) / 100.0)
+            #     edit_account.range_search = (int(form_result['range_search']) / 100.0)
+            #     edit_account.range_retargeting = (int(form_result['range_retargeting']) / 100.0)
+            # except formencode.Invalid, error:
+            #     return h.JSON({'error': True, 'msg': u'Неправильные настройки веток воркера \n' + '\n'.join(
+            #         [x.msg for x in error.error_dict.values()])})
 
             edit_account.blocked = request.params.get('edit_account_blocked', False)
             edit_account.time_filter_click = int(request.params.get('edit_time_filter_click', 15))

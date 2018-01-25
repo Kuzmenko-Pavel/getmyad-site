@@ -256,10 +256,13 @@ class AdloadController(BaseController):
         c.load_count = showCondition.load_count
         c.brending = showCondition.brending
         c.style_type = showCondition.style_type
-        c.style_types = [['default', u'динамически по умолчанию'], ['Block', u'как обычные предложения'],
-                         ['RetBlock', u'как ретаргетинговые предложения'],
-                         ['RecBlock', u'как рекомендованные предложения'],
-                         ['Style_1', u'Стиль с логотипом №1']]
+        c.style_types = [
+            ['default', u'динамически по умолчанию'], ['Block', u'как обычные предложения'],
+            ['RetBlock', u'как ретаргетинговые предложения'],
+            ['RecBlock', u'как рекомендованные предложения'],
+            ['Style_1', u'Стиль с логотипом DOM RIA'],
+            ['Style_2', u'Стиль с логотипом AUTO RIA']
+        ]
         style_data = defaultdict(str)
         style_data['img'] = showCondition.style_data.get('img', 'https://cdn.yottos.com/logos/anonymous.gif')
         style_data['head_title'] = showCondition.style_data.get('head_title', 'Подробнее')
