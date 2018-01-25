@@ -193,7 +193,7 @@ span.psw-error-message, span.fields-error-message {
 				<tr>
 					<td> Ответственный менеджер: </td>
 					<td>
-                        <select name="edit_manager_get" id="edit_manager_get" class="user-details-manager-get">
+                        <select ${'disabled="disabled"' if c.notAdmin else ''} name="edit_manager_get" id="edit_manager_get" class="user-details-manager-get">
 							% for x in c.list_manager:
 								<option value="${x}">${x}</option>
 							% endfor
@@ -267,7 +267,7 @@ span.psw-error-message, span.fields-error-message {
 		</div>
 </div>
 
-<h3><a href="#">Домены</a></h3>
+<h3><a href="#">Категории Доменов</a></h3>
     <div id="edit_domain_categories">
       <form action="/manager/saveDomainCategories" method="post" id="save-domain-categories-${id}" name="save-domain-categories-${id}">
         <input type="hidden" name="token" id="token" value="${c.token}">
