@@ -3516,10 +3516,8 @@ class ManagerController(BaseController):
             if request.params.get('edit_minsum') is not None:
                 edit_account.min_out_sum = request.params.get('edit_minsum')
 
-            if c.notAdmin:
-                schema = updateManagerCostSettins()
-            else:
-                schema = updateCostSettins()
+
+            schema = updateCostSettins()
             try:
                 form_result = schema.to_python(dict(request.params))
                 edit_account.click_percent = request.params.get('click_percent')
@@ -3528,18 +3526,6 @@ class ManagerController(BaseController):
             except formencode.Invalid, error:
                 return h.JSON({'error': True, 'msg': u'Неправильные настройки цен \n' + '\n'.join(
                     [x.msg for x in error.error_dict.values()])})
-
-            # schema = updateWorkerSettins()
-            # try:
-            #     form_result = schema.to_python(dict(request.params))
-            #     edit_account.range_short_term = (int(form_result['range_short_term']) / 100.0)
-            #     edit_account.range_long_term = (int(form_result['range_long_term']) / 100.0)
-            #     edit_account.range_context = (int(form_result['range_context']) / 100.0)
-            #     edit_account.range_search = (int(form_result['range_search']) / 100.0)
-            #     edit_account.range_retargeting = (int(form_result['range_retargeting']) / 100.0)
-            # except formencode.Invalid, error:
-            #     return h.JSON({'error': True, 'msg': u'Неправильные настройки веток воркера \n' + '\n'.join(
-            #         [x.msg for x in error.error_dict.values()])})
 
             edit_account.blocked = request.params.get('edit_account_blocked', False)
             edit_account.time_filter_click = int(request.params.get('edit_time_filter_click', 15))
@@ -3894,36 +3880,6 @@ class updateWorkerSettins(Schema):
                   'tooHigh': u'Пожалуйста, введите число, которое %(max)s меньше',
                   'tooLow': u'Пожалуйста, введите число, которое %(min)s больше',
                   'number': u'Некорректный формат числа'})
-
-
-class updateManagerCostSettins(Schema):
-    allow_extra_fields = True
-    filter_extra_fields = True
-
-    click_percent = formencode.validators.Int(
-        not_empty=True,
-        min=25,
-        max=75,
-        messages={'empty': u'Введите процент отчисления за клик',
-                  'tooHigh': u'Пожалуйста, введите процент отчисления за клик, который %(max)s меньше',
-                  'tooLow': u'Пожалуйста, введите процент отчисления за клик, который %(min)s больше',
-                  'number': u'Некорректный формат процента отчисления за клик'})
-    click_cost_min = formencode.validators.Number(
-        not_empty=True,
-        min=0.01,
-        max=0.49,
-        messages={'empty': u'Введите минимальную цену за клик',
-                  'tooHigh': u'Пожалуйста, введите минимальную цену за клик, которая %(max)s меньше',
-                  'tooLow': u'Пожалуйста, введите минимальную цену за клик, которая %(min)s больше',
-                  'number': u'Некорректный формат минимальной цены за клик'})
-    click_cost_max = formencode.validators.Number(
-        not_empty=True,
-        min=0.5,
-        max=4,
-        messages={'empty': u'Введите максимальныю цену за клик',
-                  'tooHigh': u'Пожалуйста, введите максимальныю цену за клик, которая %(max)s меньше',
-                  'tooLow': u'Пожалуйста, введите максимальныю цену за клик, которая %(min)s больше',
-                  'number': u'Некорректный формат максимальной цены за клик'})
 
 
 class updateCostSettins(Schema):
