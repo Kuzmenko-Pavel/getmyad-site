@@ -1512,17 +1512,6 @@ var ManagerUI = function () {
             // -----------------------------------------------
             // Фильтры по дате для таблицы с данными о статистики работы воркера
             // -----------------------------------------------
-            var datepickerOptions = {
-                duration: 0,
-                defaultDate: null,
-                onSelect: function () {
-                    data_url = '/manager/WorkerStats?start_date=' + $('#workerStatsCalendar').val();
-                    $('#tableWorkerStats').jqGrid().clearGridData();
-                    $('#tableWorkerStats').setGridParam({url: data_url}).trigger("reloadGrid");
-                }
-
-            };
-            $("#workerStatsCalendar").datepicker(datepickerOptions);
             var datepickerNewOptions = {
                 duration: 0,
                 defaultDate: null,
@@ -1534,117 +1523,6 @@ var ManagerUI = function () {
 
             };
             $("#workerNewStatsCalendar").datepicker(datepickerNewOptions);
-
-            // Таблица с данными о статистике работы воркера
-            $("#tableWorkerStats").jqGrid({
-                url: '/manager/WorkerStats?start_date=' + $('#workerStatsCalendar').val() + '&',
-                datatype: 'json',
-                mtype: 'GET',
-                colNames: ['Ветка алгоритма', 'Кол-во РП', 'Кол-во кликов по РП', '1 слово', '2 слова', '3 слова', 'Более 3 слов', 'Н+О', 'Клики Н+О', 'Ш', 'Клики Ш', 'Ф', 'Клики Ф', 'Т', 'Клики Т'],
-                colModel: [{
-                    name: 'branch',
-                    index: 'branch',
-                    align: 'left',
-                    width: 320,
-                    sortable: false
-                }, {
-                    name: 'imp_count',
-                    index: 'imp_count',
-                    align: 'center',
-                    width: 90,
-                    sortable: false
-                }, {
-                    name: 'click_count',
-                    index: 'click_count',
-                    align: 'center',
-                    width: 90,
-                    sortable: false
-                }, {
-                    name: 'word1',
-                    index: 'word1',
-                    align: 'center',
-                    width: 90,
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'word2',
-                    index: 'word2',
-                    align: 'center',
-                    width: 90,
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'word3',
-                    index: 'word3',
-                    align: 'center',
-                    width: 90,
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'word>3',
-                    index: 'word>3',
-                    align: 'center',
-                    width: 90,
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'imp_td',
-                    index: 'imp_td',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'click_td',
-                    index: 'click_td',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'imp_bm',
-                    index: 'imp_bm',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'click_bm',
-                    index: 'click_bm',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'imp_ph',
-                    index: 'imp_ph',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'click_ph',
-                    index: 'click_ph',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'imp_em',
-                    index: 'imp_em',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'click_em',
-                    index: 'click_em',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }],
-                caption: "Статистика работы воркера",
-                height: 'auto',
-                autowidth: true,
-                scroll: false,
-                hiddengrid: true,
-                viewrecords: false,
-                rownumbers: false,
-                rowNum: 20
-            });
 
             // Таблица с данными о статистике работы воркера
             $("#tableWorkerNewStats").jqGrid({

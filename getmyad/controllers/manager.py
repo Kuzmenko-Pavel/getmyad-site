@@ -6,6 +6,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from uuid import uuid1
+from collections import defaultdict
 
 import formencode
 import pymongo
@@ -15,15 +16,16 @@ from pylons import request, response, session, tmpl_context as c, url, \
 from pylons.controllers.util import redirect
 from pymongo import DESCENDING, ASCENDING
 
-import getmyad.tasks.mail as mail
 from getmyad import model
 from getmyad.lib import helpers as h
 from getmyad.lib.base import BaseController, render
 from getmyad.model import Account, AccountReports, ManagerReports, Permission, mq
+from getmyad.tasks.adload import delete_account
+from getmyad.tasks.mail import money_out_request as task_money_out_request
 
 
 def current_user_check(f):
-    ''' Декоратор. Проверка есть ли в сессии авторизованный пользователь'''
+    """ Декоратор. Проверка есть ли в сессии авторизованный пользователь"""
 
     def wrapper(*args):
         user = request.environ.get('CURRENT_USER')
@@ -35,8 +37,8 @@ def current_user_check(f):
 
 
 def expandtoken(f):
-    ''' Декоратор находит данные сессии по токену, переданному в параметре ``token`` и 
-        записывает их в ``c.info`` '''
+    """ Декоратор находит данные сессии по токену, переданному в параметре ``token`` и
+        записывает их в ``c.info`` """
 
     def wrapper(*args):
         try:
@@ -50,7 +52,7 @@ def expandtoken(f):
 
 
 def authcheck(f):
-    ''' Декоратор сравнивает текущего пользователя и пользователя, от которого пришёл запрос. '''
+    """ Декоратор сравнивает текущего пользователя и пользователя, от которого пришёл запрос. """
 
     def wrapper(*args):
         try:
@@ -101,7 +103,7 @@ class ManagerController(BaseController):
 
     @cache.region('short_term')
     def usersSummaryActualTime(self):
-        ''' Время на которое актуальны данные статистики'''
+        """ Время на которое актуальны данные статистики"""
         try:
             x = app_globals.db.config.find_one({'key': 'last stats_user_summary update'})
             actualTime = x.get('value')
@@ -118,8 +120,8 @@ class ManagerController(BaseController):
 
     # @cache.region('long_term')
     def managersSummary(self):
-        ''' Данные для таблицы данных о менеджерах'''
-        ''' TODO в бд в поле blocked надо привести в единый вид и описать значения полей '''
+        """ Данные для таблицы данных о менеджерах"""
+        """ TODO в бд в поле blocked надо привести в единый вид и описать значения полей """
         db = app_globals.db
         data = []
         for manager in db.users.find({"accountType": {'$in': ['manager', 'administrator']}}):
@@ -130,8 +132,8 @@ class ManagerController(BaseController):
         return h.jgridDataWrapper(data)
 
     def managersSummaryByDays(self):
-        ''' Данные для таблицы данных о менеджерах'''
-        ''' TODO в бд в поле blocked надо привести в единый вид и описать значения полей '''
+        """ Данные для таблицы данных о менеджерах"""
+        """ TODO в бд в поле blocked надо привести в единый вид и описать значения полей """
         db = app_globals.db
         data = []
         for manager in db.users.find({"accountType": 'manager'}):
@@ -146,7 +148,7 @@ class ManagerController(BaseController):
     #    @authcheck    
     #    @cache.region('short_term')
     def overallSummaryByDays(self):
-        ''' Данные для таблицы суммарных данных по дням ("Общая статистика") '''
+        """ Данные для таблицы суммарных данных по дням ("Общая статистика") """
         page = int(request.params.get('page', 0))
         limit = int(request.params.get('rows', 15))
         sidx = request.params.get('sidx', 'date')
@@ -170,24 +172,24 @@ class ManagerController(BaseController):
         cursor = app_globals.db.stats.daily.all.find(queri).sort(sidx, sord).skip(skip).limit(limit)
         for x in cursor:
             date = x['date'].strftime("%d.%m.%Y")
-            AccountSiteCount = str(x.get('acc_count', 0)) + "( " + str(x.get('act_acc_count', 0)) + "/" + str(
+            account_site_count = str(x.get('acc_count', 0)) + "( " + str(x.get('act_acc_count', 0)) + "/" + str(
                 x.get('domains_today', 0)) + " )"
             social_clicks = int(x.get('social_clicks', 0))
             clicks = int(x.get('clicks', 0))
             impressions_block = int(x.get('impressions_block', 0))
             impressions_block_not_valid = int(x.get('impressions_block_not_valid', 0))
             difference_impressions_block = int(x.get('difference_impressions_block', 0))
-            clicksUnique = int(x.get('clicksUnique', 0))
-            ctr_block = 100.0 * clicksUnique / impressions_block_not_valid if (
-                clicksUnique > 0 and impressions_block_not_valid > 0) else 0
+            clicks_unique = int(x.get('clicksUnique', 0))
+            ctr_block = 100.0 * clicks_unique / impressions_block_not_valid if (
+                clicks_unique > 0 and impressions_block_not_valid > 0) else 0
             view_seconds = float(x.get('view_seconds', 0))
             view_seconds_avg = view_seconds / (clicks + social_clicks) if ((clicks + social_clicks) > 0) else 0
             row = (x['date'].weekday(),
                    date,
-                   AccountSiteCount,
+                   account_site_count,
                    impressions_block_not_valid,
                    impressions_block,
-                   clicksUnique,
+                   clicks_unique,
                    '%.3f' % ctr_block,
                    '%.3f' % difference_impressions_block,
                    social_clicks,
@@ -198,7 +200,7 @@ class ManagerController(BaseController):
 
     @current_user_check
     def overallSumSummaryByDays(self):
-        ''' Данные для таблицы суммарных данных по дням ("Общая статистика") '''
+        """ Данные для таблицы суммарных данных по дням ("Общая статистика") """
         page = int(request.params.get('page', 0))
         limit = int(request.params.get('rows', 15))
         sidx = request.params.get('sidx', 'date')
@@ -212,7 +214,7 @@ class ManagerController(BaseController):
         if count > 0 and limit > 0:
             total_pages = int(count / limit)
         else:
-            total_pages = 0;
+            total_pages = 0
         if page > total_pages:
             page = total_pages
         skip = (limit * page) - limit
@@ -222,24 +224,20 @@ class ManagerController(BaseController):
         cursor = app_globals.db.stats.daily.all.find(queri).sort(sidx, sord).skip(skip).limit(limit)
         for x in cursor:
             date = x['date'].strftime("%d.%m.%Y")
-            AccountSiteCount = str(x.get('acc_count', 0)) + "( " + str(x.get('act_acc_count', 0)) + "/" + str(
+            account_site_count = str(x.get('acc_count', 0)) + "( " + str(x.get('act_acc_count', 0)) + "/" + str(
                 x.get('domains_today', 0)) + " )"
-            impressions_block = int(x.get('impressions_block', 0))
-            impressions_block_not_valid = int(x.get('impressions_block_not_valid', 0))
             clicksUnique = int(x.get('clicksUnique', 0))
-            ctr_block = 100.0 * clicksUnique / impressions_block_not_valid if (
-                clicksUnique > 0 and impressions_block_not_valid > 0) else 0
-            totalCost = x.get('totalCost', 0)
-            click_cost_avg = totalCost / clicksUnique if (clicksUnique > 0 and totalCost > 0) else 0
+            total_cost = x.get('totalCost', 0)
+            click_cost_avg = total_cost / clicksUnique if (clicksUnique > 0 and total_cost > 0) else 0
             adload_cost = x.get('adload_cost', 0)
             income = x.get('income', 0)
-            persent = totalCost / (adload_cost / 100.0) if (totalCost > 0 and adload_cost > 0) else 0
+            persent = total_cost / (adload_cost / 100.0) if (total_cost > 0 and adload_cost > 0) else 0
             row = (x['date'].weekday(),
                    date,
-                   AccountSiteCount,
+                   account_site_count,
                    '%.2f коп' % (click_cost_avg * 100),
                    '%.3f %%' % persent,
-                   h.formatMoney(totalCost),
+                   h.formatMoney(total_cost),
                    h.formatMoney(adload_cost),
                    h.formatMoney(income)
                    )
@@ -274,7 +272,7 @@ class ManagerController(BaseController):
         cursor = app_globals.db.stats.daily.all.find(queri).sort(sidx, sord).skip(skip).limit(limit)
         for x in cursor:
             date = x['date'].strftime("%d.%m.%Y")
-            AccountSiteCount = str(x.get('acc_count', 0)) + "( " + str(x.get('act_acc_count', 0)) + "/" + str(
+            account_site_count = str(x.get('acc_count', 0)) + "( " + str(x.get('act_acc_count', 0)) + "/" + str(
                 x.get('domains_today', 0)) + " )"
             impressions = int(x.get('impressions', 0))
             impressions_block = int(x.get('impressions_block', 0))
@@ -283,21 +281,21 @@ class ManagerController(BaseController):
             social_clicks = int(x.get('social_clicks', 0))
             view_seconds = float(x.get('view_seconds', 0))
             view_seconds_avg = view_seconds / (clicks + social_clicks) if ((clicks + social_clicks) > 0) else 0
-            clicksUnique = int(x.get('clicksUnique', 0))
-            ctr_block = 100.0 * clicksUnique / impressions_block_not_valid if (
-                clicksUnique > 0 and impressions_block_not_valid > 0) else 0
-            ctr = 100.0 * clicksUnique / impressions if (clicksUnique > 0 and impressions > 0) else 0
-            totalCost = x.get('totalCost', 0)
-            click_cost_avg = totalCost / clicksUnique if (clicksUnique > 0 and totalCost > 0) else 0
+            clicks_unique = int(x.get('clicksUnique', 0))
+            ctr_block = 100.0 * clicks_unique / impressions_block_not_valid if (
+                clicks_unique > 0 and impressions_block_not_valid > 0) else 0
+            ctr = 100.0 * clicks_unique / impressions if (clicks_unique > 0 and impressions > 0) else 0
+            total_cost = x.get('totalCost', 0)
+            click_cost_avg = total_cost / clicks_unique if (clicks_unique > 0 and total_cost > 0) else 0
             row = (x['date'].weekday(),
                    date,
-                   AccountSiteCount,
+                   account_site_count,
                    impressions_block_not_valid,
                    impressions_block,
                    impressions,
                    clicks,
-                   clicksUnique,
-                   h.formatMoney(totalCost),
+                   clicks_unique,
+                   h.formatMoney(total_cost),
                    '%.3f' % ctr,
                    '%.3f' % ctr_block,
                    '%.2f ¢' % (click_cost_avg * 100),
@@ -339,7 +337,6 @@ class ManagerController(BaseController):
             account.load()
             data = []
             for item in account.informers():
-                guid = item.guid
                 title = item.domain + ' ' + item.title
                 if item.cost:
                     click_percent = int(item.cost.get('ALL', {}).get('click', {}).get('percent', 50))
@@ -358,831 +355,9 @@ class ManagerController(BaseController):
 
             #    @cache.region('short_term')
 
-    def WorkerStats(self):
-        ''' Данные для таблицы статистики работы воркера '''
-        date = datetime.now()
-        start_date = request.params.get('start_date', None)
-        if start_date is not None and len(start_date) > 8:
-            start_date = datetime.strptime(start_date, "%d.%m.%Y")
-        else:
-            start_date = datetime(date.year, date.month, date.day)
-        queri = {'date': start_date}
-        filds = {'date': False, '_id': False}
-        data = []
-        workerstats = {'Банер по показам - Места размешения': 0,
-                       'Банер и Тизер по кликам - Места размешения': 0,
-                       'Банер и Тизер по кликам - Тематики': 0,
-                       'Банер по показам - Поисковый запрос': 0,
-                       'Банер по кликам - Поисковый запрос': 0,
-                       'Тизер по кликам - Поисковый запрос': 0,
-                       'Банер по показам - Контекст запрос': 0,
-                       'Банер по кликам - Контекст запрос': 0,
-                       'Тизер по кликам - Контекст запрос': 0,
-                       'Банер по показам - История поискового запроса': 0,
-                       'Банер по кликам - История поискового запроса': 0,
-                       'Тизер по кликам - История поискового запроса': 0,
-                       'Банер по показам - История контекстного запроса': 0,
-                       'Банер по кликам - История контекстного запроса': 0,
-                       'Тизер по кликам - История контекстного запроса': 0,
-                       'Банер по показам - История долгосрочная': 0,
-                       'Банер по кликам - История долгосрочная': 0,
-                       'Тизер по кликам - История долгосрочная': 0,
-                       'Вероятно сработала старая ветка': 0,
-                       'ИТОГО': 0}
-        workerstatsNM = {'Банер по показам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Тематики': 0,
-                         'Банер по показам - Поисковый запрос': 0,
-                         'Банер по кликам - Поисковый запрос': 0,
-                         'Тизер по кликам - Поисковый запрос': 0,
-                         'Банер по показам - Контекст запрос': 0,
-                         'Банер по кликам - Контекст запрос': 0,
-                         'Тизер по кликам - Контекст запрос': 0,
-                         'Банер по показам - История поискового запроса': 0,
-                         'Банер по кликам - История поискового запроса': 0,
-                         'Тизер по кликам - История поискового запроса': 0,
-                         'Банер по показам - История контекстного запроса': 0,
-                         'Банер по кликам - История контекстного запроса': 0,
-                         'Тизер по кликам - История контекстного запроса': 0,
-                         'Банер по показам - История долгосрочная': 0,
-                         'Банер по кликам - История долгосрочная': 0,
-                         'Тизер по кликам - История долгосрочная': 0,
-                         'Вероятно сработала старая ветка': 0,
-                         'ИТОГО': 0}
-        workerstatsPM = {'Банер по показам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Тематики': 0,
-                         'Банер по показам - Поисковый запрос': 0,
-                         'Банер по кликам - Поисковый запрос': 0,
-                         'Тизер по кликам - Поисковый запрос': 0,
-                         'Банер по показам - Контекст запрос': 0,
-                         'Банер по кликам - Контекст запрос': 0,
-                         'Тизер по кликам - Контекст запрос': 0,
-                         'Банер по показам - История поискового запроса': 0,
-                         'Банер по кликам - История поискового запроса': 0,
-                         'Тизер по кликам - История поискового запроса': 0,
-                         'Банер по показам - История контекстного запроса': 0,
-                         'Банер по кликам - История контекстного запроса': 0,
-                         'Тизер по кликам - История контекстного запроса': 0,
-                         'Банер по показам - История долгосрочная': 0,
-                         'Банер по кликам - История долгосрочная': 0,
-                         'Тизер по кликам - История долгосрочная': 0,
-                         'Вероятно сработала старая ветка': 0,
-                         'ИТОГО': 0}
-        workerstatsEM = {'Банер по показам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Тематики': 0,
-                         'Банер по показам - Поисковый запрос': 0,
-                         'Банер по кликам - Поисковый запрос': 0,
-                         'Тизер по кликам - Поисковый запрос': 0,
-                         'Банер по показам - Контекст запрос': 0,
-                         'Банер по кликам - Контекст запрос': 0,
-                         'Тизер по кликам - Контекст запрос': 0,
-                         'Банер по показам - История поискового запроса': 0,
-                         'Банер по кликам - История поискового запроса': 0,
-                         'Тизер по кликам - История поискового запроса': 0,
-                         'Банер по показам - История контекстного запроса': 0,
-                         'Банер по кликам - История контекстного запроса': 0,
-                         'Тизер по кликам - История контекстного запроса': 0,
-                         'Банер по показам - История долгосрочная': 0,
-                         'Банер по кликам - История долгосрочная': 0,
-                         'Тизер по кликам - История долгосрочная': 0,
-                         'Вероятно сработала старая ветка': 0,
-                         'ИТОГО': 0}
-        workerstatsBM = {'Банер по показам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Тематики': 0,
-                         'Банер по показам - Поисковый запрос': 0,
-                         'Банер по кликам - Поисковый запрос': 0,
-                         'Тизер по кликам - Поисковый запрос': 0,
-                         'Банер по показам - Контекст запрос': 0,
-                         'Банер по кликам - Контекст запрос': 0,
-                         'Тизер по кликам - Контекст запрос': 0,
-                         'Банер по показам - История поискового запроса': 0,
-                         'Банер по кликам - История поискового запроса': 0,
-                         'Тизер по кликам - История поискового запроса': 0,
-                         'Банер по показам - История контекстного запроса': 0,
-                         'Банер по кликам - История контекстного запроса': 0,
-                         'Тизер по кликам - История контекстного запроса': 0,
-                         'Банер по показам - История долгосрочная': 0,
-                         'Банер по кликам - История долгосрочная': 0,
-                         'Тизер по кликам - История долгосрочная': 0,
-                         'Вероятно сработала старая ветка': 0,
-                         'ИТОГО': 0}
-        workerstatsC = {'Банер по показам - Места размешения': 0,
-                        'Банер и Тизер по кликам - Места размешения': 0,
-                        'Банер и Тизер по кликам - Тематики': 0,
-                        'Банер по показам - Поисковый запрос': 0,
-                        'Банер по кликам - Поисковый запрос': 0,
-                        'Тизер по кликам - Поисковый запрос': 0,
-                        'Банер по показам - Контекст запрос': 0,
-                        'Банер по кликам - Контекст запрос': 0,
-                        'Тизер по кликам - Контекст запрос': 0,
-                        'Банер по показам - История поискового запроса': 0,
-                        'Банер по кликам - История поискового запроса': 0,
-                        'Тизер по кликам - История поискового запроса': 0,
-                        'Банер по показам - История контекстного запроса': 0,
-                        'Банер по кликам - История контекстного запроса': 0,
-                        'Тизер по кликам - История контекстного запроса': 0,
-                        'Банер по показам - История долгосрочная': 0,
-                        'Банер по кликам - История долгосрочная': 0,
-                        'Тизер по кликам - История долгосрочная': 0,
-                        'Вероятно сработала старая ветка': 0,
-                        'ИТОГО': 0}
-        workerstatsCNM = {'Банер по показам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Тематики': 0,
-                          'Банер по показам - Поисковый запрос': 0,
-                          'Банер по кликам - Поисковый запрос': 0,
-                          'Тизер по кликам - Поисковый запрос': 0,
-                          'Банер по показам - Контекст запрос': 0,
-                          'Банер по кликам - Контекст запрос': 0,
-                          'Тизер по кликам - Контекст запрос': 0,
-                          'Банер по показам - История поискового запроса': 0,
-                          'Банер по кликам - История поискового запроса': 0,
-                          'Тизер по кликам - История поискового запроса': 0,
-                          'Банер по показам - История контекстного запроса': 0,
-                          'Банер по кликам - История контекстного запроса': 0,
-                          'Тизер по кликам - История контекстного запроса': 0,
-                          'Банер по показам - История долгосрочная': 0,
-                          'Банер по кликам - История долгосрочная': 0,
-                          'Тизер по кликам - История долгосрочная': 0,
-                          'Вероятно сработала старая ветка': 0,
-                          'ИТОГО': 0}
-        workerstatsCPM = {'Банер по показам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Тематики': 0,
-                          'Банер по показам - Поисковый запрос': 0,
-                          'Банер по кликам - Поисковый запрос': 0,
-                          'Тизер по кликам - Поисковый запрос': 0,
-                          'Банер по показам - Контекст запрос': 0,
-                          'Банер по кликам - Контекст запрос': 0,
-                          'Тизер по кликам - Контекст запрос': 0,
-                          'Банер по показам - История поискового запроса': 0,
-                          'Банер по кликам - История поискового запроса': 0,
-                          'Тизер по кликам - История поискового запроса': 0,
-                          'Банер по показам - История контекстного запроса': 0,
-                          'Банер по кликам - История контекстного запроса': 0,
-                          'Тизер по кликам - История контекстного запроса': 0,
-                          'Банер по показам - История долгосрочная': 0,
-                          'Банер по кликам - История долгосрочная': 0,
-                          'Тизер по кликам - История долгосрочная': 0,
-                          'Вероятно сработала старая ветка': 0,
-                          'ИТОГО': 0}
-        workerstatsCEM = {'Банер по показам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Тематики': 0,
-                          'Банер по показам - Поисковый запрос': 0,
-                          'Банер по кликам - Поисковый запрос': 0,
-                          'Тизер по кликам - Поисковый запрос': 0,
-                          'Банер по показам - Контекст запрос': 0,
-                          'Банер по кликам - Контекст запрос': 0,
-                          'Тизер по кликам - Контекст запрос': 0,
-                          'Банер по показам - История поискового запроса': 0,
-                          'Банер по кликам - История поискового запроса': 0,
-                          'Тизер по кликам - История поискового запроса': 0,
-                          'Банер по показам - История контекстного запроса': 0,
-                          'Банер по кликам - История контекстного запроса': 0,
-                          'Тизер по кликам - История контекстного запроса': 0,
-                          'Банер по показам - История долгосрочная': 0,
-                          'Банер по кликам - История долгосрочная': 0,
-                          'Тизер по кликам - История долгосрочная': 0,
-                          'Вероятно сработала старая ветка': 0,
-                          'ИТОГО': 0}
-        workerstatsCBM = {'Банер по показам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Тематики': 0,
-                          'Банер по показам - Поисковый запрос': 0,
-                          'Банер по кликам - Поисковый запрос': 0,
-                          'Тизер по кликам - Поисковый запрос': 0,
-                          'Банер по показам - Контекст запрос': 0,
-                          'Банер по кликам - Контекст запрос': 0,
-                          'Тизер по кликам - Контекст запрос': 0,
-                          'Банер по показам - История поискового запроса': 0,
-                          'Банер по кликам - История поискового запроса': 0,
-                          'Тизер по кликам - История поискового запроса': 0,
-                          'Банер по показам - История контекстного запроса': 0,
-                          'Банер по кликам - История контекстного запроса': 0,
-                          'Тизер по кликам - История контекстного запроса': 0,
-                          'Банер по показам - История долгосрочная': 0,
-                          'Банер по кликам - История долгосрочная': 0,
-                          'Тизер по кликам - История долгосрочная': 0,
-                          'Вероятно сработала старая ветка': 0,
-                          'ИТОГО': 0}
-        stats = app_globals.db.worker_stats.find(queri, filds)
-        for item in stats:
-            for key, value in item.iteritems():
-                if key[:1] == 'N':
-                    continue
-                elif key == 'L1':
-                    workerstats['Банер по показам - Места размешения'] = workerstats.get(
-                        'Банер по показам - Места размешения', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - Места размешения'] = workerstatsNM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - Места размешения'] = workerstatsPM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - Места размешения'] = workerstatsEM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - Места размешения'] = workerstatsBM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - Места размешения'] = workerstatsC.get(
-                        'Банер по показам - Места размешения', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - Места размешения'] = workerstatsCNM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - Места размешения'] = workerstatsCPM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - Места размешения'] = workerstatsCEM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - Места размешения'] = workerstatsCBM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L29':
-                    workerstats['Банер и Тизер по кликам - Тематики'] = workerstats.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер и Тизер по кликам - Тематики'] = workerstatsNM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер и Тизер по кликам - Тематики'] = workerstatsPM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер и Тизер по кликам - Тематики'] = workerstatsEM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер и Тизер по кликам - Тематики'] = workerstatsBM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер и Тизер по кликам - Тематики'] = workerstatsC.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер и Тизер по кликам - Тематики'] = workerstatsCNM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер и Тизер по кликам - Тематики'] = workerstatsCPM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер и Тизер по кликам - Тематики'] = workerstatsCEM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер и Тизер по кликам - Тематики'] = workerstatsCBM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L30':
-                    workerstats['Банер и Тизер по кликам - Места размешения'] = workerstats.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер и Тизер по кликам - Места размешения'] = workerstatsNM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер и Тизер по кликам - Места размешения'] = workerstatsPM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер и Тизер по кликам - Места размешения'] = workerstatsEM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер и Тизер по кликам - Места размешения'] = workerstatsBM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер и Тизер по кликам - Места размешения'] = workerstatsC.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер и Тизер по кликам - Места размешения'] = workerstatsCNM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер и Тизер по кликам - Места размешения'] = workerstatsCPM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер и Тизер по кликам - Места размешения'] = workerstatsCEM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер и Тизер по кликам - Места размешения'] = workerstatsCBM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L2':
-                    workerstats['Банер по показам - Поисковый запрос'] = workerstats.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - Поисковый запрос'] = workerstatsNM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - Поисковый запрос'] = workerstatsPM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - Поисковый запрос'] = workerstatsEM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - Поисковый запрос'] = workerstatsBM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - Поисковый запрос'] = workerstatsC.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - Поисковый запрос'] = workerstatsCNM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - Поисковый запрос'] = workerstatsCPM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - Поисковый запрос'] = workerstatsCEM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - Поисковый запрос'] = workerstatsCBM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L7':
-                    workerstats['Банер по кликам - Поисковый запрос'] = workerstats.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - Поисковый запрос'] = workerstatsNM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - Поисковый запрос'] = workerstatsPM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - Поисковый запрос'] = workerstatsEM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - Поисковый запрос'] = workerstatsBM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - Поисковый запрос'] = workerstatsC.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - Поисковый запрос'] = workerstatsCNM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - Поисковый запрос'] = workerstatsCPM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - Поисковый запрос'] = workerstatsCEM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsBM['Банер по кликам - Поисковый запрос'] = workerstatsCBM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L17':
-                    workerstats['Тизер по кликам - Поисковый запрос'] = workerstats.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - Поисковый запрос'] = workerstatsNM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - Поисковый запрос'] = workerstatsPM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - Поисковый запрос'] = workerstatsEM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - Поисковый запрос'] = workerstatsBM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - Поисковый запрос'] = workerstatsC.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - Поисковый запрос'] = workerstatsCNM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - Поисковый запрос'] = workerstatsCPM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - Поисковый запрос'] = workerstatsCEM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - Поисковый запрос'] = workerstatsCBM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L3':
-                    workerstats['Банер по показам - Контекст запрос'] = workerstats.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - Контекст запрос'] = workerstatsNM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - Контекст запрос'] = workerstatsPM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - Контекст запрос'] = workerstatsEM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - Контекст запрос'] = workerstatsBM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - Контекст запрос'] = workerstatsC.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - Контекст запрос'] = workerstatsCNM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - Контекст запрос'] = workerstatsCPM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - Контекст запрос'] = workerstatsCEM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - Контекст запрос'] = workerstatsCBM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L8':
-                    workerstats['Банер по кликам - Контекст запрос'] = workerstats.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - Контекст запрос'] = workerstatsNM.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - Контекст запрос'] = workerstatsPM.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - Контекст запрос'] = workerstatsEM.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - Контекст запрос'] = workerstatsBM.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - Контекст запрос'] = workerstatsC.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - Контекст запрос'] = workerstatsCNM.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - Контекст запрос'] = workerstatsCPM.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - Контекст запрос'] = workerstatsCEM.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по кликам - Контекст запрос'] = workerstatsCBM.get(
-                        'Банер по кликам - Контекст запрос', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L18':
-                    workerstats['Тизер по кликам - Контекст запрос'] = workerstats.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - Контекст запрос'] = workerstatsNM.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - Контекст запрос'] = workerstatsPM.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - Контекст запрос'] = workerstatsEM.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - Контекст запрос'] = workerstatsBM.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - Контекст запрос'] = workerstatsC.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - Контекст запрос'] = workerstatsCNM.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - Контекст запрос'] = workerstatsCPM.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - Контекст запрос'] = workerstatsCEM.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - Контекст запрос'] = workerstatsCBM.get(
-                        'Тизер по кликам - Контекст запрос', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L4':
-                    workerstats['Банер по показам - История поискового запроса'] = workerstats.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - История поискового запроса'] = workerstatsNM.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - История поискового запроса'] = workerstatsPM.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - История поискового запроса'] = workerstatsEM.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - История поискового запроса'] = workerstatsBM.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - История поискового запроса'] = workerstatsC.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - История поискового запроса'] = workerstatsCNM.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - История поискового запроса'] = workerstatsCPM.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - История поискового запроса'] = workerstatsCEM.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - История поискового запроса'] = workerstatsCBM.get(
-                        'Банер по показам - История поискового запроса', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L9':
-                    workerstats['Банер по кликам - История поискового запроса'] = workerstats.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - История поискового запроса'] = workerstatsNM.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - История поискового запроса'] = workerstatsPM.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - История поискового запроса'] = workerstatsEM.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - История поискового запроса'] = workerstatsBM.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - История поискового запроса'] = workerstatsC.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - История поискового запроса'] = workerstatsCNM.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - История поискового запроса'] = workerstatsCPM.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - История поискового запроса'] = workerstatsCEM.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по кликам - История поискового запроса'] = workerstatsCBM.get(
-                        'Банер по кликам - История поискового запроса', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L19':
-                    workerstats['Тизер по кликам - История поискового запроса'] = workerstats.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - История поискового запроса'] = workerstatsNM.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - История поискового запроса'] = workerstatsPM.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - История поискового запроса'] = workerstatsEM.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - История поискового запроса'] = workerstatsBM.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - История поискового запроса'] = workerstatsC.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - История поискового запроса'] = workerstatsCNM.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - История поискового запроса'] = workerstatsCPM.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - История поискового запроса'] = workerstatsCEM.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - История поискового запроса'] = workerstatsCBM.get(
-                        'Тизер по кликам - История поискового запроса', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L5':
-                    workerstats['Банер по показам - История контекстного запроса'] = workerstats.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - История контекстного запроса'] = workerstatsNM.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - История контекстного запроса'] = workerstatsPM.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - История контекстного запроса'] = workerstatsEM.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - История контекстного запроса'] = workerstatsBM.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - История контекстного запроса'] = workerstatsC.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - История контекстного запроса'] = workerstatsCNM.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - История контекстного запроса'] = workerstatsCPM.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - История контекстного запроса'] = workerstatsCEM.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - История контекстного запроса'] = workerstatsCBM.get(
-                        'Банер по показам - История контекстного запроса', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L10':
-                    workerstats['Банер по кликам - История контекстного запроса'] = workerstats.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - История контекстного запроса'] = workerstatsNM.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - История контекстного запроса'] = workerstatsPM.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - История контекстного запроса'] = workerstatsEM.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - История контекстного запроса'] = workerstatsBM.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - История контекстного запроса'] = workerstatsC.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - История контекстного запроса'] = workerstatsCNM.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - История контекстного запроса'] = workerstatsCPM.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - История контекстного запроса'] = workerstatsCEM.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по кликам - История контекстного запроса'] = workerstatsCBM.get(
-                        'Банер по кликам - История контекстного запроса', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L20':
-                    workerstats['Тизер по кликам - История контекстного запроса'] = workerstats.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - История контекстного запроса'] = workerstatsNM.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - История контекстного запроса'] = workerstatsPM.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - История контекстного запроса'] = workerstatsEM.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - История контекстного запроса'] = workerstatsBM.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - История контекстного запроса'] = workerstatsC.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - История контекстного запроса'] = workerstatsCNM.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - История контекстного запроса'] = workerstatsCPM.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - История контекстного запроса'] = workerstatsCEM.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - История контекстного запроса'] = workerstatsCBM.get(
-                        'Тизер по кликам - История контекстного запроса', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L6':
-                    workerstats['Банер по показам - История долгосрочная'] = workerstats.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - История долгосрочная'] = workerstatsNM.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - История долгосрочная'] = workerstatsPM.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - История долгосрочная'] = workerstatsEM.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - История долгосрочная'] = workerstatsBM.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - История долгосрочная'] = workerstatsC.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - История долгосрочная'] = workerstatsCNM.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - История долгосрочная'] = workerstatsCPM.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - История долгосрочная'] = workerstatsCEM.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - История долгосрочная'] = workerstatsCBM.get(
-                        'Банер по показам - История долгосрочная', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L11':
-                    workerstats['Банер по кликам - История долгосрочная'] = workerstats.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - История долгосрочная'] = workerstatsNM.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - История долгосрочная'] = workerstatsPM.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - История долгосрочная'] = workerstatsEM.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - История долгосрочная'] = workerstatsBM.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - История долгосрочная'] = workerstatsC.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - История долгосрочная'] = workerstatsCNM.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - История долгосрочная'] = workerstatsCPM.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - История долгосрочная'] = workerstatsCEM.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по кликам - История долгосрочная'] = workerstatsCBM.get(
-                        'Банер по кликам - История долгосрочная', 0) + value.get('Cbroadmatch', 0)
-                elif key == 'L21':
-                    workerstats['Тизер по кликам - История долгосрочная'] = workerstats.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - История долгосрочная'] = workerstatsNM.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - История долгосрочная'] = workerstatsPM.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - История долгосрочная'] = workerstatsEM.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - История долгосрочная'] = workerstatsBM.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - История долгосрочная'] = workerstatsC.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - История долгосрочная'] = workerstatsCNM.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - История долгосрочная'] = workerstatsCPM.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - История долгосрочная'] = workerstatsCEM.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - История долгосрочная'] = workerstatsCBM.get(
-                        'Тизер по кликам - История долгосрочная', 0) + value.get('Cbroadmatch', 0)
-                else:
-                    workerstats['Вероятно сработала старая ветка'] = workerstats.get('Вероятно сработала старая ветка',
-                                                                                     0) + value.get('ALL', 0)
-                    workerstatsC['Вероятно сработала старая ветка'] = workerstatsC.get(
-                        'Вероятно сработала старая ветка', 0) + value.get('CALL', 0)
-                workerstats['ИТОГО'] = workerstats.get('ИТОГО', 0) + value.get('ALL', 0)
-                workerstatsC['ИТОГО'] = workerstatsC.get('ИТОГО', 0) + value.get('CALL', 0)
-
-        data.append(('Банер по показам - Места размешения',
-                     workerstats['Банер по показам - Места размешения'],
-                     workerstatsC['Банер по показам - Места размешения'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - Места размешения'],
-                     workerstatsCNM['Банер по показам - Места размешения'],
-                     workerstatsBM['Банер по показам - Места размешения'],
-                     workerstatsCBM['Банер по показам - Места размешения'],
-                     workerstatsPM['Банер по показам - Места размешения'],
-                     workerstatsCPM['Банер по показам - Места размешения'],
-                     workerstatsEM['Банер по показам - Места размешения'],
-                     workerstatsCEM['Банер по показам - Места размешения']))
-        data.append(('Банер и Тизер по кликам - Места размешения',
-                     workerstats['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsC['Банер и Тизер по кликам - Места размешения'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsCNM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsBM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsCBM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsPM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsCPM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsEM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsCEM['Банер и Тизер по кликам - Места размешения']))
-        data.append(('Банер и Тизер по кликам - Тематики',
-                     workerstats['Банер и Тизер по кликам - Тематики'],
-                     workerstatsC['Банер и Тизер по кликам - Тематики'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsCNM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsBM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsCBM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsPM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsCPM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsEM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsCEM['Банер и Тизер по кликам - Тематики']))
-        data.append(('Банер по показам - Поисковый запрос',
-                     workerstats['Банер по показам - Поисковый запрос'],
-                     workerstatsC['Банер по показам - Поисковый запрос'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - Поисковый запрос'],
-                     workerstatsCNM['Банер по показам - Поисковый запрос'],
-                     workerstatsBM['Банер по показам - Поисковый запрос'],
-                     workerstatsCBM['Банер по показам - Поисковый запрос'],
-                     workerstatsPM['Банер по показам - Поисковый запрос'],
-                     workerstatsCPM['Банер по показам - Поисковый запрос'],
-                     workerstatsEM['Банер по показам - Поисковый запрос'],
-                     workerstatsCEM['Банер по показам - Поисковый запрос']))
-        data.append(('Банер по кликам - Поисковый запрос',
-                     workerstats['Банер по кликам - Поисковый запрос'],
-                     workerstatsC['Банер по кликам - Поисковый запрос'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по кликам - Поисковый запрос'],
-                     workerstatsCNM['Банер по кликам - Поисковый запрос'],
-                     workerstatsBM['Банер по кликам - Поисковый запрос'],
-                     workerstatsCBM['Банер по кликам - Поисковый запрос'],
-                     workerstatsPM['Банер по кликам - Поисковый запрос'],
-                     workerstatsCPM['Банер по кликам - Поисковый запрос'],
-                     workerstatsEM['Банер по кликам - Поисковый запрос'],
-                     workerstatsCEM['Банер по кликам - Поисковый запрос']))
-        data.append(('Тизер по кликам - Поисковый запрос',
-                     workerstats['Тизер по кликам - Поисковый запрос'],
-                     workerstatsC['Тизер по кликам - Поисковый запрос'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsCNM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsBM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsCBM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsPM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsCPM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsEM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsCEM['Тизер по кликам - Поисковый запрос']))
-        data.append(('Банер по показам - Контекст запрос',
-                     workerstats['Банер по показам - Контекст запрос'],
-                     workerstatsC['Банер по показам - Контекст запрос'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - Контекст запрос'],
-                     workerstatsCNM['Банер по показам - Контекст запрос'],
-                     workerstatsBM['Банер по показам - Контекст запрос'],
-                     workerstatsCBM['Банер по показам - Контекст запрос'],
-                     workerstatsPM['Банер по показам - Контекст запрос'],
-                     workerstatsCPM['Банер по показам - Контекст запрос'],
-                     workerstatsEM['Банер по показам - Контекст запрос'],
-                     workerstatsCEM['Банер по показам - Контекст запрос']))
-        data.append(('Банер по кликам - Контекст запрос',
-                     workerstats['Банер по кликам - Контекст запрос'],
-                     workerstatsC['Банер по кликам - Контекст запрос'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по кликам - Контекст запрос'],
-                     workerstatsCNM['Банер по кликам - Контекст запрос'],
-                     workerstatsBM['Банер по кликам - Контекст запрос'],
-                     workerstatsCBM['Банер по кликам - Контекст запрос'],
-                     workerstatsPM['Банер по кликам - Контекст запрос'],
-                     workerstatsCPM['Банер по кликам - Контекст запрос'],
-                     workerstatsEM['Банер по кликам - Контекст запрос'],
-                     workerstatsCEM['Банер по кликам - Контекст запрос']))
-        data.append(('Тизер по кликам - Контекст запрос',
-                     workerstats['Тизер по кликам - Контекст запрос'],
-                     workerstatsC['Тизер по кликам - Контекст запрос'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - Контекст запрос'],
-                     workerstatsCNM['Тизер по кликам - Контекст запрос'],
-                     workerstatsBM['Тизер по кликам - Контекст запрос'],
-                     workerstatsCBM['Тизер по кликам - Контекст запрос'],
-                     workerstatsPM['Тизер по кликам - Контекст запрос'],
-                     workerstatsCPM['Тизер по кликам - Контекст запрос'],
-                     workerstatsEM['Тизер по кликам - Контекст запрос'],
-                     workerstatsCEM['Тизер по кликам - Контекст запрос']))
-        data.append(('Банер по показам - История поискового запроса',
-                     workerstats['Банер по показам - История поискового запроса'],
-                     workerstatsC['Банер по показам - История поискового запроса'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - История поискового запроса'],
-                     workerstatsCNM['Банер по показам - История поискового запроса'],
-                     workerstatsBM['Банер по показам - История поискового запроса'],
-                     workerstatsCBM['Банер по показам - История поискового запроса'],
-                     workerstatsPM['Банер по показам - История поискового запроса'],
-                     workerstatsCPM['Банер по показам - История поискового запроса'],
-                     workerstatsEM['Банер по показам - История поискового запроса'],
-                     workerstatsCEM['Банер по показам - История поискового запроса']))
-        data.append(('Банер по кликам - История поискового запроса',
-                     workerstats['Банер по кликам - История поискового запроса'],
-                     workerstatsC['Банер по кликам - История поискового запроса'],
-                     "-", "-", "-", "-",
-                     workerstatsCNM['Банер по кликам - История поискового запроса'],
-                     workerstatsNM['Банер по кликам - История поискового запроса'],
-                     workerstatsCBM['Банер по кликам - История поискового запроса'],
-                     workerstatsBM['Банер по кликам - История поискового запроса'],
-                     workerstatsCPM['Банер по кликам - История поискового запроса'],
-                     workerstatsCPM['Банер по кликам - История поискового запроса'],
-                     workerstatsEM['Банер по кликам - История поискового запроса'],
-                     workerstatsCEM['Банер по кликам - История поискового запроса']))
-        data.append(('Тизер по кликам - История поискового запроса',
-                     workerstats['Тизер по кликам - История поискового запроса'],
-                     workerstatsC['Тизер по кликам - История поискового запроса'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - История поискового запроса'],
-                     workerstatsCNM['Тизер по кликам - История поискового запроса'],
-                     workerstatsBM['Тизер по кликам - История поискового запроса'],
-                     workerstatsCBM['Тизер по кликам - История поискового запроса'],
-                     workerstatsPM['Тизер по кликам - История поискового запроса'],
-                     workerstatsCPM['Тизер по кликам - История поискового запроса'],
-                     workerstatsEM['Тизер по кликам - История поискового запроса'],
-                     workerstatsCEM['Тизер по кликам - История поискового запроса']))
-        data.append(('Банер по показам - История контекстного запроса',
-                     workerstats['Банер по показам - История контекстного запроса'],
-                     workerstatsC['Банер по показам - История контекстного запроса'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - История контекстного запроса'],
-                     workerstatsCNM['Банер по показам - История контекстного запроса'],
-                     workerstatsBM['Банер по показам - История контекстного запроса'],
-                     workerstatsCBM['Банер по показам - История контекстного запроса'],
-                     workerstatsPM['Банер по показам - История контекстного запроса'],
-                     workerstatsCPM['Банер по показам - История контекстного запроса'],
-                     workerstatsEM['Банер по показам - История контекстного запроса'],
-                     workerstatsCEM['Банер по показам - История контекстного запроса']))
-        data.append(('Банер по кликам - История контекстного запроса',
-                     workerstats['Банер по кликам - История контекстного запроса'],
-                     workerstatsC['Банер по кликам - История контекстного запроса'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по кликам - История контекстного запроса'],
-                     workerstatsCNM['Банер по кликам - История контекстного запроса'],
-                     workerstatsBM['Банер по кликам - История контекстного запроса'],
-                     workerstatsCBM['Банер по кликам - История контекстного запроса'],
-                     workerstatsPM['Банер по кликам - История контекстного запроса'],
-                     workerstatsCPM['Банер по кликам - История контекстного запроса'],
-                     workerstatsEM['Банер по кликам - История контекстного запроса'],
-                     workerstatsCEM['Банер по кликам - История контекстного запроса']))
-        data.append(('Тизер по кликам - История контекстного запроса',
-                     workerstats['Тизер по кликам - История контекстного запроса'],
-                     workerstatsC['Тизер по кликам - История контекстного запроса'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsCNM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsBM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsCBM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsPM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsCPM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsEM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsCEM['Тизер по кликам - История контекстного запроса']))
-        data.append(('Банер по показам - История долгосрочная',
-                     workerstats['Банер по показам - История долгосрочная'],
-                     workerstatsC['Банер по показам - История долгосрочная'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - История долгосрочная'],
-                     workerstatsCNM['Банер по показам - История долгосрочная'],
-                     workerstatsBM['Банер по показам - История долгосрочная'],
-                     workerstatsCBM['Банер по показам - История долгосрочная'],
-                     workerstatsPM['Банер по показам - История долгосрочная'],
-                     workerstatsCPM['Банер по показам - История долгосрочная'],
-                     workerstatsEM['Банер по показам - История долгосрочная'],
-                     workerstatsCEM['Банер по показам - История долгосрочная']))
-        data.append(('Банер по кликам - История долгосрочная',
-                     workerstats['Банер по кликам - История долгосрочная'],
-                     workerstatsC['Банер по кликам - История долгосрочная'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Банер по кликам - История долгосрочная'],
-                     workerstatsCNM['Банер по кликам - История долгосрочная'],
-                     workerstatsBM['Банер по кликам - История долгосрочная'],
-                     workerstatsCBM['Банер по кликам - История долгосрочная'],
-                     workerstatsPM['Банер по кликам - История долгосрочная'],
-                     workerstatsCPM['Банер по кликам - История долгосрочная'],
-                     workerstatsEM['Банер по кликам - История долгосрочная'],
-                     workerstatsCEM['Банер по кликам - История долгосрочная']))
-        data.append(('Тизер по кликам - История долгосрочная',
-                     workerstats['Тизер по кликам - История долгосрочная'],
-                     workerstatsC['Тизер по кликам - История долгосрочная'],
-                     "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - История долгосрочная'],
-                     workerstatsCNM['Тизер по кликам - История долгосрочная'],
-                     workerstatsBM['Тизер по кликам - История долгосрочная'],
-                     workerstatsCBM['Тизер по кликам - История долгосрочная'],
-                     workerstatsPM['Тизер по кликам - История долгосрочная'],
-                     workerstatsCPM['Тизер по кликам - История долгосрочная'],
-                     workerstatsEM['Тизер по кликам - История долгосрочная'],
-                     workerstatsCEM['Тизер по кликам - История долгосрочная']))
-        data.append(('Вероятно сработала старая ветка', workerstats['Вероятно сработала старая ветка'],
-                     workerstatsC['Вероятно сработала старая ветка'], "", "", "", "", "", "", "", "", "", "", ""))
-        data.append(('ИТОГО', workerstats['ИТОГО'], workerstatsC['ИТОГО'], "", "", "", "", "", "", "", "", "", "", ""))
-        return h.jgridDataWrapper(data)
 
     def WorkerNewStats(self):
-        ''' Данные для таблицы статистики работы воркера '''
+        """ Данные для таблицы статистики работы воркера """
         date = datetime.now()
         start_date = request.params.get('start_date', None)
         if start_date is not None and len(start_date) > 8:
@@ -1192,906 +367,605 @@ class ManagerController(BaseController):
         queri = {'date': start_date}
         filds = {'date': False, '_id': False}
         data = []
-        workerstats = {'Банер по показам - Места размешения': 0,
-                       'Банер и Тизер по кликам - Места размешения': 0,
-                       'Банер и Тизер по кликам - Ретаргетинг': 0,
-                       'Банер и Тизер по кликам - Рекомендованные': 0,
-                       'Банер и Тизер по кликам - Тематики': 0,
-                       'Банер по показам - Поисковый запрос': 0,
-                       'Банер по кликам - Поисковый запрос': 0,
-                       'Тизер по кликам - Поисковый запрос': 0,
-                       'Банер по показам - Контекст запрос': 0,
-                       'Банер по кликам - Контекст запрос': 0,
-                       'Тизер по кликам - Контекст запрос': 0,
-                       'Банер по показам - История поискового запроса': 0,
-                       'Банер по кликам - История поискового запроса': 0,
-                       'Тизер по кликам - История поискового запроса': 0,
-                       'Банер по показам - История контекстного запроса': 0,
-                       'Банер по кликам - История контекстного запроса': 0,
-                       'Тизер по кликам - История контекстного запроса': 0,
-                       'Банер по показам - История долгосрочная': 0,
-                       'Банер по кликам - История долгосрочная': 0,
-                       'Тизер по кликам - История долгосрочная': 0,
-                       'Вероятно сработала старая ветка': 0,
-                       'ИТОГО': 0}
-        workerstatsNM = {'Банер по показам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Ретаргетинг': 0,
-                         'Банер и Тизер по кликам - Рекомендованные': 0,
-                         'Банер и Тизер по кликам - Тематики': 0,
-                         'Банер по показам - Поисковый запрос': 0,
-                         'Банер по кликам - Поисковый запрос': 0,
-                         'Тизер по кликам - Поисковый запрос': 0,
-                         'Банер по показам - Контекст запрос': 0,
-                         'Банер по кликам - Контекст запрос': 0,
-                         'Тизер по кликам - Контекст запрос': 0,
-                         'Банер по показам - История поискового запроса': 0,
-                         'Банер по кликам - История поискового запроса': 0,
-                         'Тизер по кликам - История поискового запроса': 0,
-                         'Банер по показам - История контекстного запроса': 0,
-                         'Банер по кликам - История контекстного запроса': 0,
-                         'Тизер по кликам - История контекстного запроса': 0,
-                         'Банер по показам - История долгосрочная': 0,
-                         'Банер по кликам - История долгосрочная': 0,
-                         'Тизер по кликам - История долгосрочная': 0,
-                         'Вероятно сработала старая ветка': 0,
-                         'ИТОГО': 0}
-        workerstatsPM = {'Банер по показам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Ретаргетинг': 0,
-                         'Банер и Тизер по кликам - Рекомендованные': 0,
-                         'Банер и Тизер по кликам - Тематики': 0,
-                         'Банер по показам - Поисковый запрос': 0,
-                         'Банер по кликам - Поисковый запрос': 0,
-                         'Тизер по кликам - Поисковый запрос': 0,
-                         'Банер по показам - Контекст запрос': 0,
-                         'Банер по кликам - Контекст запрос': 0,
-                         'Тизер по кликам - Контекст запрос': 0,
-                         'Банер по показам - История поискового запроса': 0,
-                         'Банер по кликам - История поискового запроса': 0,
-                         'Тизер по кликам - История поискового запроса': 0,
-                         'Банер по показам - История контекстного запроса': 0,
-                         'Банер по кликам - История контекстного запроса': 0,
-                         'Тизер по кликам - История контекстного запроса': 0,
-                         'Банер по показам - История долгосрочная': 0,
-                         'Банер по кликам - История долгосрочная': 0,
-                         'Тизер по кликам - История долгосрочная': 0,
-                         'Вероятно сработала старая ветка': 0,
-                         'ИТОГО': 0}
-        workerstatsEM = {'Банер по показам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Ретаргетинг': 0,
-                         'Банер и Тизер по кликам - Рекомендованные': 0,
-                         'Банер и Тизер по кликам - Тематики': 0,
-                         'Банер по показам - Поисковый запрос': 0,
-                         'Банер по кликам - Поисковый запрос': 0,
-                         'Тизер по кликам - Поисковый запрос': 0,
-                         'Банер по показам - Контекст запрос': 0,
-                         'Банер по кликам - Контекст запрос': 0,
-                         'Тизер по кликам - Контекст запрос': 0,
-                         'Банер по показам - История поискового запроса': 0,
-                         'Банер по кликам - История поискового запроса': 0,
-                         'Тизер по кликам - История поискового запроса': 0,
-                         'Банер по показам - История контекстного запроса': 0,
-                         'Банер по кликам - История контекстного запроса': 0,
-                         'Тизер по кликам - История контекстного запроса': 0,
-                         'Банер по показам - История долгосрочная': 0,
-                         'Банер по кликам - История долгосрочная': 0,
-                         'Тизер по кликам - История долгосрочная': 0,
-                         'Вероятно сработала старая ветка': 0,
-                         'ИТОГО': 0}
-        workerstatsBM = {'Банер по показам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Места размешения': 0,
-                         'Банер и Тизер по кликам - Ретаргетинг': 0,
-                         'Банер и Тизер по кликам - Рекомендованные': 0,
-                         'Банер и Тизер по кликам - Тематики': 0,
-                         'Банер по показам - Поисковый запрос': 0,
-                         'Банер по кликам - Поисковый запрос': 0,
-                         'Тизер по кликам - Поисковый запрос': 0,
-                         'Банер по показам - Контекст запрос': 0,
-                         'Банер по кликам - Контекст запрос': 0,
-                         'Тизер по кликам - Контекст запрос': 0,
-                         'Банер по показам - История поискового запроса': 0,
-                         'Банер по кликам - История поискового запроса': 0,
-                         'Тизер по кликам - История поискового запроса': 0,
-                         'Банер по показам - История контекстного запроса': 0,
-                         'Банер по кликам - История контекстного запроса': 0,
-                         'Тизер по кликам - История контекстного запроса': 0,
-                         'Банер по показам - История долгосрочная': 0,
-                         'Банер по кликам - История долгосрочная': 0,
-                         'Тизер по кликам - История долгосрочная': 0,
-                         'Вероятно сработала старая ветка': 0,
-                         'ИТОГО': 0}
-        workerstatsC = {'Банер по показам - Места размешения': 0,
-                        'Банер и Тизер по кликам - Места размешения': 0,
-                        'Банер и Тизер по кликам - Ретаргетинг': 0,
-                        'Банер и Тизер по кликам - Рекомендованные': 0,
-                        'Банер и Тизер по кликам - Тематики': 0,
-                        'Банер по показам - Поисковый запрос': 0,
-                        'Банер по кликам - Поисковый запрос': 0,
-                        'Тизер по кликам - Поисковый запрос': 0,
-                        'Банер по показам - Контекст запрос': 0,
-                        'Банер по кликам - Контекст запрос': 0,
-                        'Тизер по кликам - Контекст запрос': 0,
-                        'Банер по показам - История поискового запроса': 0,
-                        'Банер по кликам - История поискового запроса': 0,
-                        'Тизер по кликам - История поискового запроса': 0,
-                        'Банер по показам - История контекстного запроса': 0,
-                        'Банер по кликам - История контекстного запроса': 0,
-                        'Тизер по кликам - История контекстного запроса': 0,
-                        'Банер по показам - История долгосрочная': 0,
-                        'Банер по кликам - История долгосрочная': 0,
-                        'Тизер по кликам - История долгосрочная': 0,
-                        'Вероятно сработала старая ветка': 0,
-                        'ИТОГО': 0}
-        workerstatsCNM = {'Банер по показам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Ретаргетинг': 0,
-                          'Банер и Тизер по кликам - Рекомендованные': 0,
-                          'Банер и Тизер по кликам - Тематики': 0,
-                          'Банер по показам - Поисковый запрос': 0,
-                          'Банер по кликам - Поисковый запрос': 0,
-                          'Тизер по кликам - Поисковый запрос': 0,
-                          'Банер по показам - Контекст запрос': 0,
-                          'Банер по кликам - Контекст запрос': 0,
-                          'Тизер по кликам - Контекст запрос': 0,
-                          'Банер по показам - История поискового запроса': 0,
-                          'Банер по кликам - История поискового запроса': 0,
-                          'Тизер по кликам - История поискового запроса': 0,
-                          'Банер по показам - История контекстного запроса': 0,
-                          'Банер по кликам - История контекстного запроса': 0,
-                          'Тизер по кликам - История контекстного запроса': 0,
-                          'Банер по показам - История долгосрочная': 0,
-                          'Банер по кликам - История долгосрочная': 0,
-                          'Тизер по кликам - История долгосрочная': 0,
-                          'Вероятно сработала старая ветка': 0,
-                          'ИТОГО': 0}
-        workerstatsCPM = {'Банер по показам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Ретаргетинг': 0,
-                          'Банер и Тизер по кликам - Рекомендованные': 0,
-                          'Банер и Тизер по кликам - Тематики': 0,
-                          'Банер по показам - Поисковый запрос': 0,
-                          'Банер по кликам - Поисковый запрос': 0,
-                          'Тизер по кликам - Поисковый запрос': 0,
-                          'Банер по показам - Контекст запрос': 0,
-                          'Банер по кликам - Контекст запрос': 0,
-                          'Тизер по кликам - Контекст запрос': 0,
-                          'Банер по показам - История поискового запроса': 0,
-                          'Банер по кликам - История поискового запроса': 0,
-                          'Тизер по кликам - История поискового запроса': 0,
-                          'Банер по показам - История контекстного запроса': 0,
-                          'Банер по кликам - История контекстного запроса': 0,
-                          'Тизер по кликам - История контекстного запроса': 0,
-                          'Банер по показам - История долгосрочная': 0,
-                          'Банер по кликам - История долгосрочная': 0,
-                          'Тизер по кликам - История долгосрочная': 0,
-                          'Вероятно сработала старая ветка': 0,
-                          'ИТОГО': 0}
-        workerstatsCEM = {'Банер по показам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Ретаргетинг': 0,
-                          'Банер и Тизер по кликам - Рекомендованные': 0,
-                          'Банер и Тизер по кликам - Тематики': 0,
-                          'Банер по показам - Поисковый запрос': 0,
-                          'Банер по кликам - Поисковый запрос': 0,
-                          'Тизер по кликам - Поисковый запрос': 0,
-                          'Банер по показам - Контекст запрос': 0,
-                          'Банер по кликам - Контекст запрос': 0,
-                          'Тизер по кликам - Контекст запрос': 0,
-                          'Банер по показам - История поискового запроса': 0,
-                          'Банер по кликам - История поискового запроса': 0,
-                          'Тизер по кликам - История поискового запроса': 0,
-                          'Банер по показам - История контекстного запроса': 0,
-                          'Банер по кликам - История контекстного запроса': 0,
-                          'Тизер по кликам - История контекстного запроса': 0,
-                          'Банер по показам - История долгосрочная': 0,
-                          'Банер по кликам - История долгосрочная': 0,
-                          'Тизер по кликам - История долгосрочная': 0,
-                          'Вероятно сработала старая ветка': 0,
-                          'ИТОГО': 0}
-        workerstatsCBM = {'Банер по показам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Места размешения': 0,
-                          'Банер и Тизер по кликам - Ретаргетинг': 0,
-                          'Банер и Тизер по кликам - Рекомендованные': 0,
-                          'Банер и Тизер по кликам - Тематики': 0,
-                          'Банер по показам - Поисковый запрос': 0,
-                          'Банер по кликам - Поисковый запрос': 0,
-                          'Тизер по кликам - Поисковый запрос': 0,
-                          'Банер по показам - Контекст запрос': 0,
-                          'Банер по кликам - Контекст запрос': 0,
-                          'Тизер по кликам - Контекст запрос': 0,
-                          'Банер по показам - История поискового запроса': 0,
-                          'Банер по кликам - История поискового запроса': 0,
-                          'Тизер по кликам - История поискового запроса': 0,
-                          'Банер по показам - История контекстного запроса': 0,
-                          'Банер по кликам - История контекстного запроса': 0,
-                          'Тизер по кликам - История контекстного запроса': 0,
-                          'Банер по показам - История долгосрочная': 0,
-                          'Банер по кликам - История долгосрочная': 0,
-                          'Тизер по кликам - История долгосрочная': 0,
-                          'Вероятно сработала старая ветка': 0,
-                          'ИТОГО': 0}
+        workerstats = defaultdict(int)
+        workerstats_nm = defaultdict(int)
+        workerstats_pm = defaultdict(int)
+        workerstats_em = defaultdict(int)
+        workerstats_bm = defaultdict(int)
+        workerstats_c = defaultdict(int)
+        workerstats_cnm = defaultdict(int)
+        workerstats_cpm = defaultdict(int)
+        workerstats_cem = defaultdict(int)
+        workerstats_cbm = defaultdict(int)
+
         stats = app_globals.db.worker_stats.find(queri, filds)
         for item in stats:
             for key, value in item.iteritems():
                 if key[:1] == 'L':
                     continue
                 elif key == 'NL1':
-                    workerstats['Банер по показам - Места размешения'] = workerstats.get(
-                        'Банер по показам - Места размешения', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - Места размешения'] = workerstatsNM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - Места размешения'] = workerstatsPM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - Места размешения'] = workerstatsEM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - Места размешения'] = workerstatsBM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - Места размешения'] = workerstatsC.get(
-                        'Банер по показам - Места размешения', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - Места размешения'] = workerstatsCNM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - Места размешения'] = workerstatsCPM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - Места размешения'] = workerstatsCEM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - Места размешения'] = workerstatsCBM.get(
-                        'Банер по показам - Места размешения', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Банер по показам - Места размешения'] += value.get('ALL', 0)
+                    workerstats_nm['Банер по показам - Места размешения'] += value.get('nomatch', 0)
+                    workerstats_pm['Банер по показам - Места размешения'] += value.get('phrasematch', 0)
+                    workerstats_em['Банер по показам - Места размешения'] += value.get('exactmatch', 0)
+                    workerstats_bm['Банер по показам - Места размешения'] += value.get('broadmatch', 0)
+                    workerstats_c['Банер по показам - Места размешения'] += value.get('CALL', 0)
+                    workerstats_cnm['Банер по показам - Места размешения'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Банер по показам - Места размешения'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Банер по показам - Места размешения'] += value.get('Cexactmatch', 0)
+                    workerstats_cbm['Банер по показам - Места размешения'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL29':
-                    workerstats['Банер и Тизер по кликам - Тематики'] = workerstats.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер и Тизер по кликам - Тематики'] = workerstatsNM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер и Тизер по кликам - Тематики'] = workerstatsPM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер и Тизер по кликам - Тематики'] = workerstatsEM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер и Тизер по кликам - Тематики'] = workerstatsBM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер и Тизер по кликам - Тематики'] = workerstatsC.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер и Тизер по кликам - Тематики'] = workerstatsCNM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер и Тизер по кликам - Тематики'] = workerstatsCPM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер и Тизер по кликам - Тематики'] = workerstatsCEM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер и Тизер по кликам - Тематики'] = workerstatsCBM.get(
-                        'Банер и Тизер по кликам - Тематики', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Банер и Тизер по кликам - Тематики'] += value.get('ALL', 0)
+                    workerstats_nm['Банер и Тизер по кликам - Тематики'] += value.get('nomatch', 0)
+                    workerstats_pm['Банер и Тизер по кликам - Тематики'] += value.get('phrasematch', 0)
+                    workerstats_em['Банер и Тизер по кликам - Тематики'] += value.get('exactmatch', 0)
+                    workerstats_bm['Банер и Тизер по кликам - Тематики'] += value.get('broadmatch', 0)
+                    workerstats_c['Банер и Тизер по кликам - Тематики'] += value.get('CALL', 0)
+                    workerstats_cnm['Банер и Тизер по кликам - Тематики'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Банер и Тизер по кликам - Тематики'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Банер и Тизер по кликам - Тематики'] += value.get('Cexactmatch', 0)
+                    workerstats_cbm['Банер и Тизер по кликам - Тематики'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL30':
-                    workerstats['Банер и Тизер по кликам - Места размешения'] = workerstats.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер и Тизер по кликам - Места размешения'] = workerstatsNM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер и Тизер по кликам - Места размешения'] = workerstatsPM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер и Тизер по кликам - Места размешения'] = workerstatsEM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер и Тизер по кликам - Места размешения'] = workerstatsBM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер и Тизер по кликам - Места размешения'] = workerstatsC.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер и Тизер по кликам - Места размешения'] = workerstatsCNM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер и Тизер по кликам - Места размешения'] = workerstatsCPM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер и Тизер по кликам - Места размешения'] = workerstatsCEM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер и Тизер по кликам - Места размешения'] = workerstatsCBM.get(
-                        'Банер и Тизер по кликам - Места размешения', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Банер и Тизер по кликам - Места размешения'] += value.get('ALL', 0)
+                    workerstats_nm['Банер и Тизер по кликам - Места размешения'] += value.get('nomatch', 0)
+                    workerstats_pm['Банер и Тизер по кликам - Места размешения'] += value.get('phrasematch', 0)
+                    workerstats_em['Банер и Тизер по кликам - Места размешения'] += value.get('exactmatch', 0)
+                    workerstats_bm['Банер и Тизер по кликам - Места размешения'] += value.get('broadmatch', 0)
+                    workerstats_c['Банер и Тизер по кликам - Места размешения'] += value.get('CALL', 0)
+                    workerstats_cnm['Банер и Тизер по кликам - Места размешения'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Банер и Тизер по кликам - Места размешения'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Банер и Тизер по кликам - Места размешения'] += value.get('Cexactmatch', 0)
+                    workerstats_cbm['Банер и Тизер по кликам - Места размешения'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL31':
-                    workerstats['Банер и Тизер по кликам - Ретаргетинг'] = workerstats.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsNM.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsPM.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsEM.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsBM.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsC.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsCNM.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsCPM.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsCEM.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер и Тизер по кликам - Ретаргетинг'] = workerstatsCBM.get(
-                        'Банер и Тизер по кликам - Ретаргетинг', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Банер и Тизер по кликам - Ретаргетинг'] += value.get('ALL', 0)
+                    workerstats_nm['Банер и Тизер по кликам - Ретаргетинг'] += value.get('nomatch', 0)
+                    workerstats_pm['Банер и Тизер по кликам - Ретаргетинг'] += value.get('phrasematch', 0)
+                    workerstats_em['Банер и Тизер по кликам - Ретаргетинг'] += value.get('exactmatch', 0)
+                    workerstats_bm['Банер и Тизер по кликам - Ретаргетинг'] += value.get('broadmatch', 0)
+                    workerstats_c['Банер и Тизер по кликам - Ретаргетинг'] += value.get('CALL', 0)
+                    workerstats_cnm['Банер и Тизер по кликам - Ретаргетинг'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Банер и Тизер по кликам - Ретаргетинг'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Банер и Тизер по кликам - Ретаргетинг'] += value.get('Cexactmatch', 0)
+                    workerstats_cbm['Банер и Тизер по кликам - Ретаргетинг'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL32':
-                    workerstats['Банер и Тизер по кликам - Рекомендованные'] = workerstats.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер и Тизер по кликам - Рекомендованные'] = workerstatsNM.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер и Тизер по кликам - Рекомендованные'] = workerstatsPM.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер и Тизер по кликам - Рекомендованные'] = workerstatsEM.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер и Тизер по кликам - Рекомендованные'] = workerstatsBM.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер и Тизер по кликам - Рекомендованные'] = workerstatsC.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер и Тизер по кликам - Рекомендованные'] = workerstatsCNM.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер и Тизер по кликам - Рекомендованные'] = workerstatsCPM.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер и Тизер по кликам - Рекомендованные'] = workerstatsCEM.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер и Тизер по кликам - Рекомендованные'] = workerstatsCBM.get(
-                        'Банер и Тизер по кликам - Рекомендованные', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Банер и Тизер по кликам - Рекомендованные'] += value.get('ALL', 0)
+                    workerstats_nm['Банер и Тизер по кликам - Рекомендованные'] += value.get('nomatch', 0)
+                    workerstats_pm['Банер и Тизер по кликам - Рекомендованные'] += value.get('phrasematch', 0)
+                    workerstats_em['Банер и Тизер по кликам - Рекомендованные'] += value.get('exactmatch', 0)
+                    workerstats_bm['Банер и Тизер по кликам - Рекомендованные'] += value.get('broadmatch', 0)
+                    workerstats_c['Банер и Тизер по кликам - Рекомендованные'] += value.get('CALL', 0)
+                    workerstats_cnm['Банер и Тизер по кликам - Рекомендованные'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Банер и Тизер по кликам - Рекомендованные'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Банер и Тизер по кликам - Рекомендованные'] += value.get('Cexactmatch', 0)
+                    workerstats_cbm['Банер и Тизер по кликам - Рекомендованные'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL2':
-                    workerstats['Банер по показам - Поисковый запрос'] = workerstats.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - Поисковый запрос'] = workerstatsNM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - Поисковый запрос'] = workerstatsPM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - Поисковый запрос'] = workerstatsEM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - Поисковый запрос'] = workerstatsBM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - Поисковый запрос'] = workerstatsC.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - Поисковый запрос'] = workerstatsCNM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - Поисковый запрос'] = workerstatsCPM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - Поисковый запрос'] = workerstatsCEM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - Поисковый запрос'] = workerstatsCBM.get(
-                        'Банер по показам - Поисковый запрос', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Банер по показам - Поисковый запрос'] += value.get('ALL', 0)
+                    workerstats_nm['Банер по показам - Поисковый запрос'] += value.get('nomatch', 0)
+                    workerstats_pm['Банер по показам - Поисковый запрос'] += value.get('phrasematch', 0)
+                    workerstats_em['Банер по показам - Поисковый запрос'] += value.get('exactmatch', 0)
+                    workerstats_bm['Банер по показам - Поисковый запрос'] += value.get('broadmatch', 0)
+                    workerstats_c['Банер по показам - Поисковый запрос'] += value.get('CALL', 0)
+                    workerstats_cnm['Банер по показам - Поисковый запрос'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Банер по показам - Поисковый запрос'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Банер по показам - Поисковый запрос'] += value.get('Cexactmatch', 0)
+                    workerstats_cbm['Банер по показам - Поисковый запрос'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL7':
-                    workerstats['Банер по кликам - Поисковый запрос'] = workerstats.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - Поисковый запрос'] = workerstatsNM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - Поисковый запрос'] = workerstatsPM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - Поисковый запрос'] = workerstatsEM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - Поисковый запрос'] = workerstatsBM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - Поисковый запрос'] = workerstatsC.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - Поисковый запрос'] = workerstatsCNM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - Поисковый запрос'] = workerstatsCPM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - Поисковый запрос'] = workerstatsCEM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsBM['Банер по кликам - Поисковый запрос'] = workerstatsCBM.get(
-                        'Банер по кликам - Поисковый запрос', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Банер по кликам - Поисковый запрос'] += value.get('ALL', 0)
+                    workerstats_nm['Банер по кликам - Поисковый запрос'] += value.get('nomatch', 0)
+                    workerstats_pm['Банер по кликам - Поисковый запрос'] += value.get('phrasematch', 0)
+                    workerstats_em['Банер по кликам - Поисковый запрос'] += value.get('exactmatch', 0)
+                    workerstats_bm['Банер по кликам - Поисковый запрос'] += value.get('broadmatch', 0)
+                    workerstats_c['Банер по кликам - Поисковый запрос'] += value.get('CALL', 0)
+                    workerstats_cnm['Банер по кликам - Поисковый запрос'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Банер по кликам - Поисковый запрос'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Банер по кликам - Поисковый запрос'] += value.get('Cexactmatch', 0)
+                    workerstats_bm['Банер по кликам - Поисковый запрос'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL17':
-                    workerstats['Тизер по кликам - Поисковый запрос'] = workerstats.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - Поисковый запрос'] = workerstatsNM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - Поисковый запрос'] = workerstatsPM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - Поисковый запрос'] = workerstatsEM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - Поисковый запрос'] = workerstatsBM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - Поисковый запрос'] = workerstatsC.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - Поисковый запрос'] = workerstatsCNM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - Поисковый запрос'] = workerstatsCPM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - Поисковый запрос'] = workerstatsCEM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - Поисковый запрос'] = workerstatsCBM.get(
-                        'Тизер по кликам - Поисковый запрос', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Тизер по кликам - Поисковый запрос'] += value.get('ALL', 0)
+                    workerstats_nm['Тизер по кликам - Поисковый запрос'] += value.get('nomatch', 0)
+                    workerstats_pm['Тизер по кликам - Поисковый запрос'] += value.get('phrasematch', 0)
+                    workerstats_em['Тизер по кликам - Поисковый запрос'] += value.get('exactmatch', 0)
+                    workerstats_bm['Тизер по кликам - Поисковый запрос'] += value.get('broadmatch', 0)
+                    workerstats_c['Тизер по кликам - Поисковый запрос'] += value.get('CALL', 0)
+                    workerstats_cnm['Тизер по кликам - Поисковый запрос'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Тизер по кликам - Поисковый запрос'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Тизер по кликам - Поисковый запрос'] += value.get('Cexactmatch', 0)
+                    workerstats_cbm['Тизер по кликам - Поисковый запрос'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL3':
-                    workerstats['Банер по показам - Контекст запрос'] = workerstats.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - Контекст запрос'] = workerstatsNM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - Контекст запрос'] = workerstatsPM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - Контекст запрос'] = workerstatsEM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - Контекст запрос'] = workerstatsBM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - Контекст запрос'] = workerstatsC.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - Контекст запрос'] = workerstatsCNM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - Контекст запрос'] = workerstatsCPM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - Контекст запрос'] = workerstatsCEM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - Контекст запрос'] = workerstatsCBM.get(
-                        'Банер по показам - Контекст запрос', 0) + value.get('Cbroadmatch', 0)
+                    workerstats['Банер по показам - Контекст запрос'] += value.get('ALL', 0)
+                    workerstats_nm['Банер по показам - Контекст запрос'] += value.get('nomatch', 0)
+                    workerstats_pm['Банер по показам - Контекст запрос'] += value.get('phrasematch', 0)
+                    workerstats_em['Банер по показам - Контекст запрос'] += value.get('exactmatch', 0)
+                    workerstats_bm['Банер по показам - Контекст запрос'] += value.get('broadmatch', 0)
+                    workerstats_c['Банер по показам - Контекст запрос'] += value.get('CALL', 0)
+                    workerstats_cnm['Банер по показам - Контекст запрос'] += value.get('Cnomatch', 0)
+                    workerstats_cpm['Банер по показам - Контекст запрос'] += value.get('Cphrasematch', 0)
+                    workerstats_cem['Банер по показам - Контекст запрос'] += value.get('Cexactmatch', 0)
+                    workerstats_cbm['Банер по показам - Контекст запрос'] += value.get('Cbroadmatch', 0)
                 elif key == 'NL8':
                     workerstats['Банер по кликам - Контекст запрос'] = workerstats.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - Контекст запрос'] = workerstatsNM.get(
+                    workerstats_nm['Банер по кликам - Контекст запрос'] = workerstats_nm.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - Контекст запрос'] = workerstatsPM.get(
+                    workerstats_pm['Банер по кликам - Контекст запрос'] = workerstats_pm.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - Контекст запрос'] = workerstatsEM.get(
+                    workerstats_em['Банер по кликам - Контекст запрос'] = workerstats_em.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - Контекст запрос'] = workerstatsBM.get(
+                    workerstats_bm['Банер по кликам - Контекст запрос'] = workerstats_bm.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - Контекст запрос'] = workerstatsC.get(
+                    workerstats_c['Банер по кликам - Контекст запрос'] = workerstats_c.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - Контекст запрос'] = workerstatsCNM.get(
+                    workerstats_cnm['Банер по кликам - Контекст запрос'] = workerstats_cnm.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - Контекст запрос'] = workerstatsCPM.get(
+                    workerstats_cpm['Банер по кликам - Контекст запрос'] = workerstats_cpm.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - Контекст запрос'] = workerstatsCEM.get(
+                    workerstats_cem['Банер по кликам - Контекст запрос'] = workerstats_cem.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по кликам - Контекст запрос'] = workerstatsCBM.get(
+                    workerstats_cbm['Банер по кликам - Контекст запрос'] = workerstats_cbm.get(
                         'Банер по кликам - Контекст запрос', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL18':
                     workerstats['Тизер по кликам - Контекст запрос'] = workerstats.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - Контекст запрос'] = workerstatsNM.get(
+                    workerstats_nm['Тизер по кликам - Контекст запрос'] = workerstats_nm.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - Контекст запрос'] = workerstatsPM.get(
+                    workerstats_pm['Тизер по кликам - Контекст запрос'] = workerstats_pm.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - Контекст запрос'] = workerstatsEM.get(
+                    workerstats_em['Тизер по кликам - Контекст запрос'] = workerstats_em.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - Контекст запрос'] = workerstatsBM.get(
+                    workerstats_bm['Тизер по кликам - Контекст запрос'] = workerstats_bm.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - Контекст запрос'] = workerstatsC.get(
+                    workerstats_c['Тизер по кликам - Контекст запрос'] = workerstats_c.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - Контекст запрос'] = workerstatsCNM.get(
+                    workerstats_cnm['Тизер по кликам - Контекст запрос'] = workerstats_cnm.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - Контекст запрос'] = workerstatsCPM.get(
+                    workerstats_cpm['Тизер по кликам - Контекст запрос'] = workerstats_cpm.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - Контекст запрос'] = workerstatsCEM.get(
+                    workerstats_cem['Тизер по кликам - Контекст запрос'] = workerstats_cem.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - Контекст запрос'] = workerstatsCBM.get(
+                    workerstats_cbm['Тизер по кликам - Контекст запрос'] = workerstats_cbm.get(
                         'Тизер по кликам - Контекст запрос', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL4':
                     workerstats['Банер по показам - История поискового запроса'] = workerstats.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - История поискового запроса'] = workerstatsNM.get(
+                    workerstats_nm['Банер по показам - История поискового запроса'] = workerstats_nm.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - История поискового запроса'] = workerstatsPM.get(
+                    workerstats_pm['Банер по показам - История поискового запроса'] = workerstats_pm.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - История поискового запроса'] = workerstatsEM.get(
+                    workerstats_em['Банер по показам - История поискового запроса'] = workerstats_em.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - История поискового запроса'] = workerstatsBM.get(
+                    workerstats_bm['Банер по показам - История поискового запроса'] = workerstats_bm.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - История поискового запроса'] = workerstatsC.get(
+                    workerstats_c['Банер по показам - История поискового запроса'] = workerstats_c.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - История поискового запроса'] = workerstatsCNM.get(
+                    workerstats_cnm['Банер по показам - История поискового запроса'] = workerstats_cnm.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - История поискового запроса'] = workerstatsCPM.get(
+                    workerstats_cpm['Банер по показам - История поискового запроса'] = workerstats_cpm.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - История поискового запроса'] = workerstatsCEM.get(
+                    workerstats_cem['Банер по показам - История поискового запроса'] = workerstats_cem.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - История поискового запроса'] = workerstatsCBM.get(
+                    workerstats_cbm['Банер по показам - История поискового запроса'] = workerstats_cbm.get(
                         'Банер по показам - История поискового запроса', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL9':
                     workerstats['Банер по кликам - История поискового запроса'] = workerstats.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - История поискового запроса'] = workerstatsNM.get(
+                    workerstats_nm['Банер по кликам - История поискового запроса'] = workerstats_nm.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - История поискового запроса'] = workerstatsPM.get(
+                    workerstats_pm['Банер по кликам - История поискового запроса'] = workerstats_pm.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - История поискового запроса'] = workerstatsEM.get(
+                    workerstats_em['Банер по кликам - История поискового запроса'] = workerstats_em.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - История поискового запроса'] = workerstatsBM.get(
+                    workerstats_bm['Банер по кликам - История поискового запроса'] = workerstats_bm.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - История поискового запроса'] = workerstatsC.get(
+                    workerstats_c['Банер по кликам - История поискового запроса'] = workerstats_c.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - История поискового запроса'] = workerstatsCNM.get(
+                    workerstats_cnm['Банер по кликам - История поискового запроса'] = workerstats_cnm.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - История поискового запроса'] = workerstatsCPM.get(
+                    workerstats_cpm['Банер по кликам - История поискового запроса'] = workerstats_cpm.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - История поискового запроса'] = workerstatsCEM.get(
+                    workerstats_cem['Банер по кликам - История поискового запроса'] = workerstats_cem.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по кликам - История поискового запроса'] = workerstatsCBM.get(
+                    workerstats_cbm['Банер по кликам - История поискового запроса'] = workerstats_cbm.get(
                         'Банер по кликам - История поискового запроса', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL19':
                     workerstats['Тизер по кликам - История поискового запроса'] = workerstats.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - История поискового запроса'] = workerstatsNM.get(
+                    workerstats_nm['Тизер по кликам - История поискового запроса'] = workerstats_nm.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - История поискового запроса'] = workerstatsPM.get(
+                    workerstats_pm['Тизер по кликам - История поискового запроса'] = workerstats_pm.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - История поискового запроса'] = workerstatsEM.get(
+                    workerstats_em['Тизер по кликам - История поискового запроса'] = workerstats_em.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - История поискового запроса'] = workerstatsBM.get(
+                    workerstats_bm['Тизер по кликам - История поискового запроса'] = workerstats_bm.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - История поискового запроса'] = workerstatsC.get(
+                    workerstats_c['Тизер по кликам - История поискового запроса'] = workerstats_c.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - История поискового запроса'] = workerstatsCNM.get(
+                    workerstats_cnm['Тизер по кликам - История поискового запроса'] = workerstats_cnm.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - История поискового запроса'] = workerstatsCPM.get(
+                    workerstats_cpm['Тизер по кликам - История поискового запроса'] = workerstats_cpm.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - История поискового запроса'] = workerstatsCEM.get(
+                    workerstats_cem['Тизер по кликам - История поискового запроса'] = workerstats_cem.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - История поискового запроса'] = workerstatsCBM.get(
+                    workerstats_cbm['Тизер по кликам - История поискового запроса'] = workerstats_cbm.get(
                         'Тизер по кликам - История поискового запроса', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL5':
                     workerstats['Банер по показам - История контекстного запроса'] = workerstats.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - История контекстного запроса'] = workerstatsNM.get(
+                    workerstats_nm['Банер по показам - История контекстного запроса'] = workerstats_nm.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - История контекстного запроса'] = workerstatsPM.get(
+                    workerstats_pm['Банер по показам - История контекстного запроса'] = workerstats_pm.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - История контекстного запроса'] = workerstatsEM.get(
+                    workerstats_em['Банер по показам - История контекстного запроса'] = workerstats_em.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - История контекстного запроса'] = workerstatsBM.get(
+                    workerstats_bm['Банер по показам - История контекстного запроса'] = workerstats_bm.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - История контекстного запроса'] = workerstatsC.get(
+                    workerstats_c['Банер по показам - История контекстного запроса'] = workerstats_c.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - История контекстного запроса'] = workerstatsCNM.get(
+                    workerstats_cnm['Банер по показам - История контекстного запроса'] = workerstats_cnm.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - История контекстного запроса'] = workerstatsCPM.get(
+                    workerstats_cpm['Банер по показам - История контекстного запроса'] = workerstats_cpm.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - История контекстного запроса'] = workerstatsCEM.get(
+                    workerstats_cem['Банер по показам - История контекстного запроса'] = workerstats_cem.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - История контекстного запроса'] = workerstatsCBM.get(
+                    workerstats_cbm['Банер по показам - История контекстного запроса'] = workerstats_cbm.get(
                         'Банер по показам - История контекстного запроса', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL10':
                     workerstats['Банер по кликам - История контекстного запроса'] = workerstats.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - История контекстного запроса'] = workerstatsNM.get(
+                    workerstats_nm['Банер по кликам - История контекстного запроса'] = workerstats_nm.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - История контекстного запроса'] = workerstatsPM.get(
+                    workerstats_pm['Банер по кликам - История контекстного запроса'] = workerstats_pm.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - История контекстного запроса'] = workerstatsEM.get(
+                    workerstats_em['Банер по кликам - История контекстного запроса'] = workerstats_em.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - История контекстного запроса'] = workerstatsBM.get(
+                    workerstats_bm['Банер по кликам - История контекстного запроса'] = workerstats_bm.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - История контекстного запроса'] = workerstatsC.get(
+                    workerstats_c['Банер по кликам - История контекстного запроса'] = workerstats_c.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - История контекстного запроса'] = workerstatsCNM.get(
+                    workerstats_cnm['Банер по кликам - История контекстного запроса'] = workerstats_cnm.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - История контекстного запроса'] = workerstatsCPM.get(
+                    workerstats_cpm['Банер по кликам - История контекстного запроса'] = workerstats_cpm.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - История контекстного запроса'] = workerstatsCEM.get(
+                    workerstats_cem['Банер по кликам - История контекстного запроса'] = workerstats_cem.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по кликам - История контекстного запроса'] = workerstatsCBM.get(
+                    workerstats_cbm['Банер по кликам - История контекстного запроса'] = workerstats_cbm.get(
                         'Банер по кликам - История контекстного запроса', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL20':
                     workerstats['Тизер по кликам - История контекстного запроса'] = workerstats.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - История контекстного запроса'] = workerstatsNM.get(
+                    workerstats_nm['Тизер по кликам - История контекстного запроса'] = workerstats_nm.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - История контекстного запроса'] = workerstatsPM.get(
+                    workerstats_pm['Тизер по кликам - История контекстного запроса'] = workerstats_pm.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - История контекстного запроса'] = workerstatsEM.get(
+                    workerstats_em['Тизер по кликам - История контекстного запроса'] = workerstats_em.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - История контекстного запроса'] = workerstatsBM.get(
+                    workerstats_bm['Тизер по кликам - История контекстного запроса'] = workerstats_bm.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - История контекстного запроса'] = workerstatsC.get(
+                    workerstats_c['Тизер по кликам - История контекстного запроса'] = workerstats_c.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - История контекстного запроса'] = workerstatsCNM.get(
+                    workerstats_cnm['Тизер по кликам - История контекстного запроса'] = workerstats_cnm.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - История контекстного запроса'] = workerstatsCPM.get(
+                    workerstats_cpm['Тизер по кликам - История контекстного запроса'] = workerstats_cpm.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - История контекстного запроса'] = workerstatsCEM.get(
+                    workerstats_cem['Тизер по кликам - История контекстного запроса'] = workerstats_cem.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - История контекстного запроса'] = workerstatsCBM.get(
+                    workerstats_cbm['Тизер по кликам - История контекстного запроса'] = workerstats_cbm.get(
                         'Тизер по кликам - История контекстного запроса', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL6':
                     workerstats['Банер по показам - История долгосрочная'] = workerstats.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по показам - История долгосрочная'] = workerstatsNM.get(
+                    workerstats_nm['Банер по показам - История долгосрочная'] = workerstats_nm.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по показам - История долгосрочная'] = workerstatsPM.get(
+                    workerstats_pm['Банер по показам - История долгосрочная'] = workerstats_pm.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по показам - История долгосрочная'] = workerstatsEM.get(
+                    workerstats_em['Банер по показам - История долгосрочная'] = workerstats_em.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по показам - История долгосрочная'] = workerstatsBM.get(
+                    workerstats_bm['Банер по показам - История долгосрочная'] = workerstats_bm.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по показам - История долгосрочная'] = workerstatsC.get(
+                    workerstats_c['Банер по показам - История долгосрочная'] = workerstats_c.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по показам - История долгосрочная'] = workerstatsCNM.get(
+                    workerstats_cnm['Банер по показам - История долгосрочная'] = workerstats_cnm.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по показам - История долгосрочная'] = workerstatsCPM.get(
+                    workerstats_cpm['Банер по показам - История долгосрочная'] = workerstats_cpm.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по показам - История долгосрочная'] = workerstatsCEM.get(
+                    workerstats_cem['Банер по показам - История долгосрочная'] = workerstats_cem.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по показам - История долгосрочная'] = workerstatsCBM.get(
+                    workerstats_cbm['Банер по показам - История долгосрочная'] = workerstats_cbm.get(
                         'Банер по показам - История долгосрочная', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL11':
                     workerstats['Банер по кликам - История долгосрочная'] = workerstats.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('ALL', 0)
-                    workerstatsNM['Банер по кликам - История долгосрочная'] = workerstatsNM.get(
+                    workerstats_nm['Банер по кликам - История долгосрочная'] = workerstats_nm.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Банер по кликам - История долгосрочная'] = workerstatsPM.get(
+                    workerstats_pm['Банер по кликам - История долгосрочная'] = workerstats_pm.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Банер по кликам - История долгосрочная'] = workerstatsEM.get(
+                    workerstats_em['Банер по кликам - История долгосрочная'] = workerstats_em.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Банер по кликам - История долгосрочная'] = workerstatsBM.get(
+                    workerstats_bm['Банер по кликам - История долгосрочная'] = workerstats_bm.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Банер по кликам - История долгосрочная'] = workerstatsC.get(
+                    workerstats_c['Банер по кликам - История долгосрочная'] = workerstats_c.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Банер по кликам - История долгосрочная'] = workerstatsCNM.get(
+                    workerstats_cnm['Банер по кликам - История долгосрочная'] = workerstats_cnm.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Банер по кликам - История долгосрочная'] = workerstatsCPM.get(
+                    workerstats_cpm['Банер по кликам - История долгосрочная'] = workerstats_cpm.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Банер по кликам - История долгосрочная'] = workerstatsCEM.get(
+                    workerstats_cem['Банер по кликам - История долгосрочная'] = workerstats_cem.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Банер по кликам - История долгосрочная'] = workerstatsCBM.get(
+                    workerstats_cbm['Банер по кликам - История долгосрочная'] = workerstats_cbm.get(
                         'Банер по кликам - История долгосрочная', 0) + value.get('Cbroadmatch', 0)
                 elif key == 'NL21':
                     workerstats['Тизер по кликам - История долгосрочная'] = workerstats.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('ALL', 0)
-                    workerstatsNM['Тизер по кликам - История долгосрочная'] = workerstatsNM.get(
+                    workerstats_nm['Тизер по кликам - История долгосрочная'] = workerstats_nm.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('nomatch', 0)
-                    workerstatsPM['Тизер по кликам - История долгосрочная'] = workerstatsPM.get(
+                    workerstats_pm['Тизер по кликам - История долгосрочная'] = workerstats_pm.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('phrasematch', 0)
-                    workerstatsEM['Тизер по кликам - История долгосрочная'] = workerstatsEM.get(
+                    workerstats_em['Тизер по кликам - История долгосрочная'] = workerstats_em.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('exactmatch', 0)
-                    workerstatsBM['Тизер по кликам - История долгосрочная'] = workerstatsBM.get(
+                    workerstats_bm['Тизер по кликам - История долгосрочная'] = workerstats_bm.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('broadmatch', 0)
-                    workerstatsC['Тизер по кликам - История долгосрочная'] = workerstatsC.get(
+                    workerstats_c['Тизер по кликам - История долгосрочная'] = workerstats_c.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('CALL', 0)
-                    workerstatsCNM['Тизер по кликам - История долгосрочная'] = workerstatsCNM.get(
+                    workerstats_cnm['Тизер по кликам - История долгосрочная'] = workerstats_cnm.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('Cnomatch', 0)
-                    workerstatsCPM['Тизер по кликам - История долгосрочная'] = workerstatsCPM.get(
+                    workerstats_cpm['Тизер по кликам - История долгосрочная'] = workerstats_cpm.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('Cphrasematch', 0)
-                    workerstatsCEM['Тизер по кликам - История долгосрочная'] = workerstatsCEM.get(
+                    workerstats_cem['Тизер по кликам - История долгосрочная'] = workerstats_cem.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('Cexactmatch', 0)
-                    workerstatsCBM['Тизер по кликам - История долгосрочная'] = workerstatsCBM.get(
+                    workerstats_cbm['Тизер по кликам - История долгосрочная'] = workerstats_cbm.get(
                         'Тизер по кликам - История долгосрочная', 0) + value.get('Cbroadmatch', 0)
                 else:
-                    workerstats['Вероятно сработала старая ветка'] = workerstats.get('Вероятно сработала старая ветка',
-                                                                                     0) + value.get('ALL', 0)
-                    workerstatsC['Вероятно сработала старая ветка'] = workerstatsC.get(
-                        'Вероятно сработала старая ветка', 0) + value.get('CALL', 0)
-                workerstats['ИТОГО'] = workerstats.get('ИТОГО', 0) + value.get('ALL', 0)
-                workerstatsC['ИТОГО'] = workerstatsC.get('ИТОГО', 0) + value.get('CALL', 0)
+                    workerstats['Вероятно сработала старая ветка']+= value.get('ALL', 0)
+                    workerstats_c['Вероятно сработала старая ветка'] += value.get('CALL', 0)
+                workerstats['ИТОГО'] += value.get('ALL', 0)
+                workerstats_c['ИТОГО'] += value.get('CALL', 0)
 
         data.append(('Банер по показам - Места размешения',
                      workerstats['Банер по показам - Места размешения'],
-                     workerstatsC['Банер по показам - Места размешения'],
+                     workerstats_c['Банер по показам - Места размешения'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - Места размешения'],
-                     workerstatsCNM['Банер по показам - Места размешения'],
-                     workerstatsBM['Банер по показам - Места размешения'],
-                     workerstatsCBM['Банер по показам - Места размешения'],
-                     workerstatsPM['Банер по показам - Места размешения'],
-                     workerstatsCPM['Банер по показам - Места размешения'],
-                     workerstatsEM['Банер по показам - Места размешения'],
-                     workerstatsCEM['Банер по показам - Места размешения']))
+                     workerstats_nm['Банер по показам - Места размешения'],
+                     workerstats_cnm['Банер по показам - Места размешения'],
+                     workerstats_bm['Банер по показам - Места размешения'],
+                     workerstats_cbm['Банер по показам - Места размешения'],
+                     workerstats_pm['Банер по показам - Места размешения'],
+                     workerstats_cpm['Банер по показам - Места размешения'],
+                     workerstats_em['Банер по показам - Места размешения'],
+                     workerstats_cem['Банер по показам - Места размешения']))
         data.append(('Банер и Тизер по кликам - Места размешения',
                      workerstats['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsC['Банер и Тизер по кликам - Места размешения'],
+                     workerstats_c['Банер и Тизер по кликам - Места размешения'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsCNM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsBM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsCBM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsPM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsCPM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsEM['Банер и Тизер по кликам - Места размешения'],
-                     workerstatsCEM['Банер и Тизер по кликам - Места размешения']))
+                     workerstats_nm['Банер и Тизер по кликам - Места размешения'],
+                     workerstats_cnm['Банер и Тизер по кликам - Места размешения'],
+                     workerstats_bm['Банер и Тизер по кликам - Места размешения'],
+                     workerstats_cbm['Банер и Тизер по кликам - Места размешения'],
+                     workerstats_pm['Банер и Тизер по кликам - Места размешения'],
+                     workerstats_cpm['Банер и Тизер по кликам - Места размешения'],
+                     workerstats_em['Банер и Тизер по кликам - Места размешения'],
+                     workerstats_cem['Банер и Тизер по кликам - Места размешения']))
         data.append(('Банер и Тизер по кликам - Ретаргетинг',
                      workerstats['Банер и Тизер по кликам - Ретаргетинг'],
-                     workerstatsC['Банер и Тизер по кликам - Ретаргетинг'],
+                     workerstats_c['Банер и Тизер по кликам - Ретаргетинг'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер и Тизер по кликам - Ретаргетинг'],
-                     workerstatsCNM['Банер и Тизер по кликам - Ретаргетинг'],
-                     workerstatsBM['Банер и Тизер по кликам - Ретаргетинг'],
-                     workerstatsCBM['Банер и Тизер по кликам - Ретаргетинг'],
-                     workerstatsPM['Банер и Тизер по кликам - Ретаргетинг'],
-                     workerstatsCPM['Банер и Тизер по кликам - Ретаргетинг'],
-                     workerstatsEM['Банер и Тизер по кликам - Ретаргетинг'],
-                     workerstatsCEM['Банер и Тизер по кликам - Ретаргетинг']))
+                     workerstats_nm['Банер и Тизер по кликам - Ретаргетинг'],
+                     workerstats_cnm['Банер и Тизер по кликам - Ретаргетинг'],
+                     workerstats_bm['Банер и Тизер по кликам - Ретаргетинг'],
+                     workerstats_cbm['Банер и Тизер по кликам - Ретаргетинг'],
+                     workerstats_pm['Банер и Тизер по кликам - Ретаргетинг'],
+                     workerstats_cpm['Банер и Тизер по кликам - Ретаргетинг'],
+                     workerstats_em['Банер и Тизер по кликам - Ретаргетинг'],
+                     workerstats_cem['Банер и Тизер по кликам - Ретаргетинг']))
         data.append(('Банер и Тизер по кликам - Рекомендованные',
                      workerstats['Банер и Тизер по кликам - Рекомендованные'],
-                     workerstatsC['Банер и Тизер по кликам - Рекомендованные'],
+                     workerstats_c['Банер и Тизер по кликам - Рекомендованные'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер и Тизер по кликам - Рекомендованные'],
-                     workerstatsCNM['Банер и Тизер по кликам - Рекомендованные'],
-                     workerstatsBM['Банер и Тизер по кликам - Рекомендованные'],
-                     workerstatsCBM['Банер и Тизер по кликам - Рекомендованные'],
-                     workerstatsPM['Банер и Тизер по кликам - Рекомендованные'],
-                     workerstatsCPM['Банер и Тизер по кликам - Рекомендованные'],
-                     workerstatsEM['Банер и Тизер по кликам - Рекомендованные'],
-                     workerstatsCEM['Банер и Тизер по кликам - Рекомендованные']))
+                     workerstats_nm['Банер и Тизер по кликам - Рекомендованные'],
+                     workerstats_cnm['Банер и Тизер по кликам - Рекомендованные'],
+                     workerstats_bm['Банер и Тизер по кликам - Рекомендованные'],
+                     workerstats_cbm['Банер и Тизер по кликам - Рекомендованные'],
+                     workerstats_pm['Банер и Тизер по кликам - Рекомендованные'],
+                     workerstats_cpm['Банер и Тизер по кликам - Рекомендованные'],
+                     workerstats_em['Банер и Тизер по кликам - Рекомендованные'],
+                     workerstats_cem['Банер и Тизер по кликам - Рекомендованные']))
         data.append(('Банер и Тизер по кликам - Тематики',
                      workerstats['Банер и Тизер по кликам - Тематики'],
-                     workerstatsC['Банер и Тизер по кликам - Тематики'],
+                     workerstats_c['Банер и Тизер по кликам - Тематики'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsCNM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsBM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsCBM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsPM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsCPM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsEM['Банер и Тизер по кликам - Тематики'],
-                     workerstatsCEM['Банер и Тизер по кликам - Тематики']))
+                     workerstats_nm['Банер и Тизер по кликам - Тематики'],
+                     workerstats_cnm['Банер и Тизер по кликам - Тематики'],
+                     workerstats_bm['Банер и Тизер по кликам - Тематики'],
+                     workerstats_cbm['Банер и Тизер по кликам - Тематики'],
+                     workerstats_pm['Банер и Тизер по кликам - Тематики'],
+                     workerstats_cpm['Банер и Тизер по кликам - Тематики'],
+                     workerstats_em['Банер и Тизер по кликам - Тематики'],
+                     workerstats_cem['Банер и Тизер по кликам - Тематики']))
         data.append(('Банер по показам - Поисковый запрос',
                      workerstats['Банер по показам - Поисковый запрос'],
-                     workerstatsC['Банер по показам - Поисковый запрос'],
+                     workerstats_c['Банер по показам - Поисковый запрос'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - Поисковый запрос'],
-                     workerstatsCNM['Банер по показам - Поисковый запрос'],
-                     workerstatsBM['Банер по показам - Поисковый запрос'],
-                     workerstatsCBM['Банер по показам - Поисковый запрос'],
-                     workerstatsPM['Банер по показам - Поисковый запрос'],
-                     workerstatsCPM['Банер по показам - Поисковый запрос'],
-                     workerstatsEM['Банер по показам - Поисковый запрос'],
-                     workerstatsCEM['Банер по показам - Поисковый запрос']))
+                     workerstats_nm['Банер по показам - Поисковый запрос'],
+                     workerstats_cnm['Банер по показам - Поисковый запрос'],
+                     workerstats_bm['Банер по показам - Поисковый запрос'],
+                     workerstats_cbm['Банер по показам - Поисковый запрос'],
+                     workerstats_pm['Банер по показам - Поисковый запрос'],
+                     workerstats_cpm['Банер по показам - Поисковый запрос'],
+                     workerstats_em['Банер по показам - Поисковый запрос'],
+                     workerstats_cem['Банер по показам - Поисковый запрос']))
         data.append(('Банер по кликам - Поисковый запрос',
                      workerstats['Банер по кликам - Поисковый запрос'],
-                     workerstatsC['Банер по кликам - Поисковый запрос'],
+                     workerstats_c['Банер по кликам - Поисковый запрос'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по кликам - Поисковый запрос'],
-                     workerstatsCNM['Банер по кликам - Поисковый запрос'],
-                     workerstatsBM['Банер по кликам - Поисковый запрос'],
-                     workerstatsCBM['Банер по кликам - Поисковый запрос'],
-                     workerstatsPM['Банер по кликам - Поисковый запрос'],
-                     workerstatsCPM['Банер по кликам - Поисковый запрос'],
-                     workerstatsEM['Банер по кликам - Поисковый запрос'],
-                     workerstatsCEM['Банер по кликам - Поисковый запрос']))
+                     workerstats_nm['Банер по кликам - Поисковый запрос'],
+                     workerstats_cnm['Банер по кликам - Поисковый запрос'],
+                     workerstats_bm['Банер по кликам - Поисковый запрос'],
+                     workerstats_cbm['Банер по кликам - Поисковый запрос'],
+                     workerstats_pm['Банер по кликам - Поисковый запрос'],
+                     workerstats_cpm['Банер по кликам - Поисковый запрос'],
+                     workerstats_em['Банер по кликам - Поисковый запрос'],
+                     workerstats_cem['Банер по кликам - Поисковый запрос']))
         data.append(('Тизер по кликам - Поисковый запрос',
                      workerstats['Тизер по кликам - Поисковый запрос'],
-                     workerstatsC['Тизер по кликам - Поисковый запрос'],
+                     workerstats_c['Тизер по кликам - Поисковый запрос'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsCNM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsBM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsCBM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsPM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsCPM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsEM['Тизер по кликам - Поисковый запрос'],
-                     workerstatsCEM['Тизер по кликам - Поисковый запрос']))
+                     workerstats_nm['Тизер по кликам - Поисковый запрос'],
+                     workerstats_cnm['Тизер по кликам - Поисковый запрос'],
+                     workerstats_bm['Тизер по кликам - Поисковый запрос'],
+                     workerstats_cbm['Тизер по кликам - Поисковый запрос'],
+                     workerstats_pm['Тизер по кликам - Поисковый запрос'],
+                     workerstats_cpm['Тизер по кликам - Поисковый запрос'],
+                     workerstats_em['Тизер по кликам - Поисковый запрос'],
+                     workerstats_cem['Тизер по кликам - Поисковый запрос']))
         data.append(('Банер по показам - Контекст запрос',
                      workerstats['Банер по показам - Контекст запрос'],
-                     workerstatsC['Банер по показам - Контекст запрос'],
+                     workerstats_c['Банер по показам - Контекст запрос'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - Контекст запрос'],
-                     workerstatsCNM['Банер по показам - Контекст запрос'],
-                     workerstatsBM['Банер по показам - Контекст запрос'],
-                     workerstatsCBM['Банер по показам - Контекст запрос'],
-                     workerstatsPM['Банер по показам - Контекст запрос'],
-                     workerstatsCPM['Банер по показам - Контекст запрос'],
-                     workerstatsEM['Банер по показам - Контекст запрос'],
-                     workerstatsCEM['Банер по показам - Контекст запрос']))
+                     workerstats_nm['Банер по показам - Контекст запрос'],
+                     workerstats_cnm['Банер по показам - Контекст запрос'],
+                     workerstats_bm['Банер по показам - Контекст запрос'],
+                     workerstats_cbm['Банер по показам - Контекст запрос'],
+                     workerstats_pm['Банер по показам - Контекст запрос'],
+                     workerstats_cpm['Банер по показам - Контекст запрос'],
+                     workerstats_em['Банер по показам - Контекст запрос'],
+                     workerstats_cem['Банер по показам - Контекст запрос']))
         data.append(('Банер по кликам - Контекст запрос',
                      workerstats['Банер по кликам - Контекст запрос'],
-                     workerstatsC['Банер по кликам - Контекст запрос'],
+                     workerstats_c['Банер по кликам - Контекст запрос'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по кликам - Контекст запрос'],
-                     workerstatsCNM['Банер по кликам - Контекст запрос'],
-                     workerstatsBM['Банер по кликам - Контекст запрос'],
-                     workerstatsCBM['Банер по кликам - Контекст запрос'],
-                     workerstatsPM['Банер по кликам - Контекст запрос'],
-                     workerstatsCPM['Банер по кликам - Контекст запрос'],
-                     workerstatsEM['Банер по кликам - Контекст запрос'],
-                     workerstatsCEM['Банер по кликам - Контекст запрос']))
+                     workerstats_nm['Банер по кликам - Контекст запрос'],
+                     workerstats_cnm['Банер по кликам - Контекст запрос'],
+                     workerstats_bm['Банер по кликам - Контекст запрос'],
+                     workerstats_cbm['Банер по кликам - Контекст запрос'],
+                     workerstats_pm['Банер по кликам - Контекст запрос'],
+                     workerstats_cpm['Банер по кликам - Контекст запрос'],
+                     workerstats_em['Банер по кликам - Контекст запрос'],
+                     workerstats_cem['Банер по кликам - Контекст запрос']))
         data.append(('Тизер по кликам - Контекст запрос',
                      workerstats['Тизер по кликам - Контекст запрос'],
-                     workerstatsC['Тизер по кликам - Контекст запрос'],
+                     workerstats_c['Тизер по кликам - Контекст запрос'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - Контекст запрос'],
-                     workerstatsCNM['Тизер по кликам - Контекст запрос'],
-                     workerstatsBM['Тизер по кликам - Контекст запрос'],
-                     workerstatsCBM['Тизер по кликам - Контекст запрос'],
-                     workerstatsPM['Тизер по кликам - Контекст запрос'],
-                     workerstatsCPM['Тизер по кликам - Контекст запрос'],
-                     workerstatsEM['Тизер по кликам - Контекст запрос'],
-                     workerstatsCEM['Тизер по кликам - Контекст запрос']))
+                     workerstats_nm['Тизер по кликам - Контекст запрос'],
+                     workerstats_cnm['Тизер по кликам - Контекст запрос'],
+                     workerstats_bm['Тизер по кликам - Контекст запрос'],
+                     workerstats_cbm['Тизер по кликам - Контекст запрос'],
+                     workerstats_pm['Тизер по кликам - Контекст запрос'],
+                     workerstats_cpm['Тизер по кликам - Контекст запрос'],
+                     workerstats_em['Тизер по кликам - Контекст запрос'],
+                     workerstats_cem['Тизер по кликам - Контекст запрос']))
         data.append(('Банер по показам - История поискового запроса',
                      workerstats['Банер по показам - История поискового запроса'],
-                     workerstatsC['Банер по показам - История поискового запроса'],
+                     workerstats_c['Банер по показам - История поискового запроса'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - История поискового запроса'],
-                     workerstatsCNM['Банер по показам - История поискового запроса'],
-                     workerstatsBM['Банер по показам - История поискового запроса'],
-                     workerstatsCBM['Банер по показам - История поискового запроса'],
-                     workerstatsPM['Банер по показам - История поискового запроса'],
-                     workerstatsCPM['Банер по показам - История поискового запроса'],
-                     workerstatsEM['Банер по показам - История поискового запроса'],
-                     workerstatsCEM['Банер по показам - История поискового запроса']))
+                     workerstats_nm['Банер по показам - История поискового запроса'],
+                     workerstats_cnm['Банер по показам - История поискового запроса'],
+                     workerstats_bm['Банер по показам - История поискового запроса'],
+                     workerstats_cbm['Банер по показам - История поискового запроса'],
+                     workerstats_pm['Банер по показам - История поискового запроса'],
+                     workerstats_cpm['Банер по показам - История поискового запроса'],
+                     workerstats_em['Банер по показам - История поискового запроса'],
+                     workerstats_cem['Банер по показам - История поискового запроса']))
         data.append(('Банер по кликам - История поискового запроса',
                      workerstats['Банер по кликам - История поискового запроса'],
-                     workerstatsC['Банер по кликам - История поискового запроса'],
+                     workerstats_c['Банер по кликам - История поискового запроса'],
                      "-", "-", "-", "-",
-                     workerstatsCNM['Банер по кликам - История поискового запроса'],
-                     workerstatsNM['Банер по кликам - История поискового запроса'],
-                     workerstatsCBM['Банер по кликам - История поискового запроса'],
-                     workerstatsBM['Банер по кликам - История поискового запроса'],
-                     workerstatsCPM['Банер по кликам - История поискового запроса'],
-                     workerstatsCPM['Банер по кликам - История поискового запроса'],
-                     workerstatsEM['Банер по кликам - История поискового запроса'],
-                     workerstatsCEM['Банер по кликам - История поискового запроса']))
+                     workerstats_cnm['Банер по кликам - История поискового запроса'],
+                     workerstats_nm['Банер по кликам - История поискового запроса'],
+                     workerstats_cbm['Банер по кликам - История поискового запроса'],
+                     workerstats_bm['Банер по кликам - История поискового запроса'],
+                     workerstats_cpm['Банер по кликам - История поискового запроса'],
+                     workerstats_cpm['Банер по кликам - История поискового запроса'],
+                     workerstats_em['Банер по кликам - История поискового запроса'],
+                     workerstats_cem['Банер по кликам - История поискового запроса']))
         data.append(('Тизер по кликам - История поискового запроса',
                      workerstats['Тизер по кликам - История поискового запроса'],
-                     workerstatsC['Тизер по кликам - История поискового запроса'],
+                     workerstats_c['Тизер по кликам - История поискового запроса'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - История поискового запроса'],
-                     workerstatsCNM['Тизер по кликам - История поискового запроса'],
-                     workerstatsBM['Тизер по кликам - История поискового запроса'],
-                     workerstatsCBM['Тизер по кликам - История поискового запроса'],
-                     workerstatsPM['Тизер по кликам - История поискового запроса'],
-                     workerstatsCPM['Тизер по кликам - История поискового запроса'],
-                     workerstatsEM['Тизер по кликам - История поискового запроса'],
-                     workerstatsCEM['Тизер по кликам - История поискового запроса']))
+                     workerstats_nm['Тизер по кликам - История поискового запроса'],
+                     workerstats_cnm['Тизер по кликам - История поискового запроса'],
+                     workerstats_bm['Тизер по кликам - История поискового запроса'],
+                     workerstats_cbm['Тизер по кликам - История поискового запроса'],
+                     workerstats_pm['Тизер по кликам - История поискового запроса'],
+                     workerstats_cpm['Тизер по кликам - История поискового запроса'],
+                     workerstats_em['Тизер по кликам - История поискового запроса'],
+                     workerstats_cem['Тизер по кликам - История поискового запроса']))
         data.append(('Банер по показам - История контекстного запроса',
                      workerstats['Банер по показам - История контекстного запроса'],
-                     workerstatsC['Банер по показам - История контекстного запроса'],
+                     workerstats_c['Банер по показам - История контекстного запроса'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - История контекстного запроса'],
-                     workerstatsCNM['Банер по показам - История контекстного запроса'],
-                     workerstatsBM['Банер по показам - История контекстного запроса'],
-                     workerstatsCBM['Банер по показам - История контекстного запроса'],
-                     workerstatsPM['Банер по показам - История контекстного запроса'],
-                     workerstatsCPM['Банер по показам - История контекстного запроса'],
-                     workerstatsEM['Банер по показам - История контекстного запроса'],
-                     workerstatsCEM['Банер по показам - История контекстного запроса']))
+                     workerstats_nm['Банер по показам - История контекстного запроса'],
+                     workerstats_cnm['Банер по показам - История контекстного запроса'],
+                     workerstats_bm['Банер по показам - История контекстного запроса'],
+                     workerstats_cbm['Банер по показам - История контекстного запроса'],
+                     workerstats_pm['Банер по показам - История контекстного запроса'],
+                     workerstats_cpm['Банер по показам - История контекстного запроса'],
+                     workerstats_em['Банер по показам - История контекстного запроса'],
+                     workerstats_cem['Банер по показам - История контекстного запроса']))
         data.append(('Банер по кликам - История контекстного запроса',
                      workerstats['Банер по кликам - История контекстного запроса'],
-                     workerstatsC['Банер по кликам - История контекстного запроса'],
+                     workerstats_c['Банер по кликам - История контекстного запроса'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по кликам - История контекстного запроса'],
-                     workerstatsCNM['Банер по кликам - История контекстного запроса'],
-                     workerstatsBM['Банер по кликам - История контекстного запроса'],
-                     workerstatsCBM['Банер по кликам - История контекстного запроса'],
-                     workerstatsPM['Банер по кликам - История контекстного запроса'],
-                     workerstatsCPM['Банер по кликам - История контекстного запроса'],
-                     workerstatsEM['Банер по кликам - История контекстного запроса'],
-                     workerstatsCEM['Банер по кликам - История контекстного запроса']))
+                     workerstats_nm['Банер по кликам - История контекстного запроса'],
+                     workerstats_cnm['Банер по кликам - История контекстного запроса'],
+                     workerstats_bm['Банер по кликам - История контекстного запроса'],
+                     workerstats_cbm['Банер по кликам - История контекстного запроса'],
+                     workerstats_pm['Банер по кликам - История контекстного запроса'],
+                     workerstats_cpm['Банер по кликам - История контекстного запроса'],
+                     workerstats_em['Банер по кликам - История контекстного запроса'],
+                     workerstats_cem['Банер по кликам - История контекстного запроса']))
         data.append(('Тизер по кликам - История контекстного запроса',
                      workerstats['Тизер по кликам - История контекстного запроса'],
-                     workerstatsC['Тизер по кликам - История контекстного запроса'],
+                     workerstats_c['Тизер по кликам - История контекстного запроса'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsCNM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsBM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsCBM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsPM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsCPM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsEM['Тизер по кликам - История контекстного запроса'],
-                     workerstatsCEM['Тизер по кликам - История контекстного запроса']))
+                     workerstats_nm['Тизер по кликам - История контекстного запроса'],
+                     workerstats_cnm['Тизер по кликам - История контекстного запроса'],
+                     workerstats_bm['Тизер по кликам - История контекстного запроса'],
+                     workerstats_cbm['Тизер по кликам - История контекстного запроса'],
+                     workerstats_pm['Тизер по кликам - История контекстного запроса'],
+                     workerstats_cpm['Тизер по кликам - История контекстного запроса'],
+                     workerstats_em['Тизер по кликам - История контекстного запроса'],
+                     workerstats_cem['Тизер по кликам - История контекстного запроса']))
         data.append(('Банер по показам - История долгосрочная',
                      workerstats['Банер по показам - История долгосрочная'],
-                     workerstatsC['Банер по показам - История долгосрочная'],
+                     workerstats_c['Банер по показам - История долгосрочная'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по показам - История долгосрочная'],
-                     workerstatsCNM['Банер по показам - История долгосрочная'],
-                     workerstatsBM['Банер по показам - История долгосрочная'],
-                     workerstatsCBM['Банер по показам - История долгосрочная'],
-                     workerstatsPM['Банер по показам - История долгосрочная'],
-                     workerstatsCPM['Банер по показам - История долгосрочная'],
-                     workerstatsEM['Банер по показам - История долгосрочная'],
-                     workerstatsCEM['Банер по показам - История долгосрочная']))
+                     workerstats_nm['Банер по показам - История долгосрочная'],
+                     workerstats_cnm['Банер по показам - История долгосрочная'],
+                     workerstats_bm['Банер по показам - История долгосрочная'],
+                     workerstats_cbm['Банер по показам - История долгосрочная'],
+                     workerstats_pm['Банер по показам - История долгосрочная'],
+                     workerstats_cpm['Банер по показам - История долгосрочная'],
+                     workerstats_em['Банер по показам - История долгосрочная'],
+                     workerstats_cem['Банер по показам - История долгосрочная']))
         data.append(('Банер по кликам - История долгосрочная',
                      workerstats['Банер по кликам - История долгосрочная'],
-                     workerstatsC['Банер по кликам - История долгосрочная'],
+                     workerstats_c['Банер по кликам - История долгосрочная'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Банер по кликам - История долгосрочная'],
-                     workerstatsCNM['Банер по кликам - История долгосрочная'],
-                     workerstatsBM['Банер по кликам - История долгосрочная'],
-                     workerstatsCBM['Банер по кликам - История долгосрочная'],
-                     workerstatsPM['Банер по кликам - История долгосрочная'],
-                     workerstatsCPM['Банер по кликам - История долгосрочная'],
-                     workerstatsEM['Банер по кликам - История долгосрочная'],
-                     workerstatsCEM['Банер по кликам - История долгосрочная']))
+                     workerstats_nm['Банер по кликам - История долгосрочная'],
+                     workerstats_cnm['Банер по кликам - История долгосрочная'],
+                     workerstats_bm['Банер по кликам - История долгосрочная'],
+                     workerstats_cbm['Банер по кликам - История долгосрочная'],
+                     workerstats_pm['Банер по кликам - История долгосрочная'],
+                     workerstats_cpm['Банер по кликам - История долгосрочная'],
+                     workerstats_em['Банер по кликам - История долгосрочная'],
+                     workerstats_cem['Банер по кликам - История долгосрочная']))
         data.append(('Тизер по кликам - История долгосрочная',
                      workerstats['Тизер по кликам - История долгосрочная'],
-                     workerstatsC['Тизер по кликам - История долгосрочная'],
+                     workerstats_c['Тизер по кликам - История долгосрочная'],
                      "-", "-", "-", "-",
-                     workerstatsNM['Тизер по кликам - История долгосрочная'],
-                     workerstatsCNM['Тизер по кликам - История долгосрочная'],
-                     workerstatsBM['Тизер по кликам - История долгосрочная'],
-                     workerstatsCBM['Тизер по кликам - История долгосрочная'],
-                     workerstatsPM['Тизер по кликам - История долгосрочная'],
-                     workerstatsCPM['Тизер по кликам - История долгосрочная'],
-                     workerstatsEM['Тизер по кликам - История долгосрочная'],
-                     workerstatsCEM['Тизер по кликам - История долгосрочная']))
-        data.append(('Вероятно сработало что-то не то', workerstats['Вероятно сработала старая ветка'],
-                     workerstatsC['Вероятно сработала старая ветка'], "", "", "", "", "", "", "", "", "", "", ""))
-        data.append(('ИТОГО', workerstats['ИТОГО'], workerstatsC['ИТОГО'], "", "", "", "", "", "", "", "", "", "", ""))
+                     workerstats_nm['Тизер по кликам - История долгосрочная'],
+                     workerstats_cnm['Тизер по кликам - История долгосрочная'],
+                     workerstats_bm['Тизер по кликам - История долгосрочная'],
+                     workerstats_cbm['Тизер по кликам - История долгосрочная'],
+                     workerstats_pm['Тизер по кликам - История долгосрочная'],
+                     workerstats_cpm['Тизер по кликам - История долгосрочная'],
+                     workerstats_em['Тизер по кликам - История долгосрочная'],
+                     workerstats_cem['Тизер по кликам - История долгосрочная']))
+        data.append(('Вероятно сработало что-то не то', workerstats['Вероятно сработало что-то не то'],
+                     workerstats_c['Вероятно сработало что-то не то'], "", "", "", "", "", "", "", "", "", "", ""))
+        data.append(('ИТОГО', workerstats['ИТОГО'], workerstats_c['ИТОГО'], "", "", "", "", "", "", "", "", "", "", ""))
         return h.jgridDataWrapper(data)
 
     def rating(self):
-        ''' Возвращает данные для js таблицы рейтинг товаров'''
+        """ Возвращает данные для js таблицы рейтинг товаров"""
         date = datetime.now()
         offers_guid_int = []
         filds_guid_int = {'guid_int': 1}
@@ -2117,27 +991,19 @@ class ManagerController(BaseController):
         sidx = request.params.get('sidx', 'title')
         sord = request.params.get('sord', 'asc')
         start_date = request.params.get('start_date', None)
-        total_pages = 0;
-        if start_date is not None and len(start_date) > 8:
-            start_date = datetime.strptime(start_date, "%d.%m.%Y")
-        else:
-            start_date = datetime(date.year, date.month, date.day)
-        end_date = request.params.get('end_date', None)
-        if end_date is not None and len(end_date) > 8:
-            end_date = datetime.strptime(end_date, "%d.%m.%Y")
-        else:
-            end_date = datetime(date.year, date.month, date.day) + timedelta(days=1)
+        total_pages = 0
         if sord == 'asc':
             sord = ASCENDING
         else:
             sord = DESCENDING
         data = []
         campaignIdList = [x['guid'] for x in app_globals.db.campaign.find({"showConditions.retargeting": False})]
-        queri = {"campaignId": {"$in": campaignIdList}}
+        query = {"campaignId": {"$in": campaignIdList}}
         if _search:
-            queri.update({'$or': [{'title': {'$regex': request.params.get('title', '______')}},
-                                  {'campaignTitle': {'$regex': request.params.get('campaignTitle', '______')}}]})
-        count = app_globals.db.offer.find(queri, filds_guid_int).count()
+            query['$or'] = [{'title': {'$regex': request.params.get('title', '______')}},
+                            {'campaignTitle': {'$regex': request.params.get('campaignTitle', '______')}}
+                            ]
+        count = app_globals.db.offer.find(query, filds_guid_int).count()
         if count > 0 and limit > 0:
             total_pages = int(count / limit)
         if page > total_pages:
@@ -2146,9 +1012,9 @@ class ManagerController(BaseController):
         if skip < 0:
             skip = 0
         offers_guid_int = [x['guid_int'] for x in
-                           app_globals.db.offer.find(queri, filds_guid_int).skip(skip).limit(limit).sort(sidx, sord)]
-        queri = {"guid_int": {"$in": offers_guid_int}}
-        for offer in app_globals.db.offer.find(queri, filds).sort(sidx, sord):
+                           app_globals.db.offer.find(query, filds_guid_int).skip(skip).limit(limit).sort(sidx, sord)]
+        query = {"guid_int": {"$in": offers_guid_int}}
+        for offer in app_globals.db.offer.find(query, filds).sort(sidx, sord):
             full_impressions = offer.get('full_impressions', 0)
             full_clicks = offer.get('full_clicks', 0)
             impressions = offer.get('impressions', 0)
@@ -2158,11 +1024,11 @@ class ManagerController(BaseController):
             full_ctr = 0
             ctr = 0
             old_ctr = 0
-            if ((full_impressions > 0) and (full_clicks > 0)):
+            if full_impressions > 0 and full_clicks > 0:
                 full_ctr = (float(full_clicks) / full_impressions) * 100
-            if ((old_impressions > 0) and (old_clicks > 0)):
+            if old_impressions > 0 and old_clicks > 0:
                 old_ctr = (float(old_clicks) / old_impressions) * 100
-            if ((impressions > 0) and (clicks > 0)):
+            if impressions > 0 and clicks > 0:
                 ctr = (float(clicks) / impressions) * 100
             data.append((offer.get('title', 'no name'),
                          offer.get('campaignTitle', 'no name'),
@@ -2183,7 +1049,7 @@ class ManagerController(BaseController):
         return h.jgridDataWrapper(data, page=page, count=count, total_pages=total_pages)
 
     def ratingForInformers(self):
-        ''' Возвращает данные для js таблицы рейтинг товаров'''
+        """ Возвращает данные для js таблицы рейтинг товаров"""
         page = int(request.params.get('page', 0))
         _search = request.params.get('_search', 'false')
         _search = True if _search == 'true' else False
@@ -2386,16 +1252,16 @@ class ManagerController(BaseController):
         return result
 
     def tableForDataMoneyOutRequest(self, data_from_db, add=None):
-        '''Возвращает форматированные данные для jgrid.
+        """Возвращает форматированные данные для jgrid.
 
            На входе принимает результат запроса к db.money_out_request.
 
            Обращает внимание на get-параметры ``page`` и ``rows``, 
            которые нужны jqGrid для пейджинга.
-           '''
+           """
 
         def commentFormat(str):
-            ''' Форматирует строку вывода'''
+            """ Форматирует строку вывода"""
             if not str: return ''
             str = str.replace('\n', ' ')
             res = ['']
@@ -2439,14 +1305,14 @@ class ManagerController(BaseController):
             elif x.get('paymentType') == 'cash':
                 comment = (u'<b>Наличный расчёт</b><br/>')
             elif x.get('paymentType') == 'card':
-                comment = (u'<b>Банк:</b> %s <br/>' \
-                           u'<b>Номер пластиковой карты:</b> %s<br/>' \
-                           u'<b>Имя владельца карты:</b> %s <br/>' \
-                           u'<b>Срок действия карты:</b> %s/%s <br/>' \
-                           u'<b>Валюта и тип карты:</b> %s %s<br/>' \
-                           u'<b>МФО банка:</b> %s <br/>' \
-                           u'<b>ОКПО банка:</b> %s <br/>' \
-                           u'<b>Транзитный счёт:</b> %s <br/>' \
+                comment = (u'<b>Банк:</b> %s <br/>'
+                           u'<b>Номер пластиковой карты:</b> %s<br/>'
+                           u'<b>Имя владельца карты:</b> %s <br/>'
+                           u'<b>Срок действия карты:</b> %s/%s <br/>'
+                           u'<b>Валюта и тип карты:</b> %s %s<br/>'
+                           u'<b>МФО банка:</b> %s <br/>'
+                           u'<b>ОКПО банка:</b> %s <br/>'
+                           u'<b>Транзитный счёт:</b> %s <br/>'
                            ) \
                           % (x.get('bank'),
                              x.get('cardNumber'),
@@ -2459,13 +1325,12 @@ class ManagerController(BaseController):
                              x.get('bank_OKPO', ''),
                              x.get('bank_TransitAccount', ''))
             elif x.get('paymentType') == 'card_pb_ua':
-                comment = (u'<b>Банк:</b> Приват Банк <br/>' \
-                           u'<b>Номер пластиковой карты:</b> %s<br/>' \
-                           u'<b>Имя владельца карты:</b> %s <br/>' \
-                           u'<b>Срок действия карты:</b> %s/%s <br/>' \
-                           u'<b>Валюта и тип карты:</b> %s %s<br/>' \
-                           ) \
-                          % (
+                comment = (u'<b>Банк:</b> Приват Банк <br/>'
+                           u'<b>Номер пластиковой карты:</b> %s<br/>'
+                           u'<b>Имя владельца карты:</b> %s <br/>'
+                           u'<b>Срок действия карты:</b> %s/%s <br/>'
+                           u'<b>Валюта и тип карты:</b> %s %s<br/>'
+                           ) % (
                               x.get('cardNumber'),
                               x.get('cardName'),
                               x.get('expire_month'),
@@ -2474,13 +1339,12 @@ class ManagerController(BaseController):
                               x.get('cardType', ''),
                           )
             elif x.get('paymentType') == 'card_pb_us':
-                comment = (u'<b>Банк:</b> Приват Банк <br/>' \
-                           u'<b>Номер пластиковой карты:</b> %s<br/>' \
-                           u'<b>Имя владельца карты:</b> %s <br/>' \
-                           u'<b>Срок действия карты:</b> %s/%s <br/>' \
-                           u'<b>Валюта и тип карты:</b> %s %s<br/>' \
-                           ) \
-                          % (
+                comment = (u'<b>Банк:</b> Приват Банк <br/>'
+                           u'<b>Номер пластиковой карты:</b> %s<br/>'
+                           u'<b>Имя владельца карты:</b> %s <br/>'
+                           u'<b>Срок действия карты:</b> %s/%s <br/>'
+                           u'<b>Валюта и тип карты:</b> %s %s<br/>'
+                           ) % (
                               x.get('cardNumber'),
                               x.get('cardName'),
                               x.get('expire_month'),
@@ -2491,11 +1355,10 @@ class ManagerController(BaseController):
             elif x.get('paymentType') == 'factura':
                 comment = (u'<b>Контакты:</b> %s<br/>' +
                            u'<a href="/manager/openSchetFacturaFile?filename=%s" class="facturaLink" target="_blank">' +
-                           u'Счёт-фактура</a><br/>') \
-                          % (x.get('contact'),
+                           u'Счёт-фактура</a><br/>') % (x.get('contact'),
                              x.get('schet_factura_file_name'))
             elif x.get('paymentType') == 'yandex':
-                comment = (u'<b>Счёт Яндекс Деньги:</b> %s<br/>') % x['yandex_number']
+                comment = u'<b>Счёт Яндекс Деньги:</b> %s<br/>' % x['yandex_number']
 
             else:
                 comment = u''
@@ -2539,7 +1402,7 @@ class ManagerController(BaseController):
 
     # @cache.region('long_term')
     def notApprovedActiveMoneyOutRequests(self):
-        ''' Количество неодобреных заявок на вывод средств'''
+        """ Количество неодобреных заявок на вывод средств"""
         today = datetime.today()
         three_days_ago = today - timedelta(days=3)
         pipeline = [{'$match': {'approved': {'$ne': True}, 'date': {'$gt': three_days_ago}}},
@@ -2590,10 +1453,10 @@ class ManagerController(BaseController):
 
         # Обновляем заявку
         db = app_globals.db
-        money_out_request = \
-            db.money_out_request.find_one({'user.login': user,
-                                           'date': {'$gte': date,
-                                                    '$lte': (date + timedelta(seconds=60))}})
+        money_out_request = db.money_out_request.find_one({'user.login': user,
+                                                           'date': {
+                                                               '$gte': date,
+                                                               '$lte': (date + timedelta(seconds=60))}})
         money_out_request['approved'] = approved
 
         if money_out_request['paymentType'] in ['webmoney_u', 'webmoney_r', 'webmoney_z', 'yandex']:
@@ -2610,131 +1473,134 @@ class ManagerController(BaseController):
         user_account.load()
 
         if money_out_request['paymentType'] in ['webmoney_u', 'webmoney_r', 'webmoney_z']:
+            code_expires = money_out_request.get('protectionDate')
+            if isinstance(code_expires, datetime):
+                code_expires = money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M")
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], \
-                                             wmid=money_out_request['webmoneyLogin'], \
-                                             purse=money_out_request['webmoneyAccount'], \
-                                             protection_code=money_out_request['protectionCode'], \
-                                             code_expires=money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M") \
-                                                 if isinstance(money_out_request['protectionDate'], datetime) \
-                                                 else money_out_request['protectionDate'])
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'],
+                                             wmid=money_out_request['webmoneyLogin'],
+                                             purse=money_out_request['webmoneyAccount'],
+                                             protection_code=money_out_request['protectionCode'],
+                                             code_expires=code_expires)
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], \
-                                       wmid=money_out_request['webmoneyLogin'], \
-                                       purse=money_out_request['webmoneyAccount'], \
-                                       protection_code=money_out_request['protectionCode'], \
-                                       code_expires=money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M") \
-                                           if isinstance(money_out_request['protectionDate'], datetime) \
-                                           else money_out_request['protectionDate'])
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'],
+                                       wmid=money_out_request['webmoneyLogin'],
+                                       purse=money_out_request['webmoneyAccount'],
+                                       protection_code=money_out_request['protectionCode'],
+                                       code_expires=code_expires)
+
         elif money_out_request['paymentType'] == 'cash':
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], )
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'])
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], )
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'])
         elif money_out_request['paymentType'] == 'card':
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], \
-                                             bank_name=money_out_request['bank'], \
-                                             card_number=money_out_request['cardNumber'], \
-                                             card_name=money_out_request['cardName'], \
-                                             card_expires='/'.join(
-                                                 [money_out_request['expire_month'], money_out_request['expire_year']]), \
-                                             card_currency_and_type=' '.join(
-                                                 [money_out_request['cardCurrency'], money_out_request['cardType']]), \
-                                             bank_mfo=money_out_request['bank_MFO'] if money_out_request[
-                                                 'bank_MFO'] else '', \
-                                             bank_okpo=money_out_request['bank_OKPO'] if money_out_request[
-                                                 'bank_OKPO'] else '', \
-                                             transit_account=money_out_request['bank_TransitAccount'] if
-                                             money_out_request['bank_TransitAccount'] else '')
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'],
+                                             bank_name=money_out_request['bank'],
+                                             card_number=money_out_request['cardNumber'],
+                                             card_name=money_out_request['cardName'],
+                                             card_expires='/'.join([money_out_request['expire_month'],
+                                                                    money_out_request['expire_year']]),
+                                             card_currency_and_type=' '.join([money_out_request['cardCurrency'],
+                                                                              money_out_request['cardType']]),
+                                             bank_mfo=money_out_request.get('bank_MFO', ''),
+                                             bank_okpo=money_out_request.get('bank_OKPO', ''),
+                                             transit_account=money_out_request.get('bank_TransitAccount', ''))
+
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], \
-                                       bank_name=money_out_request['bank'], \
-                                       card_number=money_out_request['cardNumber'], \
-                                       card_name=money_out_request['cardName'], \
-                                       card_expires='/'.join(
-                                           [money_out_request['expire_month'], money_out_request['expire_year']]), \
-                                       card_currency_and_type=' '.join(
-                                           [money_out_request['cardCurrency'], money_out_request['cardType']]), \
-                                       bank_mfo=money_out_request['bank_MFO'] if money_out_request['bank_MFO'] else '', \
-                                       bank_okpo=money_out_request['bank_OKPO'] if money_out_request[
-                                           'bank_OKPO'] else '', \
-                                       transit_account=money_out_request['bank_TransitAccount'] if money_out_request[
-                                           'bank_TransitAccount'] else '')
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'],
+                                       bank_name=money_out_request['bank'],
+                                       card_number=money_out_request['cardNumber'],
+                                       card_name=money_out_request['cardName'],
+                                       card_expires='/'.join([money_out_request['expire_month'],
+                                                              money_out_request['expire_year']]),
+                                       card_currency_and_type=' '.join([money_out_request['cardCurrency'],
+                                                                        money_out_request['cardType']]),
+                                       bank_mfo=money_out_request.get('bank_MFO', ''),
+                                       bank_okpo=money_out_request.get('bank_OKPO', ''),
+                                       transit_account=money_out_request.get('bank_TransitAccount', ''))
+
         elif money_out_request['paymentType'] == 'card_pb_ua':
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], \
-                                             bank_name=u'ПриватБанк', \
-                                             card_number=money_out_request['cardNumber'], \
-                                             card_name=money_out_request['cardName'], \
-                                             card_expires='/'.join(
-                                                 [money_out_request['expire_month'], money_out_request['expire_year']]), \
-                                             card_currency_and_type=' '.join(
-                                                 [money_out_request['cardCurrency'], money_out_request['cardType']]), )
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'],
+                                             bank_name=u'ПриватБанк',
+                                             card_number=money_out_request['cardNumber'],
+                                             card_name=money_out_request['cardName'],
+                                             card_expires='/'.join([money_out_request['expire_month'],
+                                                                    money_out_request['expire_year']]),
+                                             card_currency_and_type=' '.join([money_out_request['cardCurrency'],
+                                                                              money_out_request['cardType']]), )
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], \
-                                       bank_name=u'ПриватБанк', \
-                                       card_number=money_out_request['cardNumber'], \
-                                       card_name=money_out_request['cardName'], \
-                                       card_expires='/'.join(
-                                           [money_out_request['expire_month'], money_out_request['expire_year']]), \
-                                       card_currency_and_type=' '.join(
-                                           [money_out_request['cardCurrency'], money_out_request['cardType']]), )
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'],
+                                       bank_name=u'ПриватБанк',
+                                       card_number=money_out_request['cardNumber'],
+                                       card_name=money_out_request['cardName'],
+                                       card_expires='/'.join([money_out_request['expire_month'],
+                                                              money_out_request['expire_year']]),
+                                       card_currency_and_type=' '.join([money_out_request['cardCurrency'],
+                                                                        money_out_request['cardType']]))
         elif money_out_request['paymentType'] == 'card_pb_us':
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], \
-                                             bank_name=u'ПриватБанк', \
-                                             card_number=money_out_request['cardNumber'], \
-                                             card_name=money_out_request['cardName'], \
-                                             card_expires='/'.join(
-                                                 [money_out_request['expire_month'], money_out_request['expire_year']]), \
-                                             card_currency_and_type=' '.join(
-                                                 [money_out_request['cardCurrency'], money_out_request['cardType']]), )
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'],
+                                             bank_name=u'ПриватБанк',
+                                             card_number=money_out_request['cardNumber'],
+                                             card_name=money_out_request['cardName'],
+                                             card_expires='/'.join([money_out_request['expire_month'],
+                                                                    money_out_request['expire_year']]),
+                                             card_currency_and_type=' '.join([money_out_request['cardCurrency'],
+                                                                              money_out_request['cardType']]), )
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], \
-                                       bank_name=u'ПриватБанк', \
-                                       card_number=money_out_request['cardNumber'], \
-                                       card_name=money_out_request['cardName'], \
-                                       card_expires='/'.join(
-                                           [money_out_request['expire_month'], money_out_request['expire_year']]), \
-                                       card_currency_and_type=' '.join(
-                                           [money_out_request['cardCurrency'], money_out_request['cardType']]), )
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'],
+                                       bank_name=u'ПриватБанк',
+                                       card_number=money_out_request['cardNumber'],
+                                       card_name=money_out_request['cardName'],
+                                       card_expires='/'.join([money_out_request['expire_month'],
+                                                              money_out_request['expire_year']]),
+                                       card_currency_and_type=' '.join([money_out_request['cardCurrency'],
+                                                                        money_out_request['cardType']]))
         elif money_out_request['paymentType'] == 'factura':
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], \
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'],
                                              contact=money_out_request['contact'])
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], \
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'],
                                        contact=money_out_request['contact'])
         elif money_out_request['paymentType'] == 'yandex':
+            code_expires = money_out_request.get('protectionDate')
+            if isinstance(code_expires, datetime):
+                code_expires = money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M")
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], \
-                                             yandex_account=money_out_request['yandex_number'], \
-                                             protection_code=money_out_request['protectionCode'], \
-                                             code_expires=money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M") \
-                                                 if isinstance(money_out_request['protectionDate'], datetime) \
-                                                 else money_out_request['protectionDate'])
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'],
+                                             yandex_account=money_out_request['yandex_number'],
+                                             protection_code=money_out_request['protectionCode'],
+                                             code_expires=code_expires)
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], \
-                                       yandex_account=money_out_request['yandex_number'], \
-                                       protection_code=money_out_request['protectionCode'], \
-                                       code_expires=money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M") \
-                                           if isinstance(money_out_request['protectionDate'], datetime) \
-                                           else money_out_request['protectionDate'])
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'],
+                                       yandex_account=money_out_request['yandex_number'],
+                                       protection_code=money_out_request['protectionCode'],
+                                       code_expires=code_expires)
 
         return json.dumps({'error': False, 'ok': True, 'date': date.strftime("%d.%m.%Y %H:%M"),
                            'date2': (date + timedelta(seconds=60)).strftime("%d.%m.%Y %H:%M")})
@@ -3080,7 +1946,7 @@ class ManagerController(BaseController):
         return h.jgridDataWrapper(data, userdata)
 
     def account_current_CTR(self, user_login):
-        ''' Текущий CTR аккаунта ``user_login`` '''
+        """ Текущий CTR аккаунта ``user_login`` """
         ads = [x['guid'] for x in app_globals.db.informer.find({'user': user_login}, {'guid': 1})]
         d = datetime.today()
         today = datetime(d.year, d.month, d.day)
@@ -3138,7 +2004,7 @@ class ManagerController(BaseController):
         return model.accountPeriodSumm(dateCond, user_login)
 
     def domainsRequests(self):
-        ''' Возвращает список заявок на регистрацию домена '''
+        """ Возвращает список заявок на регистрацию домена """
         if not c.user: return h.userNotAuthorizedError()
         if not Permission(Account(c.user)).has(Permission.USER_DOMAINS_MODERATION): return h.jgridDataWrapper([])
         result = []
@@ -3152,7 +2018,7 @@ class ManagerController(BaseController):
     @expandtoken
     @authcheck
     def approveDomain(self):
-        ''' Одобряет заявку на регистрацию домена '''
+        """ Одобряет заявку на регистрацию домена """
         if not Permission(Account(c.user)).has(Permission.VIEW_MONEY_OUT): return h.insufficientRightsError()
         try:
             user = request.params['user']
@@ -3288,10 +2154,10 @@ class ManagerController(BaseController):
         informer.save()
 
     def userDomainDetails(self):
-        ''' Таблица статистики по доменам пользователя.
+        """ Таблица статистики по доменам пользователя.
         
             Логин пользователя передаётся в GET-параметре ``user``.
-        '''
+        """
         # TODO довести до ума db.stats_daily_domain и выберать данные с неё!
         user = request.params.get('user')
         db = app_globals.db
@@ -3432,7 +2298,7 @@ class ManagerController(BaseController):
     @expandtoken
     @authcheck
     def setNewPassword(self):
-        ''' Устанавливает новый пароль для пользователя'''
+        """ Устанавливает новый пароль для пользователя"""
         try:
             password = request.params['psw']
             login = request.params['login']
@@ -3445,16 +2311,18 @@ class ManagerController(BaseController):
     @expandtoken
     @authcheck
     def deleteAccount(self):
-        ''' Устанавливает новый пароль для пользователя'''
+        """ Устанавливает новый пароль для пользователя"""
         try:
             login = request.params['login']
-            mail.delete_account.delay(login)
-            return h.JSON({'error': False})
-        except:
+            delete_account.delay(login)
+        except Exception as e:
+            print(e)
             return h.JSON({'error': True})
+        else:
+            return h.JSON({'error': False})
 
     def generateNewPassword(self):
-        ''' Генерирует пароль'''
+        """ Генерирует пароль"""
         try:
             new_password = model.Account.makePassword()
             return h.JSON({'error': False, 'new_password': new_password})
@@ -3462,7 +2330,7 @@ class ManagerController(BaseController):
             return h.JSON({'error': True})
 
     class PaymentTypeNotDefined(Exception):
-        ''' Не выбран ни один способ вывода средств '''
+        """ Не выбран ни один способ вывода средств """
 
         def __init__(self, value):
             self.value = value
@@ -3474,8 +2342,8 @@ class ManagerController(BaseController):
     @expandtoken
     @authcheck
     def checkCurrentUser(self):
-        ''' Функция для проверки аутентичности пользователя и токена, 
-        возвращает только статус проверки и ничего не делает'''
+        """ Функция для проверки аутентичности пользователя и токена,
+        возвращает только статус проверки и ничего не делает"""
         return h.JSON({"error": False})
 
     @current_user_check
@@ -3554,7 +2422,7 @@ class ManagerController(BaseController):
     @expandtoken
     @authcheck
     def saveDomainCategories(self):
-        '''Сохранение настроек категорий для домена аккаунта'''
+        """Сохранение настроек категорий для домена аккаунта"""
         try:
             categories = request.params.getall('categories')
             domain = request.params.get('account_domains')
@@ -3590,7 +2458,7 @@ class ManagerController(BaseController):
     @expandtoken
     @authcheck
     def moneyOutSubmit(self):
-        ''' Заявка от менеджера на вывод его средств'''
+        """ Заявка от менеджера на вывод его средств"""
         schema = MoneyOutForm()
         try:
             form = schema.to_python(dict(request.params))
@@ -3636,7 +2504,7 @@ class ManagerController(BaseController):
         return h.jgridDataWrapper(data[0], data[1])
 
     def accountMoneyOutHistory(self, account_login):
-        ''' История вывода средств пользователя account_login'''
+        """ История вывода средств пользователя account_login"""
         data = AccountReports(Account(account_login)).money_out_requests()
         data.sort(key=lambda x: x['date'], reverse=True)
         data = self.tableForDataMoneyOutRequest(data, False)
@@ -3646,7 +2514,7 @@ class ManagerController(BaseController):
     @expandtoken
     @authcheck
     def moneyOutRemove(self):
-        ''' Убирает заявку менеджера на вывод его средств'''
+        """ Убирает заявку менеджера на вывод его средств"""
         try:
             id = int(request.params['id'])
             obj = app_globals.db.money_out_request.find({'user.login': c.manager_login}).sort('date',
@@ -3663,7 +2531,7 @@ class ManagerController(BaseController):
         return h.JSON({'error': False, 'ok': True, 'msg': 'Заявка успешно отменена'})
 
     def openSchetFacturaFile(self):
-        ''' Открывает файл счёт фактуры'''
+        """ Открывает файл счёт фактуры"""
         try:
             filename = request.params.get('filename')
             file = open('%s/%s' % (config.get('schet_factura_folder'), filename), 'rb')
@@ -3683,7 +2551,7 @@ class ManagerController(BaseController):
         return file
 
     def checkInformers(self, country):
-        ''' Страница проверки работоспособности информеров в стране ``country`` '''
+        """ Страница проверки работоспособности информеров в стране ``country`` """
         user = request.environ.get('CURRENT_USER') or session.get('adload_user')
         if not user:
             return h.userNotAuthorizedError()
@@ -3767,48 +2635,45 @@ class ManagerController(BaseController):
         user_account = Account(money_out_request['user']['login'])
         user_account.load()
 
+        code_expires = money_out_request['protectionDate']
+        if isinstance(code_expires, datetime):
+            code_expires = money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M")
+
         if money_out_request['paymentType'] in ['webmoney_u', 'webmoney_r', 'webmoney_z']:
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], \
-                                             wmid=money_out_request['webmoneyLogin'], \
-                                             purse=money_out_request['webmoneyAccount'], \
-                                             protection_code=money_out_request['protectionCode'], \
-                                             code_expires=money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M") \
-                                                 if isinstance(money_out_request['protectionDate'], datetime) \
-                                                 else money_out_request['protectionDate'])
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'],
+                                             wmid=money_out_request['webmoneyLogin'],
+                                             purse=money_out_request['webmoneyAccount'],
+                                             protection_code=money_out_request['protectionCode'],
+                                             code_expires=code_expires)
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], \
-                                       wmid=money_out_request['webmoneyLogin'], \
-                                       purse=money_out_request['webmoneyAccount'], \
-                                       protection_code=money_out_request['protectionCode'], \
-                                       code_expires=money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M") \
-                                           if isinstance(money_out_request['protectionDate'], datetime) \
-                                           else money_out_request['protectionDate'])
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'],
+                                       wmid=money_out_request['webmoneyLogin'],
+                                       purse=money_out_request['webmoneyAccount'],
+                                       protection_code=money_out_request['protectionCode'],
+                                       code_expires=code_expires)
 
         elif money_out_request['paymentType'] == 'yandex':
             try:
-                mail.money_out_request.delay(money_out_request['paymentType'], user_account.email, \
-                                             summ=money_out_request['summ'], \
-                                             yandex_account=money_out_request['yandex_number'], \
-                                             protection_code=money_out_request['protectionCode'], \
-                                             code_expires=money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M") \
-                                                 if isinstance(money_out_request['protectionDate'], datetime) \
-                                                 else money_out_request['protectionDate'])
+                task_money_out_request.delay(money_out_request['paymentType'], user_account.email,
+                                             summ=money_out_request['summ'],
+                                             yandex_account=money_out_request['yandex_number'],
+                                             protection_code=money_out_request['protectionCode'],
+                                             code_expires=code_expires)
             except Exception as ex:
-                mail.money_out_request(money_out_request['paymentType'], user_account.email, \
-                                       summ=money_out_request['summ'], \
-                                       yandex_account=money_out_request['yandex_number'], \
-                                       protection_code=money_out_request['protectionCode'], \
-                                       code_expires=money_out_request['protectionDate'].strftime("%d.%m.%y %H:%M") \
-                                           if isinstance(money_out_request['protectionDate'], datetime) \
-                                           else money_out_request['protectionDate'])
+                print(ex)
+                task_money_out_request(money_out_request['paymentType'], user_account.email,
+                                       summ=money_out_request['summ'],
+                                       yandex_account=money_out_request['yandex_number'],
+                                       protection_code=money_out_request['protectionCode'],
+                                       code_expires=code_expires)
 
         return h.JSON({'error': False, 'ok': True,
                        'date': date.strftime("%d.%m.%Y %H:%M"),
-                       'date2': (date + timedelta(seconds=60)) \
-                      .strftime("%d.%m.%Y %H:%M")})
+                       'date2': (date + timedelta(seconds=60)).strftime("%d.%m.%Y %H:%M")})
 
 
 class MoneyOutForm(formencode.Schema):

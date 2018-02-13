@@ -227,14 +227,9 @@ ${' | '.join(['<a class="service_links" href="%s" target="_blank">%s</a>' % x fo
 <div id="workerStats">
 % if c.permission.has(Permission.USER_DOMAINS_MODERATION):
 	<div style="margin:5px 5px 5px 5px">
-	<input type="text" id="workerStatsCalendar" value="" />
-	</div>
-    <h2>Статистика работы воркера</h2>
-    <table id="tableWorkerStats"></table>
-	<div style="margin:5px 5px 5px 5px">
 	<input type="text" id="workerNewStatsCalendar" value="" />
 	</div>
-    <h2>Статистика работы нового воркера</h2>
+    <h2>Статистика работы воркера</h2>
     <table id="tableWorkerNewStats"></table>
 %endif
 </div>
