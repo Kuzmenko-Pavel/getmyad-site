@@ -26,7 +26,7 @@ MONGO_DATABASE = 'getmyad_db'
 # Параметры FTP для заливки статических файлов на сервер CDN
 cdn_server_url = 'https://cdn.yottos.com/'
 cdn_api_list = ['cdn.api.srv-10.yottos.com', 'cdn.api.srv-11.yottos.com', 'cdn.api.srv-12.yottos.com']
-img_folder = 'img2'
+img_folder = 'img4'
 
 
 class MultiPartForm(object):
@@ -156,10 +156,10 @@ def mssql_connection_adload():
 
     """
     pymssql.set_max_connections(450)
-    conn = pymssql.connect(host='srv-1.yottos.com',
+    conn = pymssql.connect(host='srv-3.yottos.com',
                            user='web',
                            password='odif8duuisdofj',
-                           database='1gb_YottosAdLoad',
+                           database='AdLoad',
                            as_dict=True,
                            charset='cp1251')
     conn.autocommit(True)

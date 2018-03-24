@@ -61,10 +61,10 @@ class Globals(object):
     @property
     def connection_adload(self):
         pymssql.set_max_connections(450)
-        conn = pymssql.connect(host='srv-1.yottos.com',
+        conn = pymssql.connect(host='srv-3.yottos.com',
                                user='web',
                                password='odif8duuisdofj',
-                               database='1gb_YottosAdLoad',
+                               database='AdLoad',
                                as_dict=True,
                                charset='cp1251')
         conn.autocommit(True)

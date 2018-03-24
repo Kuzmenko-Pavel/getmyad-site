@@ -6,16 +6,15 @@ import datetime
 import uuid
 
 
-
 class MoneyOutRequest(object):
-    '''Запрос на вывод средств'''
+    """Запрос на вывод средств"""
     
     class NotEnoughMoney(Exception):
-        ''' Недостаточно денег для формирования заявки '''
+        """ Недостаточно денег для формирования заявки """
         pass
     
     class NotConfirm(Exception):
-        ''' Недостаточно денег для формирования заявки '''
+        """ Недостаточно денег для формирования заявки """
         pass
     
     def __init__(self):
@@ -27,7 +26,7 @@ class MoneyOutRequest(object):
         self.ip = ''
     
     def save(self):
-        ''' Сохранение заявки '''
+        """ Сохранение заявки """
         if not self._check_money_out_possibility():
             raise MoneyOutRequest.NotEnoughMoney()
         if not self._check_money_out_not_confirm():
@@ -47,16 +46,16 @@ class MoneyOutRequest(object):
         print "Saving: %s" % req
     
     def _get_payment_details(self):
-        ''' Возвращает словарь со свойствами, специфичными для каждого метода оплаты '''
+        """ Возвращает словарь со свойствами, специфичными для каждого метода оплаты """
         return {}
     
     def _get_payment_details_for_email(self):
-        ''' Текстовое описание подробностей метода вывода для отправки по e-mail '''
+        """ Текстовое описание подробностей метода вывода для отправки по e-mail """
         return ''
 
     def _check_money_out_not_confirm(self):
-        ''' Возвращает true, если заявку с заданными параметрами возможно 
-            создать (у клиента должно быть достаточно денег на счету и т.д.) '''
+        """ Возвращает true, если заявку с заданными параметрами возможно
+            создать (у клиента должно быть достаточно денег на счету и т.д.) """
         
         if not self.account.loaded:
             self.account.load()
@@ -66,8 +65,8 @@ class MoneyOutRequest(object):
         return True
 
     def _check_money_out_possibility(self):
-        ''' Возвращает true, если заявку с заданными параметрами возможно 
-            создать (у клиента должно быть достаточно денег на счету и т.д.) '''
+        """ Возвращает true, если заявку с заданными параметрами возможно
+            создать (у клиента должно быть достаточно денег на счету и т.д.) """
         if not self.account.loaded:
             self.account.load()
         if not self.account.prepayment:
@@ -83,12 +82,12 @@ class MoneyOutRequest(object):
         return True
     
     def _validate_fields(self):
-        ''' Проверка полей на корректность '''
+        """ Проверка полей на корректность """
         # TODO: Not implemented! 
         pass
 
     def send_confirmation_email(self):
-        ''' Отправка письма на e-mail пользователя с требованием подтвердить вывод средств '''
+        """ Отправка письма на e-mail пользователя с требованием подтвердить вывод средств """
         if not self.account.loaded:
             self.account.load()
 
@@ -103,7 +102,7 @@ class MoneyOutRequest(object):
 
 
     def load(self, confirm_guid):
-        ''' Загружает заявку с кодом подтверждения confirm_guid '''
+        """ Загружает заявку с кодом подтверждения confirm_guid """
         x = app_globals.db.money_out_request.find_one({'confirm_guid': confirm_guid})
         self.date = x['date']
         self.account = Account(x['user']['login'])
@@ -113,7 +112,7 @@ class MoneyOutRequest(object):
 
 
 class WebmoneyMoneyOutRequest(MoneyOutRequest):
-    ''' Запрос на вывод средств посредством WebMoney '''
+    """ Запрос на вывод средств посредством WebMoney """
     
     def __init__(self):
         MoneyOutRequest.__init__(self)
@@ -140,7 +139,7 @@ WMID: %s
 
 
 class WebmoneyMoneyOutRequest_r(MoneyOutRequest):
-    ''' Запрос на вывод средств посредством WebMoney '''
+    """ Запрос на вывод средств посредством WebMoney """
     
     def __init__(self):
         MoneyOutRequest.__init__(self)
@@ -165,8 +164,9 @@ WMID: %s
         self.webmoney_login,
         self.webmoney_account_number)
 
+
 class WebmoneyMoneyOutRequest_u(MoneyOutRequest):
-    ''' Запрос на вывод средств посредством WebMoney '''
+    """ Запрос на вывод средств посредством WebMoney """
     
     def __init__(self):
         MoneyOutRequest.__init__(self)
@@ -191,8 +191,9 @@ WMID: %s
         self.webmoney_login,
         self.webmoney_account_number)
 
+
 class CardMoneyOutRequest(MoneyOutRequest):
-    ''' запрос на вывод средств посредством банковской карты '''
+    """ запрос на вывод средств посредством банковской карты """
     
     def __init__(self):
         MoneyOutRequest.__init__(self)
@@ -238,9 +239,8 @@ u'''сумма: %s грн
 ''' % self.summ
 
 
-
 class InvoiceMoneyOutRequest(MoneyOutRequest):
-    ''' Запрос на вывод средств посредством счёт-фактуры '''
+    """ Запрос на вывод средств посредством счёт-фактуры """
     
     def __init__(self):
         MoneyOutRequest.__init__(self)
@@ -262,7 +262,7 @@ class InvoiceMoneyOutRequest(MoneyOutRequest):
 
 
 class YandexMoneyOutRequest(MoneyOutRequest):
-    ''' Запрос на вывод средств посредством Яндекс.Деньги '''
+    """ Запрос на вывод средств посредством Яндекс.Деньги """
     def __init__(self):
         MoneyOutRequest.__init__(self)
         self.yandex_number = ''
@@ -281,7 +281,7 @@ class YandexMoneyOutRequest(MoneyOutRequest):
 
 
 class CashMoneyOutRequest(MoneyOutRequest):
-    ''' запрос на вывод средств наличными'''
+    """ запрос на вывод средств наличными"""
     
     def __init__(self):
         MoneyOutRequest.__init__(self)
@@ -300,7 +300,7 @@ class CashMoneyOutRequest(MoneyOutRequest):
 
 
 class CardMoneyOutRequest_pb_ua(MoneyOutRequest):
-    ''' запрос на вывод средств посредством банковской карты '''
+    """ запрос на вывод средств посредством банковской карты """
     
     def __init__(self):
         MoneyOutRequest.__init__(self)
@@ -330,13 +330,11 @@ class CardMoneyOutRequest_pb_ua(MoneyOutRequest):
 банк: ПриватБанк
 номер карты: %(cardNumber)s
 срок действия карты: %(expire_month)s / %(expire_year)s
-''' % self._get_payment_details() + \
-u'''сумма: %s грн
-''' % self.summ
+''' % self._get_payment_details() + u'''сумма: %s грн''' % self.summ
 
 
 class CardMoneyOutRequest_pb_us(MoneyOutRequest):
-    ''' запрос на вывод средств посредством банковской карты '''
+    """ запрос на вывод средств посредством банковской карты """
     
     def __init__(self):
         MoneyOutRequest.__init__(self)
@@ -366,6 +364,4 @@ class CardMoneyOutRequest_pb_us(MoneyOutRequest):
 банк: ПриватБанк
 номер карты: %(cardNumber)s
 срок действия карты: %(expire_month)s / %(expire_year)s
-''' % self._get_payment_details() + \
-u'''сумма: %s грн
-''' % self.summ
+''' % self._get_payment_details() + u'''сумма: %s грн''' % self.summ
