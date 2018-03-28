@@ -109,7 +109,7 @@ def _mongo_main_db():
 
 def _get_worker_channel():
     ''' Подключается к брокеру mq '''
-    conn = amqp.Connection(host='srv-4.yottos.com',
+    conn = amqp.Connection(host='amqp.yottos.com',
                            userid='worker',
                            password='worker',
                            virtual_host='worker',
