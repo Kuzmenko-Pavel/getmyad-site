@@ -29,7 +29,7 @@ def registration_request_manager(**kwargs):
         letter.subject = u'Заявка на регистрацию в GetMyAd'
         letter.template = 'managers/registration_request.mako.txt'
         letter.set_message(**kwargs)
-        letter.send('mail.yottos.com', 25, 'support@yottos.com', '57fd8824')
+        letter.send('srv-4.yottos.com', 25, 'support@yottos.com', '57fd8824')
     except Exception as ex:
         print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries', 0))
         registration_request_manager.retry(args=[], kwargs=kwargs, exc=ex)
@@ -53,7 +53,7 @@ def registration_request_user(email, **kwargs):
         letter.subject = u'Рекламная сеть Yottos - заявка на участие сайта %s' % kwargs['site_url']
         letter.template = 'users/registration_request.mako.txt'
         letter.set_message(**kwargs)
-        letter.send('mail.yottos.com', 25, 'support@yottos.com', '57fd8824')
+        letter.send('srv-4.yottos.com', 25, 'support@yottos.com', '57fd8824')
     except Exception as ex:
         print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries', 0))
         registration_request_user.retry(args=[email], kwargs=kwargs, exc=ex)
@@ -96,7 +96,7 @@ def money_out_request(payment_type, email, **kwargs):
             letter.template = 'users/money_out/yandex.mako.txt'
 
         letter.set_message(**kwargs)
-        letter.send('mail.yottos.com', 25, 'support@yottos.com', '57fd8824')
+        letter.send('srv-4.yottos.com', 25, 'support@yottos.com', '57fd8824')
     except Exception as ex:
         print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries', 0))
         money_out_request.retry(args=[payment_type, email], kwargs=kwargs, exc=ex)
@@ -120,7 +120,7 @@ def confirmation_email(email, **kwargs):
         letter.subject = u'Подтверждение заявки на вывод средств в Yottos GetMyAd'
         letter.template = '/users/money_out/confirmation.mako.txt'
         letter.set_message(**kwargs)
-        letter.send('mail.yottos.com', 25, 'support@yottos.com', '57fd8824')
+        letter.send('srv-4.yottos.com', 25, 'support@yottos.com', '57fd8824')
     except Exception as ex:
         print "sendmail failed to %s: %s (retry #%s)" % (email, ex, kwargs.get('task_retries', 0))
         confirmation_email.retry(args=[email], kwargs=kwargs, exc=ex)
