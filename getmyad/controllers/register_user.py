@@ -2,6 +2,9 @@
 import logging
 import datetime
 import StringIO
+import urllib2
+import urllib
+import json
 
 from pylons import request, response, session, tmpl_context as c, url
 from pylons.controllers.util import redirect
@@ -24,7 +27,6 @@ class RegisterUserController(BaseController):
         c.user_phone = session.pop('user_phone', '')
         c.user_email = session.pop('user_email', '')
         c.capcha_error = session.pop('capcha_error', '')
-        c.recaptcha_script = displayhtml('6LdnYDcUAAAAAP4n7Yt3-eTNjwARbMFOifsW6WCb', True)
         session.save()
         return render('/register_user.mako.html')
 
@@ -43,18 +45,48 @@ class RegisterUserController(BaseController):
         response.content_type = "image/png"
         return buffer.getvalue()
 
+    def g_recaptcha_check(self, secret, response, remoteip):
+        def encode_if_necessary(s):
+            if isinstance(s, unicode):
+                return s.encode('utf-8')
+            return s
+        params = urllib.urlencode({
+            'secret': encode_if_necessary(secret),
+            'remoteip': encode_if_necessary(remoteip),
+            'response': encode_if_necessary(response)
+        })
+
+        request = urllib2.Request(
+            url="https://www.google.com/recaptcha/api/siteverify",
+            data=params,
+            headers={
+                "Content-type": "application/x-www-form-urlencoded",
+                "User-agent": "reCAPTCHA Python"
+            }
+        )
+
+        try:
+
+            httpresp = urllib2.urlopen(request)
+
+            return_values = json.loads(httpresp.read())
+            httpresp.close()
+            return return_values.get('success')
+
+        except Exception as ex:
+            print ex
+            return False
+
     def send(self):
         res = request.params
         ip = request.remote_addr
-        recaptcha_challenge_field = res.get('recaptcha_challenge_field', '')
-        recaptcha_response_field = res.get('recaptcha_response_field', '')
-        recaptcha_submit = submit(recaptcha_challenge_field, recaptcha_response_field, '6LdnYDcUAAAAAM7yg836bWJ-pwtlyZLeqy0dP0KR', ip)
-        if not recaptcha_submit.is_valid:
+        g_recaptcha_response = res.get('g-recaptcha-response', '')
+        if not self.g_recaptcha_check('6LcuelEUAAAAAOD60OJny9-ywA5IJ0RuQ9TfmNXm', g_recaptcha_response, ip):
             session['user_name'] = res.get('UserNameText')
             session['user_url'] = res.get('SiteUrl')
             session['user_email'] = res.get('Email')
             session['user_phone'] = res.get('PhoneNumber')
-            session['capcha_error'] = u'Неверно введены символы с картинки. Попробуйте ещё раз.'
+            session['capcha_error'] = u'Проверка не удалась. Попробуйте ещё раз.'
             session.save()
             return redirect(url(controller="register_user", action="index"))
 

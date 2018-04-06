@@ -4,57 +4,64 @@
         <div id="headerCenterLogo">
             <span id="headerCenterLogo1"></span><span id="headerCenterLogo2"></span>
         </div>
-% if (url.environ['pylons.routes_dict']['controller'] != 'register_user'):
-% if request.environ.get('CURRENT_USER'):
-            <div id="headerCenterLogout" class="inline-block">
-                <div id="headerCenterLogoutLeft">
-                    Здравствуйте, <span>${request.environ.get('CURRENT_USER')}</span>
-                </div>
-                <div id="headerCenterLogoutRight">
-                    <div class='selectBox'>
-                                <span class='selected'>${request.environ.get('CURRENT_USER')}</span>
-                                <span class='selectArrow'>&#9660</span>
-                                <div class="selectOptions" >
-                                    <span class="selectOption" value="" onclick="location.replace('${url(controller='main', action='signOut')}')">Выйти из аккаунта</span>
-                                </div>
+        % if (url.environ['pylons.routes_dict']['controller'] != 'register_user'):
+            % if request.environ.get('CURRENT_USER'):
+                <div id="headerCenterLogout" class="inline-block">
+                    <div id="headerCenterLogoutLeft">
+                        Здравствуйте, <span>${request.environ.get('CURRENT_USER')}</span>
+                    </div>
+                    <div id="headerCenterLogoutRight">
+                        <div class='selectBox'>
+                            <span class='selected'>${request.environ.get('CURRENT_USER')}</span>
+                            <span class='selectArrow'>&#9660</span>
+                            <div class="selectOptions">
+                                <span class="selectOption" value=""
+                                      onclick="location.replace('${url(controller='main', action='signOut')}')">Выйти из аккаунта</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-% else:
-            <div id="headerCenterText" class="inline-block">
-                <div id="headerCenterTextLeft">
-                    Вход в аккаунт
+            % else:
+                <div id="headerCenterText" class="inline-block">
+                    <div id="headerCenterTextLeft">
+                        Вход в аккаунт
+                    </div>
+                    <div id="headerCenterTextRight">
+                        <a class="dot" href="#" style="display:none">Забыли пароль?</a>
+                    </div>
                 </div>
-                <div id="headerCenterTextRight">
-                    <a class="dot" href="#" style="display:none">Забыли пароль?</a>
+                <div id="headerCenterLogin">
+                    <form name="signIn" method="post" action="/main/signIn">
+                        <fieldset class="inline-block">
+                            <ol>
+                                <li class="inline-block"><input type="text" value="Логин" name="login" id="login"
+                                                                onclick="this.value='';" onfocus="this.value='';"></li>
+                                <li class="inline-block"><input type="password" value="Пароль" name="password"
+                                                                id="password" onclick="this.value='';"
+                                                                onfocus="this.value='';"></li>
+                            </ol>
+                        </fieldset>
+                        <fieldset class="submit inline-block">
+                            ${h.submit('loginButton', u'Войти')}
+                        </fieldset>
+                    </form>
+                    %if errorMessage:
+                        <p class="errorMessage">${errorMessage}</p>
+                        <style>
+                            #headerCenterLogin form fieldset ol li input {
+                                background-color: #f15252 !important;
+                        </style>
+                    %endif
                 </div>
+            % endif
             </div>
-            <div id="headerCenterLogin">
-                <form name="signIn" method="post" action="/main/signIn">
-                <fieldset class="inline-block">
-                <ol>
-                    <li class="inline-block"><input type="text" value="Логин" name="login" id="login" onclick="this.value='';" onfocus="this.value='';"></li>
-                    <li class="inline-block"><input type="password" value="Пароль" name="password" id="password" onclick="this.value='';" onfocus="this.value='';"></li>
-                </ol>
-                </fieldset>
-                <fieldset class="submit inline-block">
-                    ${h.submit('loginButton', u'Войти')}
-                </fieldset>
-                </form>
-                %if errorMessage:
-                <p class="errorMessage">${errorMessage}</p>
-                <style>
-                #headerCenterLogin form fieldset ol li input {
-                background-color: #f15252 !important;
-                </style>
-                %endif
+            <div id="headerLogo">
+                <a href="${url.current()}"></a>
             </div>
-% endif
-% endif
-    </div>
-
-    <div id="headerLogo">
-        <a href="${url.current()}"></a>
-    </div>
-
+        % else:
+            </div>
+            <div id="headerLogo">
+                <a href="/"></a>
+            </div>
+        % endif
 </div>

@@ -7,6 +7,7 @@
 <%def name="head()">
         <title>GetMyAd | Регистрация</title>
     <meta name="description" content="Рекламная партнерская сеть Yottos GetMyAd. Добро пожаловать в программу, для регистрации необходимо заполнить и отправить заявку. "/>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
 </%def>
 ##%>	4parser
 
@@ -16,35 +17,35 @@
 
 
 <script type="text/javascript">
-$(document).ready(function() {
-	function validate()
-	{
-		var site_re = /^(https?:\/\/)?([\w\.а-яА-ЯёЁ-]+)\.([\wа-яА-ЯёЁ-]{2,}\.?)(\/[\w\.]*)*\/?$/;
+    function validate()
+    {
+        var site_re = /^(https?:\/\/)?([\w\.а-яА-ЯёЁ-]+)\.([\wа-яА-ЯёЁ-]{2,}\.?)(\/[\w\.]*)*\/?$/;
         var phone_re = /^(((\+?)\s?(\d?\s?)(\d?\s?)(\d?\s?))?\(?(\d{2,3})\)?\s?(\d\d\d)(\s|-)?(\d\d)(\s|-)?(\d\d))\s*$/;
-		var email_re = /^ *([A-Za-z0-9_\.-]+)@([A-Za-z0-9_\.-]+)\.([A-Za-z\.]{2,6}) *$/;
+        var email_re = /^ *([A-Za-z0-9_\.-]+)@([A-Za-z0-9_\.-]+)\.([A-Za-z\.]{2,6}) *$/;
 
-		var valid_name = $("#UserNameText").val().length > 0;
-		var valid_url = site_re.test($("#SiteUrl").val().toLowerCase());
-		var valid_phone = phone_re.test($("#PhoneNumber").val());
-		var valid_email = email_re.test($("#Email").val());
-		var agreed = document.getElementById('AgreeCheckBox').checked;
-		var view = document.getElementById('ViewCheckBox').checked;
-		var all_valid = valid_email && valid_phone && valid_url && valid_name && agreed && view;
+        var valid_name = $("#UserNameText").val().length > 0;
+        var valid_url = site_re.test($("#SiteUrl").val().toLowerCase());
+        var valid_phone = phone_re.test($("#PhoneNumber").val());
+        var valid_email = email_re.test($("#Email").val());
+        var agreed = document.getElementById('AgreeCheckBox').checked;
+        var view = document.getElementById('ViewCheckBox').checked;
+        var recaptcha = Boolean(grecaptcha.getResponse());
+        var all_valid = valid_email && valid_phone && valid_url && valid_name && agreed && view && recaptcha;
 
-		document.getElementById('reqUserName').style.visibility = valid_name? "hidden" : "visible";
-		document.getElementById('reqUrl').style.visibility = valid_url? "hidden" : "visible";
-		document.getElementById('reqPhoneNumber').style.visibility = valid_phone? "hidden" : "visible";
-		document.getElementById('reqEmail').style.visibility = valid_email? "hidden" : "visible";
-		document.getElementById('SubmitButton').disabled = !all_valid;
-		
-		return all_valid;
-	};
+        document.getElementById('reqUserName').style.visibility = valid_name? "hidden" : "visible";
+        document.getElementById('reqUrl').style.visibility = valid_url? "hidden" : "visible";
+        document.getElementById('reqPhoneNumber').style.visibility = valid_phone? "hidden" : "visible";
+        document.getElementById('reqEmail').style.visibility = valid_email? "hidden" : "visible";
+        document.getElementById('SubmitButton').disabled = !all_valid;
 
-	$("#UserNameText, #SiteUrl, " +
-	  "#PhoneNumber, #Email").change(validate);
-	$("#ViewCheckBox").change(validate);
-	$("#AgreeCheckBox").change(validate);
-});
+        return all_valid;
+    };
+    $(document).ready(function() {
+
+        $("#UserNameText, #SiteUrl, #PhoneNumber, #Email").change(validate);
+        $("#ViewCheckBox").change(validate);
+        $("#AgreeCheckBox").change(validate);
+    });
 </script>
 
 
@@ -82,8 +83,8 @@ $(document).ready(function() {
     </td>
 </tr>
 <tr>
-	<td>Введите символы*:</td>
-	<td>${c.recaptcha_script}</td>
+	<td></td>
+    <td><div class="g-recaptcha" data-sitekey="6LcuelEUAAAAADyo7FkjYFQPkD3teMTP4WiYvMjB" data-callback="validate"></div></td>
 </tr>
 <!--tr>
     <td>Введите символы*:</td>
