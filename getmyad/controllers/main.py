@@ -19,7 +19,6 @@ class MainController(BaseController):
                 return redirect(url(controller='manager', action='index'))
 
         errorMessage = session.get('error_message')
-        print errorMessage
         if errorMessage:
             session.delete()
         return render('/index.mako.html', extra_vars={'errorMessage': errorMessage})
