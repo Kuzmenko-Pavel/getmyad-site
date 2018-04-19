@@ -18,6 +18,10 @@ from getmyad.model.Campaign import Campaign
 from getmyad.model.Offer import Offer
 from getmyad.lib.adload_data import AdloadData
 
+import sys
+reload(sys)  # Reload does the trick!
+sys.setdefaultencoding('UTF8')
+
 
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
 MONGO_HOST = 'srv-5.yottos.com:27018,srv-5.yottos.com:27020,srv-5.yottos.com:27019'
