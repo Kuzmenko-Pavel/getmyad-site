@@ -230,6 +230,8 @@ def resize_image(res, campaign_id, work, **kwargs):
                 raise Exception('HTTPError = ' + str(e.code))
             except urllib2.URLError, e:
                 raise Exception('URLError = ' + str(e.reason))
+            except Exception as ex:
+                raise Exception('%s URLError = %s' % (str(ex), str(url)))
             f = cStringIO.StringIO(response.read())
             i = Image.open(f).convert('RGBA')
             width, height = i.size
@@ -240,6 +242,8 @@ def resize_image(res, campaign_id, work, **kwargs):
                     raise Exception('HTTPError = ' + str(e.code))
                 except urllib2.URLError, e:
                     raise Exception('URLError = ' + str(e.reason))
+                except Exception as ex:
+                    raise Exception('%s URLError = %s' % (str(ex), str(url)))
                 f = cStringIO.StringIO(response.read())
                 l = Image.open(f).convert('RGBA')
                 l.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
