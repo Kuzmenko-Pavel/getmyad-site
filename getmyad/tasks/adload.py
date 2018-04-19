@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals, print_function
 from uuid import uuid1
 import cStringIO
 from eventlet.green import urllib2
+import requests
 import datetime
 import pymssql
 import time
-
-import itertools
-import mimetools
-import mimetypes
+import magic
 
 from celery.task import task
 from PIL import Image
@@ -22,7 +21,6 @@ import sys
 reload(sys)  # Reload does the trick!
 sys.setdefaultencoding('UTF8')
 
-
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
 MONGO_HOST = 'srv-5.yottos.com:27018,srv-5.yottos.com:27020,srv-5.yottos.com:27019'
 MONGO_DATABASE = 'getmyad_db'
@@ -33,62 +31,23 @@ cdn_api_list = ['cdn.api.srv-10.yottos.com', 'cdn.api.srv-11.yottos.com', 'cdn.a
 img_folder = 'img4'
 
 
-class MultiPartForm(object):
-    __slots__ = ['files', 'boundary']
-
-    def __init__(self):
-        self.files = []
-        self.boundary = mimetools.choose_boundary()
-        return
-
-    def get_content_type(self):
-        return 'multipart/form-data; boundary=%s' % self.boundary
-
-    def add_file(self, fieldname, filename, fileHandle, mimetype=None):
-        body = fileHandle.read()
-        if mimetype is None:
-            mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
-        self.files.append((fieldname, filename, mimetype, body))
-        return
-
-    def __str__(self):
-        parts = []
-        part_boundary = '--' + self.boundary
-
-        parts.extend(
-            [part_boundary,
-             'Content-Disposition: file; name="%s"; filename="%s"' % \
-             (field_name, filename),
-             'Content-Type: %s' % content_type,
-             '',
-             body,
-             ]
-            for field_name, filename, content_type, body in self.files
-        )
-
-        flattened = list(itertools.chain(*parts))
-        flattened.append('--' + self.boundary + '--')
-        flattened.append('')
-        return '\r\n'.join(flattened)
-
-
 def send(url, filename, file, iteration=None):
     try:
-        form = MultiPartForm()
-        form.add_file('file', filename, file)
-        body = str(form)
-        request = urllib2.Request(url)
-        request.add_header('X-Authentication', 'f9bf78b9a18ce6d46a0cd2b0b86df9da')
-        request.add_header('User-agent', 'Mozilla/5.0')
-        request.add_header('Content-type', form.get_content_type())
-        request.add_header('Content-length', len(body))
-        request.add_data(body)
-        urllib2.urlopen(request)
+        headers = {
+            'X-Authentication': 'f9bf78b9a18ce6d46a0cd2b0b86df9da',
+            'User-agent': 'Mozilla/5.0'
+        }
+        mime = magic.Magic(mime=True)
+        file.seek(0)
+        content_type = mime.from_buffer(file.read())
+        file.seek(0)
+        files = {'file': (filename, file.read(), content_type)}
+        r = requests.post(url, headers=headers, files=files)
     except Exception as e:
-        print(e)
+        print('send error %s' % e)
         if iteration is None:
             iteration = 0
-        if iteration <= 5:
+        if iteration <= 1:
             iteration += 1
             send(url, filename, file, iteration)
         else:
@@ -129,7 +88,7 @@ def campaign_update(campaign_id):
     msg = amqp.Message(campaign_id)
     ch_worker.basic_publish(msg, exchange='getmyad', routing_key='campaign.update')
     ch_worker.close()
-    print "AMQP campaign_update", campaign_id
+    print("AMQP campaign_update %s" % campaign_id)
 
 
 def campaign_stop(campaign_id):
@@ -138,7 +97,7 @@ def campaign_stop(campaign_id):
     msg = amqp.Message(campaign_id)
     ch_worker.basic_publish(msg, exchange='getmyad', routing_key='campaign.stop')
     ch_worker.close()
-    print "AMQP campaign_stop", campaign_id
+    print("AMQP campaign_stop %s" % campaign_id)
 
 
 def account_update(login):
@@ -148,9 +107,9 @@ def account_update(login):
     ch_worker.basic_publish(msg, exchange='getmyad', routing_key='account.update')
     ch_worker.close()
     try:
-        print "AMQP Account update %s" % login
+        print("AMQP Account update %s" % login)
     except Exception as e:
-        print e
+        print(e)
 
 
 def mssql_connection_adload():
@@ -202,7 +161,6 @@ def resize_image(res, campaign_id, work, **kwargs):
                 Возвращает url нового файла или пустую строку в случае ошибки.
             '''
             try:
-
                 def cdn_loader(png, webp):
                     new_filename = uuid1().get_hex()
                     for host in cdn_api_list:
@@ -210,8 +168,15 @@ def resize_image(res, campaign_id, work, **kwargs):
                         webp.seek(0)
                         send_png_url = 'http://%s/%s/%s/%s.png' % (host, img_folder, new_filename[:2], new_filename)
                         send_webp_url = 'http://%s/%s/%s/%s.webp' % (host, img_folder, new_filename[:2], new_filename)
-                        send(send_png_url, '%s.png' % new_filename, png)
-                        send(send_webp_url, '%s.webp' % new_filename, webp)
+                        try:
+                            send(send_png_url, '%s.png' % new_filename, png)
+                            send(send_webp_url, '%s.webp' % new_filename, webp)
+                        except urllib2.HTTPError, e:
+                            raise Exception('HTTPError = %s %s ' % (str(e.code), url))
+                        except urllib2.URLError, e:
+                            raise Exception('URLError = %s %s' % (str(e.reason), url))
+                        except Exception as e:
+                            raise Exception('URLError = %s %s' % (e, url))
                     return new_filename
 
                 def resizer(url, trum_height, trum_width, logo):
@@ -235,8 +200,8 @@ def resize_image(res, campaign_id, work, **kwargs):
                         raise Exception('HTTPError = %s %s ' % (str(e.code), url))
                     except urllib2.URLError, e:
                         raise Exception('URLError = %s %s' % (str(e.reason), url))
-                    except Exception as ex:
-                        raise Exception('URLError = %s %s' % (ex, url))
+                    except Exception as e:
+                        raise Exception('URLError = %s %s' % (e, url))
 
                     f = cStringIO.StringIO(response.read())
                     i = Image.open(f).convert('RGBA')
@@ -249,8 +214,8 @@ def resize_image(res, campaign_id, work, **kwargs):
                             raise Exception('HTTPError = %s %s ' % (str(e.code), url))
                         except urllib2.URLError, e:
                             raise Exception('URLError = %s %s' % (str(e.reason), url))
-                        except Exception as ex:
-                            raise Exception('URLError = %s %s' % (ex, url))
+                        except Exception as e:
+                            raise Exception('URLError = %s %s' % (e, url))
 
                         f = cStringIO.StringIO(response.read())
                         l = Image.open(f).convert('RGBA')
@@ -389,7 +354,7 @@ def resize_image(res, campaign_id, work, **kwargs):
                     result.append(new_url)
                 return " , ".join(result)
             except Exception as ex:
-                print(ex)
+                print('resize_and_upload_image %s' % ex)
                 return ''
 
         for key, value in res.items():
@@ -401,7 +366,7 @@ def resize_image(res, campaign_id, work, **kwargs):
         if campaign_id is not None and work:
             campaign_update(campaign_id)
     except Exception as ex:
-        print(ex)
+        print('Task resize_image %s' % ex)
         resize_image.retry(args=[res, campaign_id, work], kwargs=kwargs, exc=ex)
 
 
@@ -512,8 +477,10 @@ def campaign_offer_update(campaign_id, **kwargs):
                     offer.update()
                     hashes.remove(offer.hash)
                 if small:
+                    print(res_task_img)
                     small_resize_image.delay(res_task_img, None, work)
                 else:
+                    print(res_task_img)
                     resize_image.delay(res_task_img, None, work)
 
             if small:
@@ -555,17 +522,17 @@ def delete_account(login, **kwargs):
             y = x.get('domains', [])
             for value in y:
                 domain_list.append(value)
-        print db.stats_user_summary.remove({'user': login})
-        print db.users.remove({'login': login})
-        print db.informer.remove({'user': login})
-        print db.domain.remove({'login': login})
-        print db.user.domains.remove({'login': login})
-        print db.domain.categories.remove({'domain': {'$in': domain_list}})
-        print db.money_out_request.remove({'user.login': login})
-        print db.stats_daily.rating.remove({'adv': {'$in': informer_list}})
-        print db.stats_daily_adv.remove({'user': login})
-        print db.stats_daily_domain.remove({'user': login})
-        print db.stats_daily_user.remove({'user': login})
+        print(db.stats_user_summary.remove({'user': login}))
+        print(db.users.remove({'login': login}))
+        print(db.informer.remove({'user': login}))
+        print(db.domain.remove({'login': login}))
+        print(db.user.domains.remove({'login': login}))
+        print(db.domain.categories.remove({'domain': {'$in': domain_list}}))
+        print(db.money_out_request.remove({'user.login': login}))
+        print(db.stats_daily.rating.remove({'adv': {'$in': informer_list}}))
+        print(db.stats_daily_adv.remove({'user': login}))
+        print(db.stats_daily_domain.remove({'user': login}))
+        print(db.stats_daily_user.remove({'user': login}))
         account_update(login)
     except Exception as ex:
         delete_account.retry(args=[login], kwargs=kwargs, exc=ex)

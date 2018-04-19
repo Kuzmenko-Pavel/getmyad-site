@@ -26,7 +26,9 @@ setup(
         "pylibmc==1.5.2",
         "urlfetch==1.0.2",
         "recaptcha-client",
-        "eventlet==0.22.1"
+        "eventlet==0.22.1",
+        'requests==2.18.4',
+        'python-magic==0.4.15'
 
     ],
     setup_requires=["PasteScript>=1.6.3"],
