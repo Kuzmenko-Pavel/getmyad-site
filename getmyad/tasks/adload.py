@@ -193,211 +193,216 @@ def resize_image(res, campaign_id, work, **kwargs):
         work:
         kwargs:
     """
-    # try:
-    db = _mongo_main_db()
+    try:
+        db = _mongo_main_db()
 
-    def resize_and_upload_image(db, urls, trum_height, trum_width, logo):
-        ''' Пережимает изображение по адресу ``url`` до размеров
-            ``height``x``width`` и заливает его на ftp для раздачи статики.
-            Возвращает url нового файла или пустую строку в случае ошибки.
-        '''
-        # try:
-
-        def cdn_loader(png, webp):
-            new_filename = uuid1().get_hex()
-            for host in cdn_api_list:
-                png.seek(0)
-                webp.seek(0)
-                send_png_url = 'http://%s/%s/%s/%s.png' % (host, img_folder, new_filename[:2], new_filename)
-                send_webp_url = 'http://%s/%s/%s/%s.webp' % (host, img_folder, new_filename[:2], new_filename)
-                send(send_png_url, '%s.png' % new_filename, png)
-                send(send_webp_url, '%s.webp' % new_filename, webp)
-            return new_filename
-
-        def resizer(url, trum_height, trum_width, logo):
-            """
-
-            Args:
-                url:
-                trum_height:
-                trum_width:
-                logo:
-
-            Returns:
-
-            """
-            opener = urllib2.build_opener()
-            opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        def resize_and_upload_image(db, urls, trum_height, trum_width, logo):
+            ''' Пережимает изображение по адресу ``url`` до размеров
+                ``height``x``width`` и заливает его на ftp для раздачи статики.
+                Возвращает url нового файла или пустую строку в случае ошибки.
+            '''
             try:
-                response = opener.open(url)
-            except urllib2.HTTPError, e:
-                raise Exception('HTTPError = ' + str(e.code))
-            except urllib2.URLError, e:
-                raise Exception('URLError = ' + str(e.reason))
+
+                def cdn_loader(png, webp):
+                    new_filename = uuid1().get_hex()
+                    for host in cdn_api_list:
+                        png.seek(0)
+                        webp.seek(0)
+                        send_png_url = 'http://%s/%s/%s/%s.png' % (host, img_folder, new_filename[:2], new_filename)
+                        send_webp_url = 'http://%s/%s/%s/%s.webp' % (host, img_folder, new_filename[:2], new_filename)
+                        send(send_png_url, '%s.png' % new_filename, png)
+                        send(send_webp_url, '%s.webp' % new_filename, webp)
+                    return new_filename
+
+                def resizer(url, trum_height, trum_width, logo):
+                    """
+
+                    Args:
+                        url:
+                        trum_height:
+                        trum_width:
+                        logo:
+
+                    Returns:
+
+                    """
+                    opener = urllib2.build_opener()
+                    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+
+                    try:
+                        response = opener.open(url)
+                    except urllib2.HTTPError, e:
+                        raise Exception('HTTPError = %s %s ' % (str(e.code), url))
+                    except urllib2.URLError, e:
+                        raise Exception('URLError = %s %s' % (str(e.reason), url))
+                    except Exception as ex:
+                        raise Exception('URLError = %s %s' % (ex, url))
+
+                    f = cStringIO.StringIO(response.read())
+                    i = Image.open(f).convert('RGBA')
+                    width, height = i.size
+                    if logo != '':
+
+                        try:
+                            response = opener.open(url)
+                        except urllib2.HTTPError, e:
+                            raise Exception('HTTPError = %s %s ' % (str(e.code), url))
+                        except urllib2.URLError, e:
+                            raise Exception('URLError = %s %s' % (str(e.reason), url))
+                        except Exception as ex:
+                            raise Exception('URLError = %s %s' % (ex, url))
+
+                        f = cStringIO.StringIO(response.read())
+                        l = Image.open(f).convert('RGBA')
+                        l.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
+                    else:
+                        l = None
+
+                    first_box = (None, None, None, None)
+                    second_box = (None, None, None, None)
+                    attach_counter_r = None
+                    attach_counter_l = None
+                    first_line = None
+                    second_line = None
+                    if width > height:
+                        first_box = (0, 0, width, 1)
+                        second_box = (0, height - 1, width, height)
+                        mod = (width - height) % 2
+                        if mod == 0:
+                            attach_counter_r = (width - height) / 2
+                            attach_counter_l = (width - height) / 2
+                        else:
+                            attach_counter_r = (width - height) / 2
+                            attach_counter_l = ((width - height) / 2) + 1
+                        size = (width, width)
+                        if l is None:
+                            ratio = 'v'
+                        else:
+                            ratio = 'vl'
+
+                    elif width < height:
+                        first_box = (0, 0, 1, height)
+                        second_box = (width - 1, 0, width, height)
+                        mod = (height - width) % 2
+                        if mod == 0:
+                            attach_counter_r = (height - width) / 2
+                            attach_counter_l = (height - width) / 2
+                        else:
+                            attach_counter_r = (height - width) / 2
+                            attach_counter_l = ((height - width) / 2) + 1
+                        size = (height, height)
+                        ratio = 'h'
+                    else:
+                        size = (width, height)
+                        ratio = 'c'
+
+                    image = Image.new("RGBA", size, (0, 0, 0))
+
+                    if ratio != 'c':
+                        first_line = i.crop(first_box)
+                        cw, ch = first_line.size
+                        color_count_first_line = first_line.getcolors(max(width, height))
+                        color_count_first_line.sort(key=lambda x: x[0], reverse=True)
+                        first_line = Image.new("RGBA", (cw, ch), color_count_first_line[0][1])
+
+                        second_line = i.crop(second_box)
+                        cw, ch = second_line.size
+                        color_count_second_line = second_line.getcolors(max(width, height))
+                        color_count_second_line.sort(key=lambda x: x[0], reverse=True)
+                        second_line = Image.new("RGBA", (cw, ch), color_count_second_line[0][1])
+
+                    if ratio == 'v':
+                        image.paste(i, (0, attach_counter_r + 1))
+                        counter = attach_counter_r
+                        while counter > 0:
+                            image.paste(first_line, (0, counter))
+                            counter -= 1
+                        counter = attach_counter_l
+                        while counter > 0:
+                            image.paste(second_line, (0, size[1] - counter))
+                            counter -= 1
+                    elif ratio == 'vl':
+                        image.paste(i, (0, 0))
+                        counter = attach_counter_r + attach_counter_l
+                        while counter > 0:
+                            image.paste(second_line, (0, size[1] - counter))
+                            counter -= 1
+                    elif ratio == 'h':
+                        image.paste(i, (attach_counter_r + 1, 0))
+                        counter = attach_counter_r
+                        while counter > 0:
+                            image.paste(first_line, (counter, 0))
+                            counter -= 1
+                        counter = attach_counter_l
+                        while counter > 0:
+                            image.paste(second_line, (size[1] - counter, 0))
+                            counter -= 1
+                    else:
+                        image.paste(i, (0, 0))
+                    if l is None:
+                        image.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
+                    else:
+                        image.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
+                        image.paste(l, (image.size[0] - l.size[0], image.size[1] - l.size[1]), l)
+
+                    return [image.convert('RGB'), width, height]
+
+                if not cdn_server_url or not cdn_api_list:
+                    return ''
+                size_key = '%sx%s' % (trum_height, trum_width)
+
+                result = []
+                url_list = urls.split(',')
+                for url in url_list:
+                    rec = db.image.find_one({'src': url.strip(), size_key: {'$exists': True}, 'logo': logo})
+                    if rec:
+                        old_url = rec[size_key].get('url', '')
+                        if old_url != '':
+                            result.append(old_url)
+                            continue
+
+                    try:
+                        image = resizer(url, trum_height, trum_width, logo)
+                    except Exception as ex:
+                        raise Exception('Image resizer filed %s' % ex)
+
+                    buf_png = cStringIO.StringIO()
+                    buf_webp = cStringIO.StringIO()
+
+                    image[0].save(buf_png, 'PNG')  # , optimize=True)
+                    image[0].save(buf_webp, 'WebP')  # , lossless=True)
+
+                    buf_png.seek(0)
+                    buf_webp.seek(0)
+
+                    new_filename = cdn_loader(buf_png, buf_webp)
+                    new_url = cdn_server_url + img_folder + '/' + new_filename[:2] + '/' + new_filename + '.png'
+                    db.image.update({'src': url.strip(), 'logo': logo},
+                                    {'$set': {size_key: {'url': new_url,
+                                                         'w': trum_width,
+                                                         'h': trum_height,
+                                                         'realWidth': image[1],
+                                                         'realHeight': image[2],
+                                                         'dt': datetime.datetime.now()
+                                                         }}},
+                                    upsert=True, w=1)
+                    result.append(new_url)
+                return " , ".join(result)
             except Exception as ex:
-                print url, ex
-                raise Exception('%s URLError = %s' % ('', ''))
-            f = cStringIO.StringIO(response.read())
-            i = Image.open(f).convert('RGBA')
-            width, height = i.size
-            if logo != '':
-                try:
-                    response = opener.open(url)
-                except urllib2.HTTPError, e:
-                    raise Exception('HTTPError = ' + str(e.code))
-                except urllib2.URLError, e:
-                    raise Exception('URLError = ' + str(e.reason))
-                except Exception as ex:
-                    print url, ex
-                    raise Exception('%s URLError = %s' % ('', ''))
-                f = cStringIO.StringIO(response.read())
-                l = Image.open(f).convert('RGBA')
-                l.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
-            else:
-                l = None
+                print(ex)
+                return ''
 
-            if width > height:
-                first_box = (0, 0, width, 1)
-                second_box = (0, height - 1, width, height)
-                mod = (width - height) % 2
-                if mod == 0:
-                    attach_counter_r = (width - height) / 2
-                    attach_counter_l = (width - height) / 2
-                else:
-                    attach_counter_r = (width - height) / 2
-                    attach_counter_l = ((width - height) / 2) + 1
-                size = (width, width)
-                if l is None:
-                    ratio = 'v'
-                else:
-                    ratio = 'vl'
-
-            elif width < height:
-                first_box = (0, 0, 1, height)
-                second_box = (width - 1, 0, width, height)
-                mod = (height - width) % 2
-                if mod == 0:
-                    attach_counter_r = (height - width) / 2
-                    attach_counter_l = (height - width) / 2
-                else:
-                    attach_counter_r = (height - width) / 2
-                    attach_counter_l = ((height - width) / 2) + 1
-                size = (height, height)
-                ratio = 'h'
-            else:
-                size = (width, height)
-                attach_counter = 0
-                ratio = 'c'
-
-            image = Image.new("RGBA", size, (0, 0, 0))
-
-            if ratio != 'c':
-                first_line = i.crop(first_box)
-                cw, ch = first_line.size
-                percent = ((cw * ch) / 100.0)
-                color_count_first_line = first_line.getcolors(max(width, height))
-                color_count_first_line.sort(key=lambda x: x[0], reverse=True)
-                first_line = Image.new("RGBA", (cw, ch), color_count_first_line[0][1])
-
-                second_line = i.crop(second_box)
-                cw, ch = second_line.size
-                percent = ((cw * ch) / 100.0)
-                color_count_second_line = second_line.getcolors(max(width, height))
-                color_count_second_line.sort(key=lambda x: x[0], reverse=True)
-                second_line = Image.new("RGBA", (cw, ch), color_count_second_line[0][1])
-
-            if ratio == 'v':
-                image.paste(i, (0, attach_counter_r + 1))
-                counter = attach_counter_r
-                while counter > 0:
-                    image.paste(first_line, (0, counter))
-                    counter -= 1
-                counter = attach_counter_l
-                while counter > 0:
-                    image.paste(second_line, (0, size[1] - counter))
-                    counter -= 1
-            elif ratio == 'vl':
-                image.paste(i, (0, 0))
-                counter = attach_counter_r + attach_counter_l
-                while counter > 0:
-                    image.paste(second_line, (0, size[1] - counter))
-                    counter -= 1
-            elif ratio == 'h':
-                image.paste(i, (attach_counter_r + 1, 0))
-                counter = attach_counter_r
-                while counter > 0:
-                    image.paste(first_line, (counter, 0))
-                    counter -= 1
-                counter = attach_counter_l
-                while counter > 0:
-                    image.paste(second_line, (size[1] - counter, 0))
-                    counter -= 1
-            else:
-                image.paste(i, (0, 0))
-            if l is None:
-                image.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
-            else:
-                image.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
-                image.paste(l, (image.size[0] - l.size[0], image.size[1] - l.size[1]), l)
-            image = image.convert('RGB')
-            return [image, width, height]
-
-        if not cdn_server_url or not cdn_api_list:
-            return ''
-        size_key = '%sx%s' % (trum_height, trum_width)
-
-        result = []
-        urlList = urls.split(',')
-        for url in urlList:
-            # rec = db.image.find_one({'src': url.strip(), size_key: {'$exists': True}, 'logo': logo})
-            # if rec:
-            #     old_url = rec[size_key].get('url', '')
-            #     if old_url != '':
-            #         result.append(old_url)
-            #         continue
-
-            # try:
-            image = resizer(url, trum_height, trum_width, logo)
-            # except Exception as ex:
-            #     print(ex)
-            # else:
-            buf_png = cStringIO.StringIO()
-            buf_webp = cStringIO.StringIO()
-
-            image[0].save(buf_png, 'PNG')  # , optimize=True)
-            image[0].save(buf_webp, 'WebP')  # , lossless=True)
-
-            buf_png.seek(0)
-            buf_webp.seek(0)
-
-            new_filename = cdn_loader(buf_png, buf_webp)
-            new_url = cdn_server_url + img_folder + '/' + new_filename[:2] + '/' + new_filename + '.png'
-            # db.image.update({'src': url.strip(), 'logo': logo},
-            #                 {'$set': {size_key: {'url': new_url,
-            #                                      'w': trum_width,
-            #                                      'h': trum_height,
-            #                                      'realWidth': image[1],
-            #                                      'realHeight': image[2],
-            #                                      'dt': datetime.datetime.now()
-            #                                      }}},
-            #                 upsert=True, w=1)
-            result.append(new_url)
-        return " , ".join(result)
-        # except Exception as ex:
-        #     print(ex)
-        #     return ''
-
-    for key, value in res.items():
-        url, trum_height, trum_width, logo = value
-        image = resize_and_upload_image(db, url, trum_height, trum_width, logo)
-        db.offer.update({'guid': key, },
-                        {'$set': {"image": image}},
-                        upsert=False, w=1)
-    if campaign_id is not None and work:
-        campaign_update(campaign_id)
-    # except Exception as ex:
-    #     print(ex)
-    #     resize_image.retry(args=[res, campaign_id, work], kwargs=kwargs, exc=ex)
+        for key, value in res.items():
+            url, trum_height, trum_width, logo = value
+            image = resize_and_upload_image(db, url, trum_height, trum_width, logo)
+            db.offer.update({'guid': key, },
+                            {'$set': {"image": image}},
+                            upsert=False, w=1)
+        if campaign_id is not None and work:
+            campaign_update(campaign_id)
+    except Exception as ex:
+        print(ex)
+        resize_image.retry(args=[res, campaign_id, work], kwargs=kwargs, exc=ex)
 
 
 @task(max_retries=10, ignore_result=True, acks_late=True, default_retry_delay=10)
@@ -419,20 +424,19 @@ def campaign_offer_update(campaign_id, **kwargs):
             try:
                 size_key = '%sx%s' % (height, width)
                 result = []
-                urlList = urls.split(',')
-                for url in urlList:
+                url_list = urls.split(',')
+                for url in url_list:
                     rec = db.image.find_one({'src': url.strip(), size_key: {'$exists': True}, 'logo': logo})
                     if rec:
                         href = rec[size_key].get('url')
                         result.append(href)
-                if len(result) == len(urlList):
+                if len(result) == len(url_list):
                     return " , ".join(result)
                 return False
             except Exception as ex:
                 print(ex)
                 return False
 
-        a = datetime.datetime.now()
         campaign_id = campaign_id.lower()
         camp = Campaign(campaign_id, db)
 
@@ -518,8 +522,6 @@ def campaign_offer_update(campaign_id, **kwargs):
                 resize_image.delay({}, campaign_id, work)
 
             db.offer.remove({'campaignId': campaign_id, 'hash': {'$in': hashes}}, w=1)
-            b = datetime.datetime.now()
-            c = b - a
 
     except Exception as ex:
         campaign_offer_update.retry(args=[campaign_id], kwargs=kwargs, exc=ex)
