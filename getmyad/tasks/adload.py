@@ -477,10 +477,8 @@ def campaign_offer_update(campaign_id, **kwargs):
                     offer.update()
                     hashes.remove(offer.hash)
                 if small:
-                    print(res_task_img)
                     small_resize_image.delay(res_task_img, None, work)
                 else:
-                    print(res_task_img)
                     resize_image.delay(res_task_img, None, work)
 
             if small:
