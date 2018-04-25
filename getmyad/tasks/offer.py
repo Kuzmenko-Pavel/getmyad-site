@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import hashlib as h
 from binascii import crc32
+import pymongo
 
 from pylons import app_globals
 
@@ -9,7 +10,7 @@ class Offer(object):
     'Класс описывает рекламное предложение'
 
     __slots__ = ['db', 'id', 'id_int', 'title', 'price', 'url', 'image', 'description', 'date_added', 'campaign',
-                 'campaign_int', 'campaignTitle', 'retargeting', 'rating', 'full_rating', 'hash', 'cost', 'accountId',
+                 'campaign_int', 'campaignTitle', 'retargeting', 'rating', 'full_rating', '_hash', 'cost', 'accountId',
                  'RetargetingID', 'Recommended']
 
     def __init__(self, id, db=None):
@@ -22,7 +23,7 @@ class Offer(object):
         self.title = ''
         self.price = ''
         self.url = ''
-        self.image = None
+        self.image = ''
         self.description = ''
         self.date_added = None
         self.campaign = ''
@@ -31,16 +32,16 @@ class Offer(object):
         self.retargeting = False
         self.rating = 0.0
         self.full_rating = 0.0
-        self.hash = None
+        self._hash = None
         self.cost = 0
         self.accountId = ''
         self.RetargetingID = ''
         self.Recommended = ''
 
     @property
-    def createOfferHash(self):
-        if self.hash is not None:
-            return self.hash
+    def hash(self):
+        if self._hash is not None:
+            return self._hash
         offerHash = {}
         offerHash['guid'] = self.id
         offerHash['guid_int'] = long(self.id_int)
@@ -52,13 +53,13 @@ class Offer(object):
         offerHash['cost'] = self.cost
         offerHash['price'] = self.price
         offerHash['dateAdded'] = self.date_added
-        self.hash = str(h.md5(str(offerHash)).hexdigest())
-        return self.hash
+        self._hash = str(h.md5(str(offerHash)).hexdigest())
+        return self._hash
 
+    @property
     def save(self):
         'Сохраняет предложение в базу данных'
-        try:
-            self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int)},
+        return pymongo.UpdateOne({'guid': self.id, 'guid_int': long(self.id_int)},
                                  {'$set': {'title': self._trim_by_words(self.title, 35),
                                            'price': self.price,
                                            'url': self.url,
@@ -77,33 +78,18 @@ class Offer(object):
                                            'RetargetingID': self.RetargetingID,
                                            'Recommended': self.Recommended
                                            }},
-                                 upsert=True, w=1)
-        except Exception as e:
-            print e
+                                 upsert=True)
 
+    @property
     def update(self):
         'Обнавляет предложение в базу данных'
-        try:
-            if self.image == "":
-                self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
-                                      'campaignId_int': long(self.campaign_int)},
-                                     {'$set': {'retargeting': self.retargeting,
-                                               'RetargetingID': self.RetargetingID,
-                                               'Recommended': self.Recommended
-                                               }},
-                                     upsert=False, w=1)
-            else:
-                self.db.offer.update({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
-                                      'campaignId_int': long(self.campaign_int)},
-                                     {'$set': {'image': self.image,
-                                               'retargeting': self.retargeting,
-                                               'RetargetingID': self.RetargetingID,
-                                               'Recommended': self.Recommended
-                                               }},
-                                     upsert=False, w=1)
-
-        except Exception as e:
-            print e
+        return pymongo.UpdateOne({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
+                                  'campaignId_int': long(self.campaign_int)},
+                                 {'$set': {'retargeting': self.retargeting,
+                                           'RetargetingID': self.RetargetingID,
+                                           'Recommended': self.Recommended
+                                           }},
+                                 upsert=False)
 
     def _trim_by_words(self, str, max_len):
         ''' Обрезает строку ``str`` до длины не более ``max_len`` с учётом слов '''
