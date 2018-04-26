@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals, print_function
 
 import cStringIO
+from io import BytesIO
 import datetime
 import pymssql
 import sys
@@ -15,7 +16,6 @@ import requests
 from PIL import Image
 from amqplib import client_0_8 as amqp
 from celery.task import task
-from eventlet.green import urllib2
 
 from getmyad.lib.adload_data import AdloadData
 from getmyad.model.Campaign import Campaign
@@ -31,32 +31,8 @@ MONGO_DATABASE = 'getmyad_db'
 image_trumb_height_width = (210, 210)
 
 # Параметры FTP для заливки статических файлов на сервер CDN
-cdn_server_url = 'https://cdn.yottos.com/'
-cdn_api_list = ['cdn.api.srv-10.yottos.com', 'cdn.api.srv-11.yottos.com', 'cdn.api.srv-12.yottos.com']
-img_folder = 'img4'
-
-
-def send(url, filename, file, iteration=None):
-    try:
-        headers = {
-            'X-Authentication': 'f9bf78b9a18ce6d46a0cd2b0b86df9da',
-            'User-agent': 'Mozilla/5.0'
-        }
-        mime = magic.Magic(mime=True)
-        file.seek(0)
-        content_type = mime.from_buffer(file.read())
-        file.seek(0)
-        files = {'file': (filename, file.read(), content_type)}
-        r = requests.post(url, headers=headers, files=files)
-    except Exception as e:
-        print('send error %s' % e)
-        if iteration is None:
-            iteration = 0
-        if iteration <= 1:
-            iteration += 1
-            send(url, filename, file, iteration)
-        else:
-            raise Exception(e)
+cdn_server_url = 'https://cdn.yottos.com'
+cdn_api_list = ['http://cdn.api.srv-10.yottos.com', 'http://cdn.api.srv-11.yottos.com', 'http://cdn.api.srv-12.yottos.com']
 
 
 def _mongo_connection():
@@ -134,35 +110,56 @@ def mssql_connection_adload():
     return conn
 
 
-def check_image(db, url, height, width, logo):
+def check_image(db, url, logo):
     try:
-        size_key = '%sx%s' % (height, width)
-        rec = db.image.find_one({'src': url.strip(), size_key: {'$exists': True}, 'logo': logo})
+        rec = db.image_n.find_one({'src': url.strip(), 'logo': logo})
         if rec:
-            return rec[size_key].get('url')
+            return rec.get('url')
         return None
     except Exception as ex:
         print(ex)
         return None
 
 
+def send(url, filename, obj, iteration=None):
+    try:
+        headers = {
+            'X-Authentication': 'f9bf78b9a18ce6d46a0cd2b0b86df9da',
+            'User-agent': 'Mozilla/5.0'
+        }
+        mime = magic.Magic(mime=True)
+        obj.seek(0)
+        content_type = mime.from_buffer(obj.read())
+        obj.seek(0)
+        files = {'file': (filename, obj.read(), content_type)}
+        r = requests.post(url, headers=headers, files=files)
+        if r.status_code != requests.codes.ok:
+            raise Exception('URLError = %s ' % r.status_code)
+    except Exception as e:
+        print('send error %s %s' % url, e)
+        if iteration is None:
+            iteration = 0
+        if iteration <= 1:
+            iteration += 1
+            send(url, filename, obj, iteration)
+        else:
+            raise Exception(e)
+
+
 def cdn_loader(png, webp):
+    if not cdn_server_url or not cdn_api_list:
+        raise Exception('Wrong settings')
     new_filename = uuid1().get_hex()
+    url_path = datetime.datetime.now().strftime('img10/%m/%d')
     for host in cdn_api_list:
         png.seek(0)
+        url = '%s/%s/%s.png' % (host, url_path, new_filename)
+        send(url, '%s.png' % new_filename, png)
+
         webp.seek(0)
-        send_png_url = 'http://%s/%s/%s/%s.png' % (host, img_folder, new_filename[:2], new_filename)
-        send_webp_url = 'http://%s/%s/%s/%s.webp' % (host, img_folder, new_filename[:2], new_filename)
-        try:
-            send(send_png_url, '%s.png' % new_filename, png)
-            send(send_webp_url, '%s.webp' % new_filename, webp)
-        except urllib2.HTTPError, e:
-            raise Exception('HTTPError = %s %s ' % (str(e.code), url))
-        except urllib2.URLError, e:
-            raise Exception('URLError = %s %s' % (str(e.reason), url))
-        except Exception as e:
-            raise Exception('URLError = %s %s' % (e, url))
-    return new_filename
+        url = '%s/%s/%s.webp' % (host, url_path, new_filename)
+        send(url, '%s.webp' % new_filename, webp)
+    return '%s/%s/%s.png' % (cdn_server_url, url_path, new_filename)
 
 
 def resizer(url, trum_height, trum_width, logo):
@@ -177,37 +174,21 @@ def resizer(url, trum_height, trum_width, logo):
     Returns:
 
     """
-    opener = urllib2.build_opener()
-    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-
-    try:
-        response = opener.open(url)
-    except urllib2.HTTPError, e:
-        raise Exception('HTTPError = %s %s ' % (str(e.code), url))
-    except urllib2.URLError, e:
-        raise Exception('URLError = %s %s' % (str(e.reason), url))
-    except Exception as e:
-        raise Exception('URLError = %s %s' % (e, url))
-
-    f = cStringIO.StringIO(response.read())
-    i = Image.open(f).convert('RGBA')
+    l = None
+    headers = {
+        'User-agent': 'Mozilla/5.0'
+    }
+    r = requests.get(url, headers=headers)
+    if r.status_code != requests.codes.ok:
+        raise Exception('URLError = %s %s' % (r.status_code, url))
+    i = Image.open(BytesIO(r.content)).convert('RGBA')
     width, height = i.size
-    if logo != '':
-
-        try:
-            response = opener.open(url)
-        except urllib2.HTTPError, e:
-            raise Exception('HTTPError = %s %s ' % (str(e.code), url))
-        except urllib2.URLError, e:
-            raise Exception('URLError = %s %s' % (str(e.reason), url))
-        except Exception as e:
-            raise Exception('URLError = %s %s' % (e, url))
-
-        f = cStringIO.StringIO(response.read())
-        l = Image.open(f).convert('RGBA')
+    if logo and logo != '':
+        r = requests.get(logo, headers=headers)
+        if r.status_code != requests.codes.ok:
+            raise Exception('URLError = %s %s' % (r.status_code, logo))
+        l = Image.open(BytesIO(r.content)).convert('RGBA')
         l.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
-    else:
-        l = None
 
     first_box = (None, None, None, None)
     second_box = (None, None, None, None)
@@ -305,16 +286,10 @@ def resize_and_upload_image(db, urls, logo):
         Возвращает url нового файла или пустую строку в случае ошибки.
     '''
     try:
-
-        if not cdn_server_url or not cdn_api_list:
-            return ''
         trum_height, trum_width = image_trumb_height_width
-        size_key = '%sx%s' % (trum_height, trum_width)
-
         result = []
-        url_list = urls.split(',')
-        for url in url_list:
-            rec = check_image(db, url, trum_height, trum_width, logo)
+        for url in urls:
+            rec = check_image(db, url, logo)
             if rec:
                 result.append(rec)
                 continue
@@ -333,58 +308,71 @@ def resize_and_upload_image(db, urls, logo):
             buf_png.seek(0)
             buf_webp.seek(0)
 
-            new_filename = cdn_loader(buf_png, buf_webp)
-            new_url = cdn_server_url + img_folder + '/' + new_filename[:2] + '/' + new_filename + '.png'
-            db.image.update({'src': url.strip(), 'logo': logo},
-                            {'$set': {size_key: {'url': new_url,
-                                                 'w': trum_width,
-                                                 'h': trum_height,
-                                                 'realWidth': image[1],
-                                                 'realHeight': image[2],
-                                                 'dt': datetime.datetime.now()
-                                                 }}},
-                            upsert=True, w=1)
-            result.append(new_url)
-        return " , ".join(result)
+            cdn_url = cdn_loader(buf_png, buf_webp)
+            db.image_n.update({'src': url.strip(), 'logo': logo},
+                              {'$set': {'url': cdn_url, 'dt': datetime.datetime.now()}}, upsert=True)
+            result.append(cdn_url)
+        return result
     except Exception as ex:
         print('resize_and_upload_image %s' % ex)
-        return ''
+        return []
 
 
 @task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='small-image')
-def small_resize_image(offer_id, res, campaign_id=None, **kwargs):
-    """
-
-    Args:
-        res:
-        campaign_id:
-        work:
-        kwargs:
-    """
-    resize_image(offer_id, res, campaign_id, **kwargs)
-
-
-@task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='image')
-def resize_image(offer_id, res, campaign_id=None, **kwargs):
+def small_resize_image(offer_id=None, urls=None, logo=None, campaign_id=None, **kwargs):
     """
 
     Args:
         offer_id:
-        res:
+        urls:
+        logo:
+        campaign_id:
+        kwargs:
+    """
+    resize_image(offer_id, urls, logo, campaign_id, **kwargs)
+
+
+@task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='image')
+def resize_image(offer_id=None, urls=None, logo=None, campaign_id=None, **kwargs):
+    """
+
+    Args:
+        offer_id:
+        urls:
+        logo:
         campaign_id:
         kwargs:
     """
     try:
         db = _mongo_main_db()
-        if offer_id:
-            url, logo = res
-            image = resize_and_upload_image(db, url, logo)
-            db.offer.update({'guid': offer_id, }, {'$set': {"image": image}}, upsert=False)
+        if offer_id and urls:
+            images = resize_and_upload_image(db, urls, logo)
+            db.offer.update({'guid': offer_id, }, {'$set': {"image":  " , ".join(images)}}, upsert=False)
         if campaign_id:
             campaign_update(campaign_id)
     except Exception as ex:
         print('Task resize_image %s' % ex)
-        resize_image.retry(args=[offer_id, res, campaign_id], kwargs=kwargs, exc=ex)
+        resize_image.retry(args=[offer_id, urls, logo, campaign_id], kwargs=kwargs, exc=ex)
+
+
+@task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='preload-image')
+def preload_image(urls=None, logo=None, **kwargs):
+    """
+
+    Args:
+        offer_id:
+        urls:
+        logo:
+        campaign_id:
+        kwargs:
+    """
+    try:
+        db = _mongo_main_db()
+        if urls:
+            resize_and_upload_image(db, urls, logo)
+    except Exception as ex:
+        print('Task preload_image %s' % ex)
+        resize_image.retry(args=[urls, logo], kwargs=kwargs, exc=ex)
 
 
 @task(max_retries=10, ignore_result=True, acks_late=True, default_retry_delay=10)
@@ -444,7 +432,12 @@ def campaign_offer_update(campaign_id, **kwargs):
             operations = []
             res_task_img = []
             for x in ad.offers.itervalues():
-                offer = Offer(x['id'], db)
+                images = x['image'].split(',')
+                logo = x['logo']
+                offer_id = x['id']
+                preload_image.delay(images, logo)
+                res_task_img.append((offer_id, images, logo))
+                offer = Offer(offer_id, db)
                 offer.accountId = x['accountId']
                 offer.title = x['title']
                 offer.price = x['price']
@@ -473,14 +466,14 @@ def campaign_offer_update(campaign_id, **kwargs):
                         print(ex, "offer.update", x['id'])
                     hashes.remove(offer.hash)
 
-                if len(operations) >= 1000:
+                if len(operations) >= 10000:
                     try:
                         db.offer.bulk_write(operations, ordered=False)
                     except BulkWriteError as bwe:
                         print(bwe.details)
 
                     for task_img in res_task_img:
-                        task_resize_image.delay(task_img[0], task_img[1])
+                        task_resize_image.delay(task_img[0], task_img[1], task_img[2])
 
                     res_task_img = []
                     operations = []
@@ -495,9 +488,9 @@ def campaign_offer_update(campaign_id, **kwargs):
                 print(bwe.details)
 
             for task_img in res_task_img:
-                task_resize_image.delay(task_img[0], task_img[1])
+                task_resize_image.delay(task_img[0], task_img[1], task_img[2])
             if work:
-                task_resize_image.delay(None, {}, campaign_id)
+                task_resize_image.delay(campaign_id=campaign_id)
 
     except Exception as ex:
         campaign_offer_update.retry(args=[campaign_id], kwargs=kwargs, exc=ex)
