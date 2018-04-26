@@ -12,7 +12,7 @@ from uuid import uuid1
 import magic
 import pymongo
 from pymongo.errors import BulkWriteError
-import requests
+import erequests as requests
 from PIL import Image
 from amqplib import client_0_8 as amqp
 from celery.task import task

@@ -8,4 +8,4 @@ pip install -e.
 
 Run Celery
 ==========
-celery worker -Q celery,image,small-image -c 1  -n worker.%h
+celery worker -Q celery,image,small-image,preload-image -c 10 -P eventlet -n worker.%h

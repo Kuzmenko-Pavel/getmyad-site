@@ -22,12 +22,12 @@ setup(
         "WebOb==1.7.4",
         "slimit==0.8.1",
         "ply==3.4",
-        "Pillow==3.0.0",
+        "Pillow==5.1.0",
         "pylibmc==1.5.2",
         "urlfetch==1.0.2",
         "recaptcha-client",
         "eventlet==0.22.1",
-        'requests==2.18.4',
+        'erequests==0.4.1',
         'python-magic==0.4.15'
 
     ],
