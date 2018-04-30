@@ -421,22 +421,22 @@ def campaign_offer_update(campaign_id, **kwargs):
             campaignTitle = camp.title
 
             pipeline = [
-                {'$match': {'hash': {'$exists': True}, 'campaignId': campaign_id}},
-                {'$group': {'_id': '$hash'}}
+                {'$match': {'campaignId': campaign_id}},
+                {'$group': {'_id': {'_id': '$_id', 'hash': '$hash'}}}
             ]
-            hashes = []
             cursor = db.offer.aggregate(pipeline=pipeline, cursor={})
-            for doc in cursor:
-                hashes.append(doc['_id'])
+            hashes = {doc['_id']['hash']: doc['_id']['_id'] for doc in cursor}
 
             operations = []
             res_task_img = []
             for x in ad.offers.itervalues():
+
                 images = x['image'].split(',')
                 logo = x['logo']
                 offer_id = x['id']
                 preload_image.delay(images, logo)
                 res_task_img.append((offer_id, images, logo))
+
                 offer = Offer(offer_id, db)
                 offer.accountId = x['accountId']
                 offer.title = x['title']
@@ -453,18 +453,19 @@ def campaign_offer_update(campaign_id, **kwargs):
                 offer.retargeting = retargeting_campaign
                 offer.rating = round(((ctr * offer.cost) * 100000), 4)
                 offer.full_rating = round(((ctr * offer.cost) * 100000), 4)
+                offer.rating_garant = round(((ctr * offer.cost) * 100000), 4)
+                offer.full_rating_garant = round(((ctr * offer.cost) * 100000), 4)
 
-                if offer.hash not in hashes:
+                if offer.hash in hashes:
+                    try:
+                        del hashes[offer.hash]
+                    except Exception as e:
+                        print('remove hash %s' % str(e))
+                else:
                     try:
                         operations.append(offer.save)
                     except Exception as ex:
                         print(ex, "offer.save", x['id'])
-                else:
-                    try:
-                        operations.append(offer.update)
-                    except Exception as ex:
-                        print(ex, "offer.update", x['id'])
-                    hashes.remove(offer.hash)
 
                 if len(operations) >= 10000:
                     try:
@@ -478,12 +479,13 @@ def campaign_offer_update(campaign_id, **kwargs):
                     res_task_img = []
                     operations = []
 
-
-            operations.append(
-                pymongo.DeleteMany({'campaignId': campaign_id, 'hash': {'$in': hashes}})
-            )
+            for value in hashes.itervalues():
+                operations.append(
+                    pymongo.DeleteOne({'_id': value})
+                )
             try:
-                db.offer.bulk_write(operations, ordered=False)
+                if operations:
+                    db.offer.bulk_write(operations, ordered=False)
             except BulkWriteError as bwe:
                 print(bwe.details)
 

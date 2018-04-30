@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import hashlib as h
+import uuid
 from binascii import crc32
 import pymongo
 
@@ -11,7 +12,7 @@ class Offer(object):
 
     __slots__ = ['db', 'id', 'id_int', 'title', 'price', 'url', 'image', 'description', 'date_added', 'campaign',
                  'campaign_int', 'campaignTitle', 'retargeting', 'rating', 'full_rating', '_hash', 'cost', 'accountId',
-                 'RetargetingID', 'Recommended']
+                 'RetargetingID', 'Recommended', 'rating_garant', 'full_rating_garant']
 
     def __init__(self, id, db=None):
         if db is None:
@@ -19,7 +20,7 @@ class Offer(object):
         else:
             self.db = db
         self.id = id.lower()
-        self.id_int = long(crc32(self.id.encode('utf-8')) & 0xffffffff)
+        self.id_int = long(uuid.UUID(self.id.encode('utf-8')).int & ((1 << 64)/2) - 2)
         self.title = ''
         self.price = ''
         self.url = ''
@@ -32,6 +33,8 @@ class Offer(object):
         self.retargeting = False
         self.rating = 0.0
         self.full_rating = 0.0
+        self.rating_garant = 0.0
+        self.full_rating_garant = 0.0
         self._hash = None
         self.cost = 0
         self.accountId = ''
@@ -45,14 +48,17 @@ class Offer(object):
         offerHash = {}
         offerHash['guid'] = self.id
         offerHash['guid_int'] = long(self.id_int)
-        offerHash['title'] = self.title
-        offerHash['description'] = self.description
+        offerHash['title'] = self._trim_by_words(self.title, 35)
+        offerHash['description'] = self._trim_by_words(self.description, 70)
         offerHash['url'] = self.url
         offerHash['campaignId'] = self.campaign
-        offerHash['campaignId_int'] = self.campaign_int
+        offerHash['campaignId_int'] = long(self.campaign_int)
         offerHash['cost'] = self.cost
         offerHash['price'] = self.price
         offerHash['dateAdded'] = self.date_added
+        offerHash['retargeting'] = self.date_added
+        offerHash['RetargetingID'] = self.date_added
+        offerHash['Recommended'] = self.date_added
         self._hash = str(h.md5(str(offerHash)).hexdigest())
         return self._hash
 
@@ -72,6 +78,8 @@ class Offer(object):
                                            'retargeting': self.retargeting,
                                            'rating': self.rating,
                                            'full_rating': self.full_rating,
+                                           'rating_garant': self.rating_garant,
+                                           'full_rating_garant': self.full_rating_garant,
                                            'hash': self.hash,
                                            'cost': self.cost,
                                            'accountId': self.accountId,
@@ -79,17 +87,6 @@ class Offer(object):
                                            'Recommended': self.Recommended
                                            }},
                                  upsert=True)
-
-    @property
-    def update(self):
-        'Обнавляет предложение в базу данных'
-        return pymongo.UpdateOne({'guid': self.id, 'guid_int': long(self.id_int), 'campaignId': self.campaign,
-                                  'campaignId_int': long(self.campaign_int)},
-                                 {'$set': {'retargeting': self.retargeting,
-                                           'RetargetingID': self.RetargetingID,
-                                           'Recommended': self.Recommended
-                                           }},
-                                 upsert=False)
 
     def _trim_by_words(self, str, max_len):
         ''' Обрезает строку ``str`` до длины не более ``max_len`` с учётом слов '''
