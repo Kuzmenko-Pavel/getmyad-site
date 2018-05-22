@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from ftplib import FTP
-from uuid import uuid1
+from uuid import uuid4
 import StringIO
 import datetime
 import logging
@@ -58,7 +58,7 @@ class Informer:
         """ Сохраняет информер, при необходимости создаёт """
         update = {}
         if not self.guid:
-            self.guid = str(uuid1()).lower()
+            self.guid = str(uuid4()).lower()
             if not self.user_login:
                 raise ValueError('User login must be specified when creating '
                                  'informer!')
@@ -373,7 +373,7 @@ class InformerPattern:
         if self.guid:
             pass
         else:
-            self.guid = str(uuid1()).lower()
+            self.guid = str(uuid4()).lower()
             
         if self.admaker:
             update['admaker'] = self.admaker

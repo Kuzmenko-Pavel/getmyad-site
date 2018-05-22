@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import datetime
 import logging
-from uuid import uuid1
+from uuid import uuid4
 
 import pymongo
 from pylons import app_globals
@@ -141,7 +141,7 @@ class Account(object):
                 raise Account.Domains.AlreadyExistsError(self.account.login)
             try:
                 domain = self.url_to_domain(url)
-                guid = uuid1()
+                guid = uuid4()
                 guid_int = uuid_to_long(str(guid))
                 self.db.domain.update({'login': self.account.login},
                                       {'$set': {('domains.' + str(guid)): domain}},
@@ -264,7 +264,7 @@ class Account(object):
 
     def __init__(self, login):
         self.login = login
-        self.guid = str(uuid1())
+        self.guid = str(uuid4())
         self.guid_int = uuid_to_long(self.guid)
         self.email = ''
         self.skype = ''

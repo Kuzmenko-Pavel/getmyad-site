@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from datetime import datetime, timedelta
-from uuid import uuid1
+from uuid import uuid4
 from collections import defaultdict
 
 import formencode
@@ -84,7 +84,7 @@ class ManagerController(BaseController):
         if not c.user:
             return redirect(url(controller="main", action="signOut"))
 
-        token = str(uuid1()).upper()
+        token = str(uuid4()).upper()
         session[token] = {'user': session.get('user')}
         session.save()
         c.token = token

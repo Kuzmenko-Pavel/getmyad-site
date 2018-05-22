@@ -202,7 +202,7 @@ def secontToString(seconds, format):
 
 
 def uuid_to_long(uuid):
-    return long(UUID(uuid.encode('utf-8')).int & ((1 << 64) / 2) - 2)
+    return long(UUID(uuid.encode('utf-8')).int >> 64 & ((1 << 64) / 2) - 2)
 
 
 def to_int(value, default=0):

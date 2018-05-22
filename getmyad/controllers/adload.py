@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import logging
 import datetime
-from uuid import uuid1
+from uuid import uuid4
 from collections import defaultdict
 
 from pylons import request, session, tmpl_context as c, app_globals
@@ -188,7 +188,7 @@ class AdloadController(BaseController):
             title = request.params.get('title')
             guid = request.params.get('guid')
             if not guid:
-                guid = str(uuid1()).upper()
+                guid = str(uuid4()).upper()
             guid_int = h.uuid_to_long(guid)
             app_globals.db_m.advertise.category.update({'guid': guid},
                                                        {'$set': {
@@ -210,7 +210,7 @@ class AdloadController(BaseController):
         c.campaign = Campaign(id)
         c.campaign.load()
 
-        token = str(uuid1()).upper()
+        token = str(uuid4()).upper()
         session[token] = {'user': session.get('user'), 'campaign_id': id}
         session.save()
         c.token = token
@@ -285,7 +285,7 @@ class AdloadController(BaseController):
         if not Campaign(id).exists():
             return h.JSON(
                 {"error": True, "msg": "Кампания с заданным id не существует"})  # TODO: Ошибку на нормальной странице
-        token = str(uuid1()).upper()
+        token = str(uuid4()).upper()
         session[token] = {'user': session.get('user'), 'campaign_id': id}
         session.save()
         c.token = token

@@ -7,7 +7,7 @@ import datetime
 import pymssql
 import sys
 import time
-from uuid import uuid1
+from uuid import uuid4
 
 import magic
 import pymongo
@@ -149,7 +149,7 @@ def send(url, filename, obj, iteration=None):
 def cdn_loader(png, webp):
     if not cdn_server_url or not cdn_api_list:
         raise Exception('Wrong settings')
-    new_filename = uuid1().get_hex()
+    new_filename = uuid4().get_hex()
     url_path = datetime.datetime.now().strftime('img10/%m/%d')
     for host in cdn_api_list:
         png.seek(0)

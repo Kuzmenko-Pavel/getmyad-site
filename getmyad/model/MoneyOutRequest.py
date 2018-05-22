@@ -22,7 +22,7 @@ class MoneyOutRequest(object):
         self.account = None
         self.summ = 0
         self.comment = ''
-        self.confirm_guid = uuid.uuid1().hex
+        self.confirm_guid = uuid.uuid4().hex
         self.ip = ''
     
     def save(self):

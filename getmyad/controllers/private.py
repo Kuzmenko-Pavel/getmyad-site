@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from datetime import datetime, timedelta
-from uuid import uuid1
+from uuid import uuid4
 import logging
 import time
 
@@ -84,7 +84,7 @@ class PrivateController(BaseController):
         if request.environ['IS_MANAGER']:
             return redirect(url(controller='manager', action='index'))
 
-        token = str(uuid1()).upper()
+        token = str(uuid4()).upper()
         session[token] = {'user': session.get('user')}
         session.save()
         c.token = token
@@ -720,7 +720,7 @@ class PrivateController(BaseController):
     def uploadFactura(self):
         try:
             form = request.params.get("userfile")
-            file_guid = str(uuid1().hex).upper()
+            file_guid = str(uuid4().hex).upper()
             extension = os.path.splitext(form.filename)[-1]
             filename = file_guid + extension
             location = '%s/%s' % (config.get('schet_factura_folder'), filename)
