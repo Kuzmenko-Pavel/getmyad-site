@@ -7,7 +7,7 @@ import pymongo
 from pylons import app_globals
 
 from getmyad.lib.helpers import uuid_to_long, formatMoney
-from getmyad.model import mq
+from getmyad.model.mq import MQ
 from getmyad.model.Informer import Informer
 
 log = logging.getLogger(__name__)
@@ -69,6 +69,17 @@ class Account(object):
         def __call__(self):
             return self.list()
 
+        @staticmethod
+        def url_to_domain(url):
+            domain = url
+            if domain.startswith('http://'):
+                domain = domain[7:]
+            if domain.startswith('https://'):
+                domain = domain[8:]
+            if domain.startswith('www.'):
+                domain = domain[4:]
+            return domain
+
         def list(self):
             """ Возвращает список доменов, назначенных данному аккаунту """
             data = self.db.domain.find_one({'login': self.account.login})
@@ -79,6 +90,27 @@ class Account(object):
                 return domains
             except (AssertionError, KeyError, TypeError):
                 return []
+
+        def id_by_name(self, name):
+            """ Возвращает список доменов, назначенных данному аккаунту """
+            data = self.db.domain.find_one({'login': self.account.login})
+            try:
+                guid = None
+                guid_int = None
+                domains = data.get('domains', {})
+                domains_int = data.get('domains_int', {})
+                assert isinstance(domains, dict)
+                for key, value in domains.iteritems():
+                    if value == name:
+                        guid = key
+                        break
+                for key, value in domains_int.iteritems():
+                    if value == name:
+                        guid_int = key
+                        break
+                return guid, guid_int
+            except (AssertionError, KeyError, TypeError):
+                return None, None
 
         def all_list(self):
             """ Возвращает список доменов, в системе """
@@ -105,31 +137,39 @@ class Account(object):
 
         def add(self, url):
             """ Добавляет домен к списку разрешённых доменов пользователя """
+            if self.check_exists(url):
+                raise Account.Domains.AlreadyExistsError(self.account.login)
             try:
-                domain = url
-                if domain.startswith('http://'):
-                    domain = domain[7:]
-                if domain.startswith('https://'):
-                    domain = domain[8:]
-                if domain.startswith('www.'):
-                    domain = domain[4:]
-
+                domain = self.url_to_domain(url)
+                guid = uuid1()
+                guid_int = uuid_to_long(str(guid))
                 self.db.domain.update({'login': self.account.login},
-                                      {'$set': {('domains.' + str(uuid1())): domain}},
+                                      {'$set': {('domains.' + str(guid)): domain}},
+                                      {'$set': {('domains_int.' + str(guid_int)): domain}},
                                       upsert=True)
-                mq.MQ().account_update(self.account.login)
+                MQ().domain_start(domain)
+                MQ().account_update(self.account.login)
             except (pymongo.errors.OperationFailure):
                 raise Account.Domains.DomainAddError(self.account.login)
 
-        def categories_add(self, domain, categories):
+        def categories_add(self, url, categories):
             """ Добавляет домен к списку разрешённых доменов пользователя """
             try:
+                domain = self.url_to_domain(url)
+                guid, guid_int = self.id_by_name(domain)
+                categories_int = [uuid_to_long(x) for x in categories]
                 self.db.domain.categories.update({'domain': domain},
                                                  {'$set':
-                                                      {'categories': categories}
+                                                      {
+                                                          'guid': guid,
+                                                          'guid_int': guid_int,
+                                                          'categories': categories,
+                                                          'categories_int': categories_int
+                                                      }
                                                   },
                                                  upsert=True)
-                mq.MQ().account_update(self.account.login)
+                MQ().domain_update(domain)
+                MQ().account_update(self.account.login)
             except (pymongo.errors.OperationFailure):
                 raise Account.Domains.DomainAddError(self.account.login)
 
@@ -144,21 +184,15 @@ class Account(object):
                 return []
 
         def check_exists(self, url):
+            url = self.url_to_domain(url)
             return filter(lambda x: x == url or ('http://%s' % x) == url or ('https://%s' % x) == url, self.all_list())
 
         def add_request(self, url):
             """ Добавляет заявку на добавление домена """
-            domain = url
-            if domain.startswith('http://'):
-                domain = domain[7:]
-            if domain.startswith('https://'):
-                domain = domain[8:]
-            if domain.startswith('www.'):
-                domain = domain[4:]
-
-            if filter(lambda x: x == domain or ('http://%s' % x) == domain or ('https://%s' % x) == domain,
-                      self.all_list()):
+            if self.check_exists(url):
                 raise Account.Domains.AlreadyExistsError(self.account.login)
+
+            domain = self.url_to_domain(url)
 
             self.db.domain.update({'login': self.account.login},
                                   {'$addToSet': {'requests': domain}}, upsert=True)
@@ -166,13 +200,7 @@ class Account(object):
         def approve_request(self, url):
             """ Одобряет заявку на добавление домена """
             # Проверяем, была ли подана такая заявка
-            domain = url
-            if domain.startswith('http://'):
-                domain = domain[7:]
-            if domain.startswith('https://'):
-                domain = domain[8:]
-            if domain.startswith('www.'):
-                domain = domain[4:]
+            domain = self.url_to_domain(url)
 
             if not self.db.domain.find_one({'login': self.account.login, 'requests': domain}):
                 return False
@@ -181,24 +209,12 @@ class Account(object):
 
         def remove_request(self, url):
             """ Удаляет заявку на добавление домена """
-            domain = url
-            if domain.startswith('http://'):
-                domain = domain[7:]
-            if domain.startswith('https://'):
-                domain = domain[8:]
-            if domain.startswith('www.'):
-                domain = domain[4:]
+            domain = self.url_to_domain(url)
             self.db.domain.update({'login': self.account.login},
                                   {'$pull': {'requests': domain}}, upsert=True)
 
         def reject_request(self, url):
-            domain = url
-            if domain.startswith('http://'):
-                domain = domain[7:]
-            if domain.startswith('https://'):
-                domain = domain[8:]
-            if domain.startswith('www.'):
-                domain = domain[4:]
+            domain = self.url_to_domain(url)
             if not self.db.domain.find_one({'login': self.account.login, 'requests': domain}):
                 return False
             self.db.domain.update({'login': self.account.login},
@@ -206,13 +222,7 @@ class Account(object):
             self.remove_request(domain)
 
         def remove(self, url):
-            domain = url
-            if domain.startswith('http://'):
-                domain = domain[7:]
-            if domain.startswith('https://'):
-                domain = domain[8:]
-            if domain.startswith('www.'):
-                domain = domain[4:]
+            domain = self.url_to_domain(url)
             data = self.db.domain.find({'login': self.account.login})
             for item in data:
                 domains = item.get('domains', {})
@@ -225,14 +235,11 @@ class Account(object):
             for informer in self.db.informer.find({'domain': domain}):
                 informer_id = informer['guid']
                 self.db.informer.remove({'guid': informer_id}, multi=True)
-                mq.MQ().informer_stop(informer_id)
+                MQ().informer_stop(informer_id)
 
             self.db.domain.categories.remove({'domain': domain}, multi=True)
-            mq.MQ().domain_stop(domain)
-
-            self.db.user.domains.update({'login': self.account.login},
-                                        {'$pull': {'domain': domain}}, upsert=True)
-            mq.MQ().account_update(self.account.login)
+            MQ().domain_stop(domain)
+            MQ().account_update(self.account.login)
 
     def get_login(self):
         return self._login

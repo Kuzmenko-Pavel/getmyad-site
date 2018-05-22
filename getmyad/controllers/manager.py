@@ -2428,14 +2428,10 @@ class ManagerController(BaseController):
             domain = request.params.get('account_domains')
             if len(domain) == 0:
                 return h.JSON({'error': True, 'msg': u'Ошибка! Не указан домен!'})
-            app_globals.db.domain.categories.update({'domain': domain},
-                                                    {'$set':
-                                                         {'categories': categories}
-                                                     },
-                                                    upsert=True)
             login = request.params.get('login')
             edit_account = model.Account(login)
             edit_account.load()
+            edit_account.domains.categories_add(domain, categories)
             account_domains = edit_account.domains.list()
             domains_categories = {}
             for x in account_domains:

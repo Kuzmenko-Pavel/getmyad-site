@@ -98,11 +98,21 @@ class Informer:
             update['admaker'] = self.admaker
         if self.domain:
             update['domain'] = self.domain
-            record = self.db.user.domains.find_one({'login': self.user_login})
+            record = self.db.domains.find_one({'login': self.user_login})
             if not self.domain_guid:
-                self.domain_guid = record.get('guid')
+                obj = record.get('domains', {})
+                for k, v in obj.iteritems():
+                    if v == self.domain:
+                        self.domain_guid = k
+                        break
             if not self.domain_guid_int:
-                self.domain_guid_int = record.get('guid_int', uuid_to_long(self.domain_guid))
+                obj = record.get('domains_int', {})
+                for k, v in obj.iteritems():
+                    if v == self.domain:
+                        self.domain_guid_int = k
+                        break
+                else:
+                    self.domain_guid_int = uuid_to_long(self.domain_guid)
         if self.height:
             update['height'] = self.height
         if self.width:

@@ -52,6 +52,14 @@ class MQ(object):
         ch.close()
         print "AMQP Campaign update %s" % campaign_id
 
+    def informer_start(self, informer_id):
+        ''' Отправляет уведомление о том, что информер ``informer_id`` был удален '''
+        ch = self._get_channel()
+        msg = amqp.Message(informer_id)
+        ch.basic_publish(msg, exchange='getmyad', routing_key='informer.start')
+        ch.close()
+        print "AMQP Informer deleted %s" % informer_id
+
     def informer_update(self, informer_id):
         ''' Отправляет уведомление о том, что информер ``informer_id`` был изменён '''
         ch = self._get_channel()
@@ -67,6 +75,22 @@ class MQ(object):
         ch.basic_publish(msg, exchange='getmyad', routing_key='informer.stop')
         ch.close()
         print "AMQP Informer deleted %s" % informer_id
+
+    def domain_start(self, domain):
+        ''' Отправляет уведомление о том, что информер ``informer_id`` был удален '''
+        ch = self._get_channel()
+        msg = amqp.Message(domain)
+        ch.basic_publish(msg, exchange='getmyad', routing_key='domain.start')
+        ch.close()
+        print "AMQP Site deleted %s" % domain
+
+    def domain_update(self, domain):
+        ''' Отправляет уведомление о том, что информер ``informer_id`` был удален '''
+        ch = self._get_channel()
+        msg = amqp.Message(domain)
+        ch.basic_publish(msg, exchange='getmyad', routing_key='domain.update')
+        ch.close()
+        print "AMQP Site deleted %s" % domain
 
     def domain_stop(self, domain):
         ''' Отправляет уведомление о том, что информер ``informer_id`` был удален '''

@@ -189,8 +189,13 @@ class AdloadController(BaseController):
             guid = request.params.get('guid')
             if not guid:
                 guid = str(uuid1()).upper()
+            guid_int = h.uuid_to_long(guid)
             app_globals.db_m.advertise.category.update({'guid': guid},
-                                                       {'$set': {'clickCost': clickCost, 'title': title}}, upsert=True)
+                                                       {'$set': {
+                                                           'guid_int': guid_int,
+                                                           'clickCost': clickCost,
+                                                           'title': title
+                                                       }}, upsert=True)
             return h.JSON({'error': False})
         except:
             return h.JSON({'error': True})
