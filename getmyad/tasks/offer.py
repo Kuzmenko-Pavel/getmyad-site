@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
-import hashlib as h
-import uuid
-from binascii import crc32
+import hashlib
+from getmyad.lib.helpers import uuid_to_long
 import pymongo
 
 from pylons import app_globals
@@ -20,7 +19,7 @@ class Offer(object):
         else:
             self.db = db
         self.id = id.lower()
-        self.id_int = long(uuid.UUID(self.id.encode('utf-8')).int & ((1 << 64)/2) - 2)
+        self.id_int = uuid_to_long(self.id.encode('utf-8'))
         self.title = ''
         self.price = ''
         self.url = ''
@@ -59,7 +58,7 @@ class Offer(object):
         offerHash['retargeting'] = self.date_added
         offerHash['RetargetingID'] = self.date_added
         offerHash['Recommended'] = self.date_added
-        self._hash = str(h.md5(str(offerHash)).hexdigest())
+        self._hash = str(hashlib.md5(str(offerHash)).hexdigest())
         return self._hash
 
     @property

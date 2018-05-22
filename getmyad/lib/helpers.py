@@ -12,6 +12,7 @@ from webhelpers.html.tags import *
 from datetime import datetime
 from pylons.controllers.util import redirect
 import json
+from uuid import UUID
 
 import bson.json_util
 
@@ -57,7 +58,6 @@ class progressBar:
         return str(self.progBar)
 
 
-
 def dateFromStr(str):
     """Возвращает объект datetime из строки вида 'чч.мм.гггг' """
     try:
@@ -81,15 +81,18 @@ def datetimeFromStr(str):
     except:
         return None
 
+
 def trim_time(datetime_object):
     ''' Возвращает объект datetime.datetime с обнулённым временем '''
     return datetime(datetime_object.year,
                     datetime_object.month,
                     datetime_object.day)
 
+
 def userNotAuthorizedError():
     return JSON({'error': True, 'error_type': 'authorizedError',
                  'msg': u"Пожалуйста, войдите в систему GetMyAd", 'ok': False}) 
+
 
 def insufficientRightsError():
     return JSON({'error': True,
@@ -154,6 +157,7 @@ def jgridDataWrapper(data, userdata=None, page=None, records_on_page=None, count
         output['userdata'] = userdata
     return JSON(output) if json else output
 
+
 def jqGridLocalData(data, columns_list):
     """ Принимает таблицу ``data`` (list of tupples) и список id колонок
         jqGrid ``columns_list``.
@@ -172,21 +176,41 @@ def formatMoney(value):
     """ Форматирует денежную величину """
     return u'%.2f грн' % value
 
+
 def JSON(obj):
     """Возвращает JSON-представление объекта obj"""
     return json.dumps(obj, default=bson.json_util.default, ensure_ascii=True)
+
 
 def avg(collection):
     ''' Возвращает среднее значение коллекции '''
     if not collection:
         return 0
     return sum(collection) / len(collection)
+
+
 def year():
     dt = datetime.now()
     return dt.strftime('%Y')
-   
+
+
 def secontToString(seconds, format):
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     data = {'h':int(h), 'm':int(m), 's':int(s)}
     return format.format(**data)
+
+
+def uuid_to_long(uuid):
+    return long(UUID(uuid.encode('utf-8')).int & ((1 << 64) / 2) - 2)
+
+
+def to_int(value, default=0):
+    if isinstance(value, int):
+        return value
+    elif isinstance(value, str) and value.isdigit():
+        return int(value)
+    elif isinstance(value, unicode) and value.isdigit():
+        return int(value)
+    else:
+        return default

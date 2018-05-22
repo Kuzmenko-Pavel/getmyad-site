@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import datetime
-from binascii import crc32
+from getmyad.lib.helpers import uuid_to_long
 
 from pylons import app_globals
 
@@ -25,7 +25,7 @@ class Campaign(object):
             self.db = db
         #: ID кампании
         self.id = id.lower()
-        self.id_int = long(crc32(self.id.encode('utf-8')) & 0xffffffff)
+        self.id_int = uuid_to_long(self.id.encode('utf-8'))
         #: Заголовок рекламной кампании
         self.title = ''
         #: Является ли кампания социальной рекламой
@@ -67,7 +67,7 @@ class Campaign(object):
         if not c:
             raise Campaign.NotFoundError(self.id, self.db)
         self.id = c.get('guid')
-        self.id_int = c.get('guid_int', 0)
+        self.id_int = c.get('guid_int', uuid_to_long(self.id.encode('utf-8')))
         self.title = c.get('title')
         self.account = c.get('account')
         self.manager = c.get('manager')
@@ -112,15 +112,16 @@ class Campaign(object):
             return False
         self.delete()
         self.db.campaign.save(c)
-        self.db.campaign.archive.remove({'guid': self.id, 'guid_int': long(self.id_int)})
+        self.db.campaign.archive.remove({'guid': self.id})
 
         return True
 
     def save(self):
         'Сохраняет кампанию в базу данных'
         self.db.campaign.update(
-            {'guid': self.id, 'guid_int': long(self.id_int)},
-            {'$set': {'title': self.title,
+            {'guid': self.id},
+            {'$set': {'guid_int': self.id_int,
+                      'title': self.title,
                       'social': self.social,
                       'project': self.project,
                       'account': self.account,
@@ -186,13 +187,13 @@ class Campaign(object):
 
     def delete(self):
         'Удаляет кампанию'
-        self.db.campaign.remove({'guid': self.id, 'guid_int': long(self.id_int)})
+        self.db.campaign.remove({'guid': self.id})
 
     def move_to_archive(self):
         'Перемещает кампанию в архив'
-        c = self.db.campaign.find_one({'guid': self.id, 'guid_int': long(self.id_int)})
+        c = self.db.campaign.find_one({'guid': self.id})
         if not c: return
-        self.db.campaign.archive.remove({'guid': self.id, 'guid_int': long(self.id_int)})
+        self.db.campaign.archive.remove({'guid': self.id})
         self.db.campaign.archive.save(c)
         self.delete()
 

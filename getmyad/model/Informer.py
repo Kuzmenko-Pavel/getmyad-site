@@ -4,15 +4,11 @@ from uuid import uuid1
 import StringIO
 import datetime
 import logging
-from binascii import crc32
 import json
 
-from getmyad.lib.helpers import progressBar
-from getmyad.lib.admaker_validator import validate_admaker
-from getmyad.lib.template_convertor import js2mako
-from getmyad.model import mq
+from getmyad.lib.helpers import progressBar, uuid_to_long, to_int
+from getmyad.model.mq import MQ
 from pylons import config, app_globals
-import mako.template
 import re
 from slimit import minifier
 
@@ -25,15 +21,17 @@ class Informer:
 
         """
         self.guid = None
-        self.guid_int = 0
+        self.guid_int = None
         self.dynamic = False
         self.title = None
         self.admaker = None
-        self.css = None
-        self.css_banner = None
         self.user_login = None
+        self.user_guid = None
+        self.user_guid_int = None
         self.non_relevant = None
         self.domain = None
+        self.domain_guid = None
+        self.domain_guid_int = None
         self.height = None
         self.width = None
         self.height_banner = None
@@ -56,37 +54,36 @@ class Informer:
         self.rating_division = 1000
         self.db = app_globals.db
 
-
     def save(self):
         """ Сохраняет информер, при необходимости создаёт """
         update = {}
-        if self.guid:
-            self.guid_int = long(crc32(self.guid.encode('utf-8')) & 0xffffffff)
-        else:
+        if not self.guid:
             self.guid = str(uuid1()).lower()
-            self.guid_int = long(crc32(self.guid.encode('utf-8')) & 0xffffffff)
             if not self.user_login:
                 raise ValueError('User login must be specified when creating '
                                  'informer!')
             update['user'] = self.user_login
+
+        if not self.guid_int:
+            self.guid_int = uuid_to_long(self.guid)
+
         if self.user_login is not None:
             record = self.db.users.find_one({'login': self.user_login})
-            self.range_short_term = float(record.get('range_short_term', (100 / 100.0)))
-            update['range_short_term'] = self.range_short_term
-            self.range_long_term = float(record.get('range_long_term', (0 / 100.0)))
-            update['range_long_term'] = self.range_long_term
-            self.range_context = float(record.get('range_context', (0 / 100.0)))
-            update['range_context'] = self.range_context
-            self.range_search = float(record.get('range_search', (100 / 100.0)))
-            update['range_search'] = self.range_search
-            self.range_retargeting = float(record.get('range_retargeting', (100 / 100.0)))
-            update['retargeting_capacity'] = self.range_retargeting
+            if not self.user_guid:
+                self.user_guid = record.get('guid')
+            if not self.user_guid_int:
+                self.user_guid_int = record.get('guid_int', uuid_to_long(self.user_guid))
+            update['range_short_term'] = self.range_short_term = float(record.get('range_short_term', 1))
+            update['range_long_term'] = self.range_long_term = float(record.get('range_long_term', 0))
+            update['range_context'] = self.range_context = float(record.get('range_context', 0))
+            update['range_search'] = self.range_search = float(record.get('range_search', 1))
+            update['retargeting_capacity'] = self.range_retargeting = float(record.get('range_retargeting', 1))
         else:
-            self.range_short_term = (100 / 100.0) 
-            self.range_long_term = (0 / 100.0)
-            self.range_context = (0 / 100.0)
-            self.range_search = (100 / 100.0)
-            self.range_retargeting = (100 / 100.0)
+            self.range_short_term = 1.0
+            self.range_long_term = 0.0
+            self.range_context = 0.0
+            self.range_search = 1.0
+            self.range_retargeting = 1.0
             update['user'] = self.user_login
             update['range_short_term'] = self.range_short_term
             update['range_long_term'] = self.range_long_term
@@ -99,16 +96,13 @@ class Informer:
             update['title'] = self.title
         if self.admaker:
             update['admaker'] = self.admaker
-        if self.css:
-            update['css'] = self.css
-        else:
-            update['css'] = self.admaker_options_to_css(self.admaker)
-        if self.css_banner:
-            update['css_banner'] = self.css_banner
-        else:
-            update['css_banner'] = self.admaker_options_to_css_banner(self.admaker)
         if self.domain:
             update['domain'] = self.domain
+            record = self.db.user.domains.find_one({'login': self.user_login})
+            if not self.domain_guid:
+                self.domain_guid = record.get('guid')
+            if not self.domain_guid_int:
+                self.domain_guid_int = record.get('guid_int', uuid_to_long(self.domain_guid))
         if self.height:
             update['height'] = self.height
         if self.width:
@@ -117,47 +111,18 @@ class Informer:
             update['height_banner'] = self.height_banner
         if self.width_banner:
             update['width_banner'] = self.width_banner
-        if isinstance(self.auto_reload, int):
-            update['auto_reload'] = self.auto_reload
-        elif (isinstance(self.auto_reload, str) and self.auto_reload.isdigit()):
-            update['auto_reload'] = int(self.auto_reload)
-        elif (isinstance(self.auto_reload, unicode) and self.auto_reload.isdigit()):
-            update['auto_reload'] = int(self.auto_reload)
-        else:
-            update['auto_reload'] = 0
 
-        if isinstance(self.blinking, int):
-            update['blinking'] = self.blinking
-        elif (isinstance(self.blinking, str) and self.blinking.isdigit()):
-            update['blinking'] = int(self.blinking)
-        elif (isinstance(self.blinking, unicode) and self.blinking.isdigit()):
-            update['blinking'] = int(self.blinking)
-        else:
-            update['blinking'] = 0
-
-        if isinstance(self.shake, int):
-            update['shake'] = self.shake
-        elif (isinstance(self.shake, str) and self.shake.isdigit()):
-            update['shake'] = int(self.shake)
-        elif (isinstance(self.shake, unicode) and self.shake.isdigit()):
-            update['shake'] = int(self.shake)
-        else:
-            update['shake'] = 0
-
-        if isinstance(self.rating_division, int):
-            update['rating_division'] = self.rating_division
-        elif (isinstance(self.rating_division, str) and self.rating_division.isdigit()):
-            update['rating_division'] = int(self.rating_division)
-        elif (isinstance(self.rating_division, unicode) and self.rating_division.isdigit()):
-            update['rating_division'] = int(self.rating_division)
-        else:
-            update['rating_division'] = 1000
+        update['auto_reload'] = to_int(self.auto_reload)
+        update['blinking'] = to_int(self.blinking)
+        update['shake'] = to_int(self.shake)
+        update['rating_division'] = to_int(self.rating_division, 1000)
         update['blinking_reload'] = self.blinking_reload
         update['shake_reload'] = self.shake_reload
         update['shake_mouse'] = self.shake_mouse
         update['html_notification'] = self.html_notification
         update['plase_branch'] = self.plase_branch
         update['retargeting_branch'] = self.retargeting_branch
+
         if self.cost:
             update['cost'] = self.cost
         if isinstance(self.non_relevant, dict) and 'action' in self.non_relevant and 'userCode' in self.non_relevant:
@@ -166,18 +131,9 @@ class Informer:
         update['lastModified'] = datetime.datetime.now()
 
         self.db.informer.update({'guid': self.guid, 'guid_int': long(self.guid_int)},
-                                       {'$set': update},
-                                       upsert=True)
+                                {'$set': update}, upsert=True)
         InformerFtpUploader(self.guid).upload()
-        mq.MQ().informer_update(self.guid)
-
-    def load(self, id):
-        """
-
-        Args:
-            id:
-        """
-        raise NotImplementedError
+        MQ().informer_update(self.guid)
 
     def loadGuid (self, id):
         """ Загружает информер из MongoDB """
@@ -185,14 +141,16 @@ class Informer:
             mongo_record = self.db.informer.find_one({'guid': id})
             record = self.db.users.find_one({'login': mongo_record["user"]})
             self.guid = mongo_record['guid']
-            self.guid_int = mongo_record['guid_int']
+            self.guid_int = mongo_record.get('guid_int', uuid_to_long(self.guid))
             self.dynamic = mongo_record.get('dynamic', False)
             self.title = mongo_record['title']
             self.user_login = mongo_record["user"]
+            self.user_guid = mongo_record["user_guid"]
+            self.user_guid_int = mongo_record.get("user_guid_int", uuid_to_long(self.user_guid))
             self.admaker = mongo_record.get('admaker')
-            self.css = mongo_record.get('css')
-            self.css_banner = mongo_record.get('css_banner')
             self.domain = mongo_record.get('domain')
+            self.domain_guid = mongo_record.get('domain_guid')
+            self.domain_guid_int = mongo_record.get('domain_guid_int', uuid_to_long(self.domain_guid))
             self.cost = mongo_record.get('cost', None)
             self.height = mongo_record.get('height')
             self.width = mongo_record.get('width')
@@ -222,18 +180,20 @@ class Informer:
     @staticmethod
     def load_from_mongo_record(mongo_record):
         """ Загружает информер из записи MongoDB """
+        db = app_globals.db
+        record = db.users.find_one({'login': mongo_record["user"]})
         informer = Informer()
         informer.guid = mongo_record['guid']
-        informer.guid_int = mongo_record['guid_int']
+        informer.guid_int = mongo_record.get('guid_int', uuid_to_long(informer.guid))
         informer.dynamic = mongo_record.get('dynamic', False)
         informer.title = mongo_record['title']
         informer.user_login = mongo_record["user"]
-        db = app_globals.db
-        record = db.users.find_one({'login': mongo_record["user"]})
+        informer.user_guid = mongo_record["user_guid"]
+        informer.user_guid_int = mongo_record.get("user_guid_int", uuid_to_long(informer.user_guid))
         informer.admaker = mongo_record.get('admaker')
-        informer.css = mongo_record.get('css')
-        informer.css_banner = mongo_record.get('css_banner')
         informer.domain = mongo_record.get('domain')
+        informer.domain_guid = mongo_record.get('domain_guid')
+        informer.domain_guid_int = mongo_record.get('domain_guid_int', uuid_to_long(informer.domain_guid))
         informer.cost = mongo_record.get('cost', None)
         informer.height = mongo_record.get('height')
         informer.width = mongo_record.get('width')
@@ -260,48 +220,6 @@ class Informer:
             informer.non_relevant['userCode'] = \
                 mongo_record['nonRelevant'].get('userCode', '')
         return informer
-
-    def admaker_options_to_css(self, options):
-        """ Создаёт строку CSS из параметров Admaker """
-
-        def parseInt(value):
-            ''' Пытается выдрать int из строки.
-                
-                Например, для "128px" вернёт 128. '''
-            try:
-                return re.findall("\\d+", value)[0]
-            except IndexError:
-                return 0
-        options = validate_admaker(options)
-        template_name = '/advertise_style_template.mako.html'
-        src = app_globals.mako_lookup.get_template(template_name)\
-                .source.replace('<%text>', '').replace('</%text>', '')
-        template = mako.template.Template(
-            text=js2mako(src), 
-            format_exceptions=True)
-        return template.render_unicode(parseInt=parseInt, **options)
-
-    def admaker_options_to_css_banner(self, options):
-        """ Создаёт строку CSS Banner из параметров Admaker """
-
-        def parseInt(value):
-            ''' Пытается выдрать int из строки.
-                
-                Например, для "128px" вернёт 128. '''
-            try:
-                return re.findall("\\d+", value)[0]
-            except IndexError:
-                return 0
-
-        options = validate_admaker(options)
-        template_name = '/advertise_style_template_banner.mako.html'
-        src = app_globals.mako_lookup.get_template(template_name)\
-                .source.replace('<%text>', '').replace('</%text>', '')
-        template = mako.template.Template(
-            text=js2mako(src), 
-            format_exceptions=True)
-        return template.render_unicode(parseInt=parseInt, **options)
-#        return minify_css( template.render_unicode(parseInt=h.parseInt, **opt) )
 
 
 class InformerFtpUploader:
@@ -429,64 +347,15 @@ class InformerFtpUploader:
         return """//<![CDATA[\n""" + minifier.minify(script.encode('utf-8'), mangle=False) + """\n//]]>"""
 
 
-def minify_css(css):
-    """
-
-    Args:
-        css:
-
-    Returns:
-
-    """
-    # remove comments - this will break a lot of hacks :-P
-    css = re.sub( r'\s*/\*\s*\*/', "$$HACK1$$", css ) # preserve IE<6 comment hack
-    css = re.sub( r'/\*[\s\S]*?\*/', "", css )
-    css = css.replace( "$$HACK1$$", '/**/' ) # preserve IE<6 comment hack
-    
-    # url() doesn't need quotes
-    css = re.sub( r'url\((["\'])([^)]*)\1\)', r'url(\2)', css )
-    
-    # spaces may be safely collapsed as generated content will collapse them anyway
-    css = re.sub( r'\s+', ' ', css )
-    
-    # shorten collapsable colors: #aabbcc to #abc
-    css = re.sub( r'#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3(\s|;)', r'#\1\2\3\4', css )
-    
-    # fragment values can loose zeros
-    css = re.sub( r':\s*0(\.\d+([cm]m|e[mx]|in|p[ctx]))\s*;', r':\1;', css )
-    
-    result = []
-    for rule in re.findall( r'([^{]+){([^}]*)}', css ):
-    
-        # we don't need spaces around operators
-        selectors = [re.sub( r'(?<=[\[\(>+=])\s+|\s+(?=[=~^$*|>+\]\)])', r'', selector.strip() ) for selector in rule[0].split( ',' )]
-    
-        # order is important, but we still want to discard repetitions
-        properties = {}
-        porder = []
-        for prop in re.findall( '(.*?):(.*?)(;|$)', rule[1] ):
-            key = prop[0].strip().lower()
-            if key not in porder: porder.append( key )
-            properties[ key ] = prop[1].strip()
-    
-        # output rule if it contains any declarations
-        if properties:
-            result.append( "%s{%s}" % ( ','.join( selectors ), ''.join(['%s:%s;' % (key, properties[key]) for key in porder])[:-1] ))
-    return "\n".join(result)
-
-
-
 class InformerPattern:
     """ Рекламный информер (он же рекламный скрипт, рекламная выгрузка) """
 
     def __init__(self):
         """
-
         """
         self.guid = None
         self.admaker = None
         self.db = app_globals.db
-
 
     def save(self):
         """ Сохраняет информер, при необходимости создаёт """

@@ -6,7 +6,7 @@ from uuid import uuid1
 import pymongo
 from pylons import app_globals
 
-import getmyad.lib.helpers as h
+from getmyad.lib.helpers import uuid_to_long, formatMoney
 from getmyad.model import mq
 from getmyad.model.Informer import Informer
 
@@ -115,7 +115,8 @@ class Account(object):
                     domain = domain[4:]
 
                 self.db.domain.update({'login': self.account.login},
-                                      {'$set': {('domains.' + str(uuid1())): domain}}, upsert=True)
+                                      {'$set': {('domains.' + str(uuid1())): domain}},
+                                      upsert=True)
                 mq.MQ().account_update(self.account.login)
             except (pymongo.errors.OperationFailure):
                 raise Account.Domains.DomainAddError(self.account.login)
@@ -257,6 +258,7 @@ class Account(object):
     def __init__(self, login):
         self.login = login
         self.guid = str(uuid1())
+        self.guid_int = uuid_to_long(self.guid)
         self.email = ''
         self.skype = ''
         self.password = ''
@@ -332,6 +334,7 @@ class Account(object):
                                     'cost_max': float(self.imp_cost_max)}}}
             self.db.users.insert({'login': self.login,
                                   'guid': self.guid,
+                                  'guid_int': self.guid_int,
                                   'password': self.password,
                                   'registrationDate': self.registration_date,
                                   'email': self.email,
@@ -351,7 +354,6 @@ class Account(object):
                                   'range_search': float(self.range_search),
                                   'range_retargeting': float(self.range_retargeting),
                                   })
-            log.info(vars(self))
             self.loaded = True
             mq.MQ().account_update(self.login)
         except (pymongo.errors.DuplicateKeyError, pymongo.errors.OperationFailure) as e:
@@ -380,7 +382,7 @@ class Account(object):
                 self.money_out_paymentType.append(u'factura')
             if self.money_yandex:
                 self.money_out_paymentType.append(u'yandex')
-            self.db.users.update({'login': self.login, 'guid': self.guid},
+            self.db.users.update({'login': self.login},
                                  {'$set': {
                                      'password': self.password,
                                      'registrationDate': self.registration_date,
@@ -429,6 +431,7 @@ class Account(object):
         if not record:
             raise Account.NotFoundError(self.login)
         self.guid = record['guid']
+        self.guid_int = record.get('guid_int', uuid_to_long(self.guid))
         self.password = record['password']
         self.registration_date = record['registrationDate']
         self.email = record.get('email', '')
@@ -649,10 +652,10 @@ class ManagerReports():
                 x['totalCost'] > 0 and x['adload_cost'] > 0) else 0.0
             data.append((x['date'].strftime('%Y.%m.%d'),
                          manager,
-                         h.formatMoney(x['totalCost']),
+                         formatMoney(x['totalCost']),
                          '%.3f %%' % persent,
-                         h.formatMoney(x['income']),
-                         h.formatMoney(x['adload_cost']),
+                         formatMoney(x['income']),
+                         formatMoney(x['adload_cost']),
                          x['activ_users'],
                          x['all_users']))
 

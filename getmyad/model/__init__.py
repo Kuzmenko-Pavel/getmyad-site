@@ -40,7 +40,6 @@ def users():
              for x in app_globals.db.users.find().sort('registrationDate')]
 
 
-
 def accountPeriodSumm(dateCond, user_login):
     ''' Возвращает сумму аккаунта за период заданный в dateCond'''
     ads = [x['guid'] for x in db.informer.find({'user': user_login})]                                       
@@ -55,11 +54,7 @@ def accountPeriodSumm(dateCond, user_login):
     return income
 
 
-
-
 def moneyOutApproved(user_login):
     """Возвращает список одобренных заявок"""
     return db.money_out_request.find({'user.login': user_login,
                                       'approved': True}).sort('date', ASCENDING)
-    
-    
