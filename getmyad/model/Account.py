@@ -488,7 +488,9 @@ class Account(object):
         """ Возвращает список информеров данного пользователя """
         result = []
         for object in self.db.informer.find({'user': self.login}):
-            informer = Informer.load_from_mongo_record(object)
+            informer = Informer()
+            guid = object.get('guid', '')
+            informer.loadGuid(guid)
             result.append(informer)
         return result
 

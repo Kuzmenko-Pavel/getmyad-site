@@ -54,6 +54,10 @@ class Informer:
         self.rating_division = 1000
         self.db = app_globals.db
 
+    def user_by_login(self, login):
+        record = self.db.users.find_one({'login': login})
+        return record
+
     def save(self):
         """ Сохраняет информер, при необходимости создаёт """
         update = {}
@@ -68,7 +72,7 @@ class Informer:
             self.guid_int = uuid_to_long(self.guid)
 
         if self.user_login is not None:
-            record = self.db.users.find_one({'login': self.user_login})
+            record = self.user_by_login(self.user_login)
             if not self.user_guid:
                 self.user_guid = record.get('guid')
             if not self.user_guid_int:
@@ -145,7 +149,7 @@ class Informer:
         InformerFtpUploader(self.guid).upload()
         MQ().informer_update(self.guid)
 
-    def loadGuid (self, id):
+    def loadGuid(self, id):
         """ Загружает информер из MongoDB """
         if id is not None:
             mongo_record = self.db.informer.find_one({'guid': id})
@@ -155,11 +159,23 @@ class Informer:
             self.dynamic = mongo_record.get('dynamic', False)
             self.title = mongo_record['title']
             self.user_login = mongo_record["user"]
-            self.user_guid = mongo_record["user_guid"]
+            if mongo_record.get("user_guid"):
+                self.user_guid = mongo_record["user_guid"]
+            else:
+                record = self.user_by_login(self.user_login)
+                self.user_guid = record.get('guid')
             self.user_guid_int = mongo_record.get("user_guid_int", uuid_to_long(self.user_guid))
             self.admaker = mongo_record.get('admaker')
             self.domain = mongo_record.get('domain')
-            self.domain_guid = mongo_record.get('domain_guid')
+            if mongo_record.get('domain_guid'):
+                self.domain_guid = mongo_record.get('domain_guid')
+            else:
+                record = self.db.domains.find_one({'login': self.user_login})
+                obj = record.get('domains', {})
+                for k, v in obj.iteritems():
+                    if v == self.domain:
+                        self.domain_guid = k
+                        break
             self.domain_guid_int = mongo_record.get('domain_guid_int', uuid_to_long(self.domain_guid))
             self.cost = mongo_record.get('cost', None)
             self.height = mongo_record.get('height')
@@ -186,50 +202,6 @@ class Informer:
                     mongo_record['nonRelevant'].get('action', 'social')
                 self.non_relevant['userCode'] = \
                     mongo_record['nonRelevant'].get('userCode', '')
-
-    @staticmethod
-    def load_from_mongo_record(mongo_record):
-        """ Загружает информер из записи MongoDB """
-        db = app_globals.db
-        record = db.users.find_one({'login': mongo_record["user"]})
-        informer = Informer()
-        informer.guid = mongo_record['guid']
-        informer.guid_int = mongo_record.get('guid_int', uuid_to_long(informer.guid))
-        informer.dynamic = mongo_record.get('dynamic', False)
-        informer.title = mongo_record['title']
-        informer.user_login = mongo_record["user"]
-        informer.user_guid = mongo_record["user_guid"]
-        informer.user_guid_int = mongo_record.get("user_guid_int", uuid_to_long(informer.user_guid))
-        informer.admaker = mongo_record.get('admaker')
-        informer.domain = mongo_record.get('domain')
-        informer.domain_guid = mongo_record.get('domain_guid')
-        informer.domain_guid_int = mongo_record.get('domain_guid_int', uuid_to_long(informer.domain_guid))
-        informer.cost = mongo_record.get('cost', None)
-        informer.height = mongo_record.get('height')
-        informer.width = mongo_record.get('width')
-        informer.height_banner = mongo_record.get('height_banner')
-        informer.width_banner = mongo_record.get('width_banner')
-        informer.range_short_term = float(record.get('range_short_term', (100 / 100.0)))
-        informer.range_long_term = float(record.get('range_long_term', (0 / 100.0)))
-        informer.range_context = float(record.get('range_context', (0 / 100.0)))
-        informer.range_search = float(record.get('range_search', (100 / 100.0)))
-        informer.range_retargeting = float(record.get('range_retargeting', (100 / 100.0)))
-        informer.blinking = int(mongo_record.get('blinking', 0))
-        informer.shake = int(mongo_record.get('shake', 0))
-        informer.rating_division = int(mongo_record.get('rating_division', 1000))
-        informer.html_notification = bool(mongo_record.get('html_notification', False))
-        informer.blinking_reload = bool(mongo_record.get('blinking_reload', True))
-        informer.shake_reload = bool(mongo_record.get('shake_reload', True))
-        informer.shake_mouse = bool(mongo_record.get('shake_mouse', True))
-        informer.plase_branch = bool(mongo_record.get('plase_branch', True))
-        informer.retargeting_branch = bool(mongo_record.get('retargeting_branch', True))
-        if 'nonRelevant' in mongo_record:
-            informer.non_relevant = {}
-            informer.non_relevant['action'] = \
-                mongo_record['nonRelevant'].get('action', 'social')
-            informer.non_relevant['userCode'] = \
-                mongo_record['nonRelevant'].get('userCode', '')
-        return informer
 
 
 class InformerFtpUploader:
@@ -402,17 +374,3 @@ class InformerPattern:
         self.width = mongo_record.get('width')
         self.height_banner = mongo_record.get('height_banner')
         self.width_banner = mongo_record.get('width_banner')
-
-    @staticmethod
-    def load_from_mongo_record(mongo_record):
-        """ Загружает информер из записи MongoDB """
-        informer = InformerPattern()
-        informer.guid = mongo_record['guid']
-        informer.title = mongo_record['title']
-        db = app_globals.db
-        informer.admaker = mongo_record.get('admaker')
-        informer.height = mongo_record.get('height')
-        informer.width = mongo_record.get('width')
-        informer.height_banner = mongo_record.get('height_banner')
-        informer.width_banner = mongo_record.get('width_banner')
-        return informer
