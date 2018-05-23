@@ -112,7 +112,7 @@ def mssql_connection_adload():
 
 def check_image(db, url, logo):
     try:
-        rec = db.image_n.find_one({'src': url.strip(), 'logo': logo})
+        rec = db.images.find_one({'src': url.strip(), 'logo': logo})
         if rec:
             return rec.get('url')
         return None
@@ -309,7 +309,7 @@ def resize_and_upload_image(db, urls, logo):
             buf_webp.seek(0)
 
             cdn_url = cdn_loader(buf_png, buf_webp)
-            db.image_n.update({'src': url.strip(), 'logo': logo},
+            db.images.update({'src': url.strip(), 'logo': logo},
                               {'$set': {'url': cdn_url, 'dt': datetime.datetime.now()}}, upsert=True)
             result.append(cdn_url)
         return result
