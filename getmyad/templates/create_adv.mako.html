@@ -6,7 +6,9 @@
 <div id="advertise">
 <div id="tabs">
 	<ul>
-		<li><a href="#main">Мои информеры</a></li>
+		<li id="linkmain"><a href="#main">Главная</a></li>
+        <li id="linkaccount"><a href="#account">Счёт</a></li>
+        <li><a href="#informers" id="linkinformers">Мои блоки</a></li>
 		<li><a href="#size">1. Размер</a></li>
 		<li><a href="#color">2. Цвет</a></li>
 		<li><a href="#font">3. Шрифты</a></li>
@@ -15,8 +17,11 @@
 	
 	<div id="main">
 	</div>
-	
-	<div id="size">
+	<div id="account">
+	</div>
+    <div id="informers">
+	</div>
+	<div id="size" class="floatLeft">
 		<h2>Выберите подходящий размер</h2>
 		<p>Мы выбрали для вас ${len([x for x in c.patterns if x.get('popular')])} самых популярных размеров.
 			Другие варианты можно найти в выпадающих списках "ещё". </p>
@@ -60,7 +65,7 @@
 		 </div>
 	</div>
 	
-	<div id="color">
+	<div id="color" class="floatLeft">
 		<h2>Настройка цветовой гаммы</h2>
 		
 		<table>
@@ -149,7 +154,7 @@
 	</div>
 	
 	
-	<div id="ready">
+	<div id="ready" class="floatLeft">
 		<h2>Информер готов?</h2>
 		<table>
 			<tr>
@@ -183,7 +188,7 @@
 		</div>
 	</div>
 
-	<div id="font">
+	<div id="font" class="floatLeft">
 		<h2>Настройка шрифтов</h2>
 		
 		<table>

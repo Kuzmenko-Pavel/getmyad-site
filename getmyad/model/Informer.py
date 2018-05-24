@@ -70,6 +70,7 @@ class Informer:
 
         if not self.guid_int:
             self.guid_int = uuid_to_long(self.guid)
+            update['guid_int'] = self.guid_int
 
         if self.user_login is not None:
             record = self.user_by_login(self.user_login)
@@ -102,7 +103,7 @@ class Informer:
             update['admaker'] = self.admaker
         if self.domain:
             update['domain'] = self.domain
-            record = self.db.domains.find_one({'login': self.user_login})
+            record = self.db.domain.find_one({'login': self.user_login})
             if not self.domain_guid:
                 obj = record.get('domains', {})
                 for k, v in obj.iteritems():
@@ -117,12 +118,27 @@ class Informer:
                         break
                 else:
                     self.domain_guid_int = uuid_to_long(self.domain_guid)
+        if self.user_guid:
+            update['user_guid'] = self.user_guid
+
+        if self.user_guid_int:
+            update['user_guid_int'] = self.user_guid_int
+
+        if self.domain_guid:
+            update['domain_guid'] = self.domain_guid
+
+        if self.domain_guid_int:
+            update['domain_guid_int'] = self.domain_guid_int
+
         if self.height:
             update['height'] = self.height
+
         if self.width:
             update['width'] = self.width
+
         if self.height_banner:
             update['height_banner'] = self.height_banner
+
         if self.width_banner:
             update['width_banner'] = self.width_banner
 
@@ -144,7 +160,12 @@ class Informer:
                                      'userCode': self.non_relevant['userCode']}
         update['lastModified'] = datetime.datetime.now()
 
-        self.db.informer.update({'guid': self.guid, 'guid_int': long(self.guid_int)},
+        #Clean CSS
+        update['css'] = ''
+        update['css_banner'] = ''
+
+
+        self.db.informer.update({'guid': self.guid},
                                 {'$set': update}, upsert=True)
         InformerFtpUploader(self.guid).upload()
         MQ().informer_update(self.guid)
@@ -170,7 +191,7 @@ class Informer:
             if mongo_record.get('domain_guid'):
                 self.domain_guid = mongo_record.get('domain_guid')
             else:
-                record = self.db.domains.find_one({'login': self.user_login})
+                record = self.db.domain.find_one({'login': self.user_login})
                 obj = record.get('domains', {})
                 for k, v in obj.iteritems():
                     if v == self.domain:

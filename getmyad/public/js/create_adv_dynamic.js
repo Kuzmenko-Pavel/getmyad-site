@@ -86,8 +86,16 @@ var AdvertiseEditor = AdvertiseEditor || (function () {
         /** Инициализация интерфейса */
         function initInterface() {
             // Щелчёк по вкладке "Мои информеры" */
-            $("#tabs").tabs({selected: 1}).bind('tabsselect', function (e, ui) {
-                if (ui.index == 0) {
+            $("#tabs").tabs({selected: 3}).bind('tabsselect', function (e, ui) {
+                if (ui.index === 0) {
+                    window.location = '/private/index#main';
+                    return true;
+                }
+                else if (ui.index === 1) {
+                    window.location = '/private/index#account';
+                    return true;
+                }
+                else if (ui.index === 2) {
                     window.location = '/private/index#informers';
                     return true;
                 }

@@ -397,10 +397,10 @@ function drawChartUsingFilter() {
                                 }
 
                                 if (dynamic === 'true') {
-                                    window.open('/advertise/edit_dynamic?ads_id=' + id + '#ready', '_blank');
+                                    document.location.assign('/advertise/edit_dynamic?ads_id=' + id + '#ready');
                                 }
                                 else {
-                                    window.open('/advertise/edit?ads_id=' + id + '#size', '_blank');
+                                    document.location.assign('/advertise/edit?ads_id=' + id + '#size');
                                 }
                             });
                             var removeExistingInformers = $('.' + subgrid_table_id + '-GuidR');

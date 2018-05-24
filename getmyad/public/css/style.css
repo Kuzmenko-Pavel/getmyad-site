@@ -789,12 +789,12 @@ a.linkMoneyOut{
 	max-width: 300px;
 }
 /*INFORMERS*/
-#advertise #tabs {
+.floatLeft {
+    display: block;
     float: left;
-    margin: 0 15px;
-    min-height: 400px;
-    width: 480px;
-      }
+    margin: 5px;
+    max-width: 600px;
+}
 #advertise h2{
     font-size:20px;
     color:#333333;
@@ -815,6 +815,7 @@ a.linkMoneyOut{
 }
 #admaker-container{
     float: left;
+    margin: 5px;
 }
 #advertise #size a{
     color: #0000CC;
