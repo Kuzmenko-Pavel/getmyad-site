@@ -706,7 +706,7 @@ var ManagerUI = function () {
                 url: '/manager/overallTeaserSummaryByDays',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['', 'Дата', 'Аккаунтов<br/>(Акт Аккаунтов/Сайтов)', 'Показы Блоков</br> не гарантированные', 'Показы<br/>Блоков', 'Показы<br/>РП', 'Клики', 'Клики<br/>уник.', 'Сумма', 'CTR<br/>РП', 'CTR<br/>Блоков', 'Цена', 'Ср.время</br>до клика'],
+                colNames: ['', 'Дата', 'Аккаунтов<br/>(Акт Аккаунтов/Сайтов)', 'Показы Блоков</br> не гарантированные', 'Показы<br/>Блоков', 'Показы РП</br> не гарантированные', 'Показы<br/>РП', 'Клики', 'Клики<br/>уник.', 'Сумма', 'CTR<br/>РП', 'CTR<br/>Блоков', 'Цена', 'Ср.время</br>до клика'],
                 colModel: [{
                     name: 'color',
                     index: 'color',
@@ -735,6 +735,12 @@ var ManagerUI = function () {
                 }, {
                     name: 'impressions_block',
                     index: 'impressions_block',
+                    width: 70,
+                    align: 'center',
+                    sortable: false
+                }, {
+                    name: 'impressions_not_valid',
+                    index: 'impressions_not_valid',
                     width: 70,
                     align: 'center',
                     sortable: false
@@ -1772,7 +1778,7 @@ var ManagerUI = function () {
                 url: '/manager/dataUserImpressionsClick?' + '&start_date=' + $('#ImpClickCalendar1').val() + '&',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['Сайт Партнёр', 'Показы Блоков</br> не гарантированные', 'Показы<br/>Блоков', 'Процент видимых показов', 'Социальные показы РП', 'Социальные клики', 'Уникальные Социальные клики', 'Социальный CTR', 'Показы РП', 'Клики', 'Уникальные клики', 'CTR', 'Разница', 'Ср.время</br>до клика'],
+                colNames: ['Сайт Партнёр', 'Показы Блоков</br> не гарантированные', 'Показы<br/>Блоков', 'Процент видимых показов', 'Социальные показы РП</br> не гарантированные', 'Социальные показы РП', 'Социальные клики', 'Уникальные Социальные клики', 'Социальный CTR', 'Показы РП</br> не гарантированные', 'Показы РП', 'Клики', 'Уникальные клики', 'CTR', 'Разница', 'Ср.время</br>до клика'],
                 colModel: [{
                     name: 'domain',
                     index: 'domain',
@@ -1800,6 +1806,13 @@ var ManagerUI = function () {
                     width: 100,
                     sortable: false
                 }, {
+                    name: 'social_impressions_not_valid',
+                    index: 'social_impressions_not_valid',
+                    align: 'center',
+                    formatter: 'integer',
+                    width: 100,
+                    sortable: true
+                }, {
                     name: 'social_impressions',
                     index: 'social_impressions',
                     align: 'center',
@@ -1825,6 +1838,13 @@ var ManagerUI = function () {
                     index: 'ctr_social_impressions',
                     formatter: 'integer',
                     align: 'center',
+                    width: 100,
+                    sortable: true
+                }, {
+                    name: 'impressions_not_valid',
+                    index: 'impressions_not_valid',
+                    align: 'center',
+                    formatter: 'integer',
                     width: 100,
                     sortable: true
                 }, {

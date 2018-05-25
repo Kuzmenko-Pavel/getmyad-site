@@ -275,6 +275,7 @@ class ManagerController(BaseController):
             account_site_count = str(x.get('acc_count', 0)) + "( " + str(x.get('act_acc_count', 0)) + "/" + str(
                 x.get('domains_today', 0)) + " )"
             impressions = int(x.get('impressions', 0))
+            impressions_not_valid = int(x.get('impressions_not_valid', 0))
             impressions_block = int(x.get('impressions_block', 0))
             impressions_block_not_valid = int(x.get('impressions_block_not_valid', 0))
             clicks = int(x.get('clicks', 0))
@@ -292,6 +293,7 @@ class ManagerController(BaseController):
                    account_site_count,
                    impressions_block_not_valid,
                    impressions_block,
+                   impressions_not_valid,
                    impressions,
                    clicks,
                    clicks_unique,
@@ -2280,10 +2282,12 @@ class ManagerController(BaseController):
                          item.get('impressions_block_not_valid', 0),
                          item.get('impressions_block', 0),
                          "%.2f" % item.get('difference_impressions_block', 0),
+                         item.get('social_impressions_not_valid', 0),
                          item.get('social_impressions', 0),
                          social_clicks,
                          item.get('social_clicksUnique', 0),
                          "%.2f" % item.get('ctr_social_impressions', 0),
+                         item.get('impressions_not_valid', 0),
                          item.get('impressions', 0),
                          clicks,
                          item.get('clicksUnique', 0),
