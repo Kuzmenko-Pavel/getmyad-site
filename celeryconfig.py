@@ -3,8 +3,8 @@ import sys
 
 sys.path.append('.')
 
-# BROKER_URL = 'pyamqp://getmyad_site:123qwe@amqp.yottos.com:5672/getmyad_site_celery'
-BROKER_URL = 'pyamqp://getmyad_site:123qwe@localhost:5672/getmyad_site_celery'
+BROKER_URL = 'pyamqp://getmyad_site:123qwe@amqp.yottos.com:5672/getmyad_site_celery'
+# BROKER_URL = 'pyamqp://getmyad_site:123qwe@localhost:5672/getmyad_site_celery'
 BROKER_CONNECTION_MAX_RETRIES = 0
 BROKER_HEARTBEAT = 0
 CELERY_TASK_IGNORE_RESULT = True
