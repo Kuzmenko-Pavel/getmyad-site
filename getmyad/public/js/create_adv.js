@@ -70,8 +70,9 @@ function change(cl) {
 function change1(cl) {
     var divs = document.getElementsByTagName("DIV");
     for (var i = 0; i < divs.length; i++) {
-        if (divs[i].className == cl)
+        if (divs[i].className == cl){
             divs[i].style.backgroundColor = "#" + $('#arrowColor').val();
+        }
         if (divs[i].className == cl + "1") {
             divs[i].style.backgroundColor = "#" + $('#arrowBgColor').val();
         }
@@ -536,18 +537,19 @@ var AdvertiseEditor = AdvertiseEditor || (function () {
                     window.location = '/private/index#informers';
                     return true;
                 }
-                else
+                else{
                     return true;
+                }
             });
 
             $("#size .navigation-arrow").click(function () {
-                $("#tabs").tabs("select", 2);
+                $("#tabs").tabs("select", 4);
             });
             $("#color .navigation-arrow").click(function () {
-                $("#tabs").tabs("select", 3);
+                $("#tabs").tabs("select", 5);
             });
             $("#font .navigation-arrow").click(function () {
-                $("#tabs").tabs("select", 4);
+                $("#tabs").tabs("select", 6);
             });
             $("#informer-code").click(function () {
                 this.select();

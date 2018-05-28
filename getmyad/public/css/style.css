@@ -790,10 +790,12 @@ a.linkMoneyOut{
 }
 /*INFORMERS*/
 .floatLeft {
-    display: block;
+    display: block !important;
     float: left;
-    margin: 5px;
-    max-width: 600px;
+    margin: 5px !important;
+    padding: 15px !important;
+    width: 450px;
+    background: #eeeeee !important;
 }
 #advertise h2{
     font-size:20px;
