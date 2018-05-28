@@ -2172,20 +2172,25 @@ class ManagerController(BaseController):
                 .setdefault(key, {'clicks': 0,
                                   'unique': 0,
                                   'imp': 0,
+                                  'imp_nv': 0,
                                   'imp_block': 0,
                                   'imp_block_nv': 0,
                                   'summ': 0,
                                   'soc_clicks': 0,
                                   'soc_imp': 0,
+                                  'soc_imp_nv': 0,
+                                  'soc_nv': 0,
                                   })
             record['clicks'] += x.get('clicks', 0)
             record['unique'] += x.get('clicksUnique', 0)
             record['imp'] += x.get('impressions', 0)
+            record['imp_nv'] += x.get('impressions_not_valid', 0)
             record['imp_block'] += x.get('impressions_block', 0)
             record['imp_block_nv'] += x.get('impressions_block_not_valid', 0)
             record['summ'] += x.get('totalCost', 0)
             record['soc_clicks'] += x.get('social_clicks', 0)
             record['soc_imp'] += x.get('social_impressions', 0)
+            record['soc_imp_nv'] += x.get('social_impressions_not_valid', 0)
 
         # Сортировка
         raw_data = data_by_date_and_domain.items()
@@ -2223,6 +2228,7 @@ class ManagerController(BaseController):
                          domain,
                          v['imp_block_nv'],
                          v['imp_block'],
+                         v['imp_nv'],
                          v['imp'],
                          v['clicks'],
                          v['unique'],
@@ -2232,6 +2238,7 @@ class ManagerController(BaseController):
                          '%.3f' % ctr_block,
                          '%.2f' % v['summ'],
                          v['soc_clicks'],
+                         v['soc_imp_nv'],
                          v['soc_imp'],
                          '%.3f' % viewport,
                          ))
@@ -2258,7 +2265,8 @@ class ManagerController(BaseController):
         queri = {'date': {'$gte': start_date, '$lt': end_date}, "user": {"$in": users}}
         filds = {'impressions_block': True, 'impressions_block_not_valid': True, 'difference_impressions_block': True,
                  'view_seconds': True, 'date': True, 'domain': True, 'social_clicks': True, 'social_clicksUnique': True,
-                 'social_impressions': True, 'clicks': True, 'clicksUnique': True, 'impressions': True,
+                 'social_impressions': True, 'social_impressions_not_valid': True, 'clicks': True, 'clicksUnique': True,
+                 'impressions': True, 'impressions_not_valid': True,
                  'ctr_social_impressions': True, 'ctr_impressions': True, 'ctr_difference_impressions': True}
         count = app_globals.db.stats.daily.domain.find(queri).count()
         if count > 0 and limit > 0:

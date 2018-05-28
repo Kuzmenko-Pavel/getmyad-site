@@ -82,6 +82,8 @@ class Account(object):
 
         def list(self):
             """ Возвращает список доменов, назначенных данному аккаунту """
+            if self.account.account_type != Account.User:
+                return []
             data = self.db.domain.find_one({'login': self.account.login})
             try:
                 domains = data['domains']
@@ -93,6 +95,8 @@ class Account(object):
 
         def id_by_name(self, name):
             """ Возвращает список доменов, назначенных данному аккаунту """
+            if self.account.account_type != Account.User:
+                return None, None
             data = self.db.domain.find_one({'login': self.account.login})
             try:
                 guid = None
@@ -127,6 +131,8 @@ class Account(object):
 
         def list_request(self):
             """ Возвращает список заявок на регистрацию домена данного аккаунта """
+            if self.account.account_type != Account.User:
+                return []
             data = self.db.domain.find_one({'login': self.account.login})
             try:
                 requests = data['requests']
@@ -137,6 +143,8 @@ class Account(object):
 
         def add(self, url):
             """ Добавляет домен к списку разрешённых доменов пользователя """
+            if self.account.account_type != Account.User:
+                return
             if self.check_exists(url):
                 raise Account.Domains.AlreadyExistsError(self.account.login)
             try:
@@ -175,6 +183,8 @@ class Account(object):
 
         def list_requests(self):
             """ Возвращает список заявок на регистрацию доменов """
+            if self.account.account_type != Account.User:
+                return []
             data = self.db.domain.find_one({'login': self.account.login})
             try:
                 requests = data['requests']
@@ -189,6 +199,8 @@ class Account(object):
 
         def add_request(self, url):
             """ Добавляет заявку на добавление домена """
+            if self.account.account_type != Account.User:
+                return []
             if self.check_exists(url):
                 raise Account.Domains.AlreadyExistsError(self.account.login)
 
@@ -362,7 +374,7 @@ class Account(object):
                                   'range_retargeting': float(self.range_retargeting),
                                   })
             self.loaded = True
-            mq.MQ().account_update(self.login)
+            MQ().account_update(self.login)
         except (pymongo.errors.DuplicateKeyError, pymongo.errors.OperationFailure) as e:
             print(e)
             raise Account.AlreadyExistsError(self.login)
@@ -425,7 +437,7 @@ class Account(object):
                                      {'$set': {'managerGet': ''}},
                                      multi=True)
 
-            mq.MQ().account_update(self.login)
+            MQ().account_update(self.login)
         except Exception as e:
             print e
             raise Account.UpdateError(self.login)

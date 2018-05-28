@@ -266,8 +266,9 @@ class RegisterAdvController(BaseController):
                                     'admin': Account.Administrator
                                     }.get(c.account_type, Account.User)
             account.register()
-            account.domains.add(account.login)
-            account.domains.categories_add(account.login, c.category)
+            if c.account_type == 'user':
+                account.domains.add(account.login)
+                account.domains.categories_add(account.login, c.category)
         except Exception as e:
             print e
             return (False, e)

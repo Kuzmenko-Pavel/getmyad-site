@@ -1,13 +1,14 @@
 var userDetailsTabs = false;
 var ManagerUI = function () {
-    CheckUser();
+    "use strict";
+    window.CheckUser();
     $(document).ready(function () {
         /**
          * Проверка текстового поля на допустимое число
          */
-        function checkFloat(o) {
-            return o && /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/.test(o.val());
-        }
+        // function checkFloat(o) {
+        //     return o && /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/.test(o.val());
+        // }
 
 
         /**
@@ -15,7 +16,10 @@ var ManagerUI = function () {
          */
         function prepareUi() {
             $("#tabs").tabs({
-                add: function (event, ui) {
+                add: function (
+                    event,
+                    ui
+                ) {
                     $('#tabs').tabs('select', '#' + ui.panel.id);
                     var match = ui.tab.hash.match('#user-details:(.+)');
                     if (match && match[1]) {
@@ -37,7 +41,10 @@ var ManagerUI = function () {
                 height: 'auto',
                 resizable: false,
                 title: 'Заявка на вывод средств',
-                open: function (event, ui) {
+                open: function (
+                    event,
+                    ui
+                ) {
                     $("#moneyOut_summ").val(Math.round(0).toString()).focus();
                     $("#moneyOut_comment").val('');
                 },
@@ -53,13 +60,15 @@ var ManagerUI = function () {
                             },
                             success: function (reply) {
                                 if (reply.error) {
-                                    if (reply.error_type == "authorizedError")
+                                    if (reply.error_type == "authorizedError"){
                                         window.location.replace("/main/index");
+                                    }
                                     else if (reply.msg) {
                                         $("#moneyOut_errorMessage").html(reply.msg);
                                     }
-                                    else
+                                    else{
                                         $("#moneyOut_errorMessage").html("Неизвестная ошибка.");
+                                    }
                                 }
                                 else {
                                     $("#moneyOut").dialog('close');
@@ -72,7 +81,7 @@ var ManagerUI = function () {
                                                 $(this).dialog('close');
                                             }
                                         }
-                                    })
+                                    });
                                 }
                             },
                             complete: function () {
@@ -101,17 +110,19 @@ var ManagerUI = function () {
                             protectionCode: $('#dialogMoneyOutApprove > input[name="protectionCode"]')[0].value,
                             protectionPeriod: $('#dialogMoneyOutApprove > input[name="protectionPeriod"]')[0].value,
                             approved: 'true',
-                            token: token
+                            token: window.token
                         }, function (data) {
                             if (data.error) {
-                                if (data.error_type == "authorizedError")
+                                if (data.error_type === "authorizedError")
+                                {
                                     window.location.replace("/main/index");
+                                }
                                 else if (data.msg) {
-                                    alert(msg);
+                                    alert(data.msg);
                                     return;
                                 }
                                 else {
-                                    alert("Неизвестная ошибка.")
+                                    alert("Неизвестная ошибка.");
                                     return;
                                 }
                             }
@@ -119,7 +130,7 @@ var ManagerUI = function () {
                                 $('#dialogMoneyOutApprove').dialog('close');
                                 $('#tableMoneyOutRequest').trigger('reloadGrid');
                             }
-                        })
+                        });
                     },
                     'Нет': function () {
                         $(this).dialog('close');
@@ -137,17 +148,18 @@ var ManagerUI = function () {
                             user: $("#dialogMoneyOutAgree_user").html(),
                             date: $("#dialogMoneyOutAgree_date").html(),
                             approved: 'true',
-                            token: token
+                            token: window.token
                         }, function (data) {
                             if (data.error) {
-                                if (data.error_type == "authorizedError")
+                                if (data.error_type === "authorizedError"){
                                     window.location.replace("/main/index");
+                                }
                                 else if (data.msg) {
-                                    alert(msg);
+                                    alert(data.msg);
                                     return;
                                 }
                                 else {
-                                    alert("Неизвестная ошибка.")
+                                    alert("Неизвестная ошибка.");
                                     return;
                                 }
                             }
@@ -155,7 +167,7 @@ var ManagerUI = function () {
                                 $('#dialogMoneyOutAgree').dialog('close');
                                 $('#tableMoneyOutRequest').trigger('reloadGrid');
                             }
-                        })
+                        });
                     },
                     'Нет': function () {
                         $(this).dialog('close');
@@ -173,17 +185,18 @@ var ManagerUI = function () {
                             date: $("#dialogMoneyOutUpdateProtectionCode_date").html(),
                             protectionCode: $('#dialogMoneyOutUpdateProtectionCode > input[name="protectionCode"]')[0].value,
                             protectionPeriod: $('#dialogMoneyOutUpdateProtectionCode > input[name="protectionPeriod"]')[0].value,
-                            token: token
+                            token: window.token
                         }, function (data) {
                             if (data.error) {
-                                if (data.error_type == "authorizedError")
+                                if (data.error_type === "authorizedError"){
                                     window.location.replace("/main/index");
+                                    }
                                 else if (data.msg) {
-                                    alert(msg);
+                                    alert(data.msg);
                                     return;
                                 }
                                 else {
-                                    alert("Неизвестная ошибка.")
+                                    alert("Неизвестная ошибка.");
                                     return;
                                 }
                             }
@@ -191,7 +204,7 @@ var ManagerUI = function () {
                                 $('#dialogMoneyOutUpdateProtectionCode').dialog('close');
                                 $('#tableMoneyOutRequest').trigger('reloadGrid');
                             }
-                        })
+                        });
                     },
                     'Нет': function () {
                         $(this).dialog('close');
@@ -207,7 +220,7 @@ var ManagerUI = function () {
                     'Да': function () {
                         $.getJSON("/manager/block", {
                             manager: $("#dialogBlockManager_manager").html(),
-                            token: token
+                            token: window.token
                         }, function (data) {
                             $("#managersSummary").trigger("reloadGrid");
                             $('#dialogBlockManager').dialog('close');
@@ -227,35 +240,49 @@ var ManagerUI = function () {
                 loadComplete: function () {
                     $('#managersSummary .actionLink').click(openUserDetails);
                 },
-                colNames: ['Менеджер', 'Статус', 'Тип'],
-                colModel: [{
-                    name: 'manager',
-                    index: 'manager',
-                    width: 150,
-                    align: 'center',
-                    sortable: true,
-                    classes: 'actionLink'
-                }, {
-                    name: 'status',
-                    index: 'status',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'type',
-                    index: 'type',
-                    width: 100,
-                    align: 'center',
-                    sortable: true
-                }],
+                colNames: [
+                    'Менеджер',
+                    'Статус',
+                    'Тип'
+                ],
+                colModel: [
+                    {
+                        name: 'manager',
+                        index: 'manager',
+                        width: 150,
+                        align: 'center',
+                        sortable: true,
+                        classes: 'actionLink'
+                    },
+                    {
+                        name: 'status',
+                        index: 'status',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'type',
+                        index: 'type',
+                        width: 100,
+                        align: 'center',
+                        sortable: true
+                    }
+                ],
                 viewrecords: true,
                 caption: "Сводная информация по менеджерам",
                 gridview: true,
                 rownumbers: true,
                 height: 'auto',
-                toolbar: [true, 'top'],
+                toolbar: [
+                    true,
+                    'top'
+                ],
                 hiddengrid: true,
-                beforeSelectRow: function (rowid, e) {
+                beforeSelectRow: function (
+                    rowid,
+                    e
+                ) {
                     if (rowid) {
                         blockManagerButton.attr('disabled', false);
                     }
@@ -268,7 +295,9 @@ var ManagerUI = function () {
             blockManagerButton.attr('disabled', true).click(function () {
                 var id = $("#managersSummary").jqGrid('getGridParam', 'selrow');
                 if (!id)
+                {
                     return;
+                }
                 var row = $("#managersSummary").jqGrid('getRowData', id);
                 $("#dialogBlockManager_manager").html(row.manager);
                 $("#dialogBlockManager").dialog('open');
@@ -281,35 +310,85 @@ var ManagerUI = function () {
                 url: '/manager/currentClickCost?onlyActive=true',
                 datatype: 'json',
                 mtype: 'get',
-                colNames: ['Аккаунт', 'Процент цены</br>за клик', 'Минимальная цена</br>за клик', 'Максимальная цена</br>за клик'],
+                colNames: [
+                    'Аккаунт',
+                    'Процент цены</br>за клик',
+                    'Минимальная цена</br>за клик',
+                    'Максимальная цена</br>за клик'
+                ],
                 colModel: [
-                    {name: 'title', index: 'title', sortable: false, width: 150, align: 'center'},
-                    {name: 'click_percent', index: 'click_percent', sortable: false, width: 100, align: 'center'},
-                    {name: 'click_cost_min', index: 'click_cost_min', sortable: false, width: 125, align: 'center'},
-                    {name: 'click_cost_max', index: 'click_cost_max', sortable: false, width: 125, align: 'center'},
+                    {
+                        name: 'title',
+                        index: 'title',
+                        sortable: false,
+                        width: 150,
+                        align: 'center'
+                    },
+                    {
+                        name: 'click_percent',
+                        index: 'click_percent',
+                        sortable: false,
+                        width: 100,
+                        align: 'center'
+                    },
+                    {
+                        name: 'click_cost_min',
+                        index: 'click_cost_min',
+                        sortable: false,
+                        width: 125,
+                        align: 'center'
+                    },
+                    {
+                        name: 'click_cost_max',
+                        index: 'click_cost_max',
+                        sortable: false,
+                        width: 125,
+                        align: 'center'
+                    }
                 ],
                 caption: "Текущие цены за уникального посетителя",
                 rownumbers: false,
                 sortable: false,
                 hiddengrid: true,
                 rowNum: 900,
-                toolbar: [true, 'top'],
+                toolbar: [
+                    true,
+                    'top'
+                ],
                 height: '400px',
                 subGrid: true,
-                subGridRowExpanded: function (subgrid_id, row_id) {
+                subGridRowExpanded: function (
+                    subgrid_id,
+                    row_id
+                ) {
                     var subgrid_table_id, pager_id;
                     subgrid_table_id = subgrid_id + "_t";
                     pager_id = "p_" + subgrid_table_id;
                     $("#" + subgrid_id).html("<table id='" + subgrid_table_id + "' class='scroll'></table><div id='" + pager_id + "' class='scroll'></div>");
-                    request = jQuery(this).getRowData(row_id);
-                    jQuery("#" + subgrid_table_id).jqGrid({
-                        url: '/manager/currentClickCost?subgrid=true&id=' + request['title'] + '&click_percent=' + request['click_percent']
-                        + '&click_cost_min=' + request['click_cost_min'] + '&click_cost_max=' + request['click_cost_max'],
+                    var req = $(this).getRowData(row_id);
+                    $("#" + subgrid_table_id).jqGrid({
+                        url: ['/manager/currentClickCost?',
+                              'subgrid=true&id=', req.title,
+                              '&click_percent=', req.click_percent,
+                              '&click_cost_min=', req.click_cost_min,
+                              '&click_cost_max=', req.click_cost_max
+                        ].join(''),
                         datatype: 'json',
                         mtype: 'get',
-                        colNames: ['Рекламный блок', 'Процент цены</br>за клик', 'Минимальная цена</br>за клик', 'Максимальная цена</br>за клик'],
+                        colNames: [
+                            'Рекламный блок',
+                            'Процент цены</br>за клик',
+                            'Минимальная цена</br>за клик',
+                            'Максимальная цена</br>за клик'
+                        ],
                         colModel: [
-                            {name: 'btitle', index: 'btitle', align: 'center', sortable: false, width: 150},
+                            {
+                                name: 'btitle',
+                                index: 'btitle',
+                                align: 'center',
+                                sortable: false,
+                                width: 150
+                            },
                             {
                                 name: 'bclick_percent',
                                 index: 'bclick_percent',
@@ -330,7 +409,7 @@ var ManagerUI = function () {
                                 sortable: false,
                                 width: 125,
                                 align: 'center'
-                            },
+                            }
                         ],
                         rownumbers: false,
                         loadonce: true,
@@ -370,87 +449,115 @@ var ManagerUI = function () {
                 loadComplete: function () {
                     $('#tableMoneyOutRequest .actionLink').click(openUserDetails);
                 },
-                colNames: ['Пользователь', 'Дата', 'Сумма заявки', 'Сумма на счету', 'Доступно к выводу', 'Подтверждено', 'Разрешено', 'Оплачено', 'Телефон', 'Оплата', 'Код протекции', 'Истекает', 'Примечания'],
-                colModel: [{
-                    name: 'user',
-                    index: 'user',
-                    width: 115,
-                    align: 'center',
-                    sortable: true,
-                    classes: 'actionLink pseudoLink'
-                }, {
-                    name: 'date',
-                    index: 'date',
-                    width: 70,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summ',
-                    index: 'summ',
-                    width: 70,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summin',
-                    index: 'summin',
-                    width: 70,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summout',
-                    index: 'summout',
-                    width: 70,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'user_confirmed',
-                    index: 'user_confirmed',
-                    width: 100,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'manager_agreed',
-                    index: 'manager_agreed',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'approved',
-                    index: 'approved',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'phone',
-                    index: 'phone',
-                    width: 100,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'paymentType',
-                    index: 'paymentType',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'protectionCode',
-                    index: 'protectionCode',
-                    width: 100,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'protectionDate',
-                    index: 'protectionDate',
-                    width: 100,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'comments',
-                    index: 'comments',
-                    width: 400,
-                    align: 'left',
-                    sortable: true
-                }],
+                colNames: [
+                    'Пользователь',
+                    'Дата',
+                    'Сумма заявки',
+                    'Сумма на счету',
+                    'Доступно к выводу',
+                    'Подтверждено',
+                    'Разрешено',
+                    'Оплачено',
+                    'Телефон',
+                    'Оплата',
+                    'Код протекции',
+                    'Истекает',
+                    'Примечания'
+                ],
+                colModel: [
+                    {
+                        name: 'user',
+                        index: 'user',
+                        width: 115,
+                        align: 'center',
+                        sortable: true,
+                        classes: 'actionLink pseudoLink'
+                    },
+                    {
+                        name: 'date',
+                        index: 'date',
+                        width: 70,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summ',
+                        index: 'summ',
+                        width: 70,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summin',
+                        index: 'summin',
+                        width: 70,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summout',
+                        index: 'summout',
+                        width: 70,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'user_confirmed',
+                        index: 'user_confirmed',
+                        width: 100,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'manager_agreed',
+                        index: 'manager_agreed',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'approved',
+                        index: 'approved',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'phone',
+                        index: 'phone',
+                        width: 100,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'paymentType',
+                        index: 'paymentType',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'protectionCode',
+                        index: 'protectionCode',
+                        width: 100,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'protectionDate',
+                        index: 'protectionDate',
+                        width: 100,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'comments',
+                        index: 'comments',
+                        width: 400,
+                        align: 'left',
+                        sortable: true
+                    }
+                ],
                 caption: "Заявки на вывод средств",
                 rownumbers: true,
                 height: '100%',
@@ -460,23 +567,29 @@ var ManagerUI = function () {
                 autowidth: true,
                 pager: "#pagerMoneyOutRequest",
                 forceFit: true,
-                toolbar: [true, 'top'],
-                beforeSelectRow: function (rowid, e) {
+                toolbar: [
+                    true,
+                    'top'
+                ],
+                beforeSelectRow: function (
+                    rowid,
+                    e
+                ) {
                     if (!rowid)
                         return false;
                     var row = $("#tableMoneyOutRequest").jqGrid('getRowData', rowid);
-                    buttonApproveMoneyOutRequest.attr('disabled', row.approved == 'Да' ||
-                        row.user_confirmed != 'Да' ||
-                        row.manager_agreed != 'Да');
-                    buttonAgreeMoneyOutRequest.attr('disabled', row.approved == 'Да' ||
-                        row.manager_agreed == 'Да');
+                    buttonApproveMoneyOutRequest.attr('disabled', row.approved === 'Да' ||
+                        row.user_confirmed !== 'Да' ||
+                        row.manager_agreed !== 'Да');
+                    buttonAgreeMoneyOutRequest.attr('disabled', row.approved === 'Да' ||
+                        row.manager_agreed === 'Да');
 
 
-                    buttonUpdateProtectionCodeMoneyOutRequest.attr('disabled', ((row.approved != 'Да') ||
-                        (row.user_confirmed != 'Да') ||
-                        (row.manager_agreed != 'Да')) ||
-                        ((row.paymentType != 'webmoney_z') &&
-                        (row.paymentType != 'yandex')));
+                    buttonUpdateProtectionCodeMoneyOutRequest.attr('disabled', ((row.approved !== 'Да') ||
+                        (row.user_confirmed !== 'Да') ||
+                        (row.manager_agreed !== 'Да')) ||
+                        ((row.paymentType !== 'webmoney_z') &&
+                            (row.paymentType !== 'yandex')));
 
                     return true;
                 }
@@ -488,14 +601,15 @@ var ManagerUI = function () {
             buttonApproveMoneyOutRequest.attr('disabled', true).click(function () {
                 var table = $("#tableMoneyOutRequest");
                 var id = table.jqGrid('getGridParam', 'selrow');
-                if (!id)
+                if (!id){
                     return;
+                }
                 var row = table.jqGrid('getRowData', id);
                 $('#dialogMoneyOutApprove_summ').html(row.summ);
                 $('#dialogMoneyOutApprove_user').html(row.user);
                 $('#dialogMoneyOutApprove_date').html(row.date);
 
-                if (row.paymentType == 'card' || row.paymentType == 'счёт-фактура') {
+                if (row.paymentType === 'card' || row.paymentType === 'счёт-фактура') {
                     $('.protection_code_info').hide();
                 }
                 else {
@@ -528,8 +642,9 @@ var ManagerUI = function () {
             buttonUpdateProtectionCodeMoneyOutRequest.attr('disabled', true).click(function () {
                 var table = $("#tableMoneyOutRequest");
                 var id = table.jqGrid('getGridParam', 'selrow');
-                if (!id)
+                if (!id){
                     return;
+                }
                 var row = table.jqGrid('getRowData', id);
                 $('#dialogMoneyOutUpdateProtectionCode_summ').html(row.summ);
                 $('#dialogMoneyOutUpdateProtectionCode_user').html(row.user);
@@ -542,63 +657,87 @@ var ManagerUI = function () {
                 url: '/manager/overallSumSummaryByDays',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['', 'Дата', 'Аккаунтов<br/>(Акт Аккаунтов/Сайтов)', 'Средняя цена', 'Процент<br/>отчисления', 'Начислено<br/>партнёрам', 'Отчислено<br/>Adload', 'Осталось'],
-                colModel: [{
-                    name: 'color',
-                    index: 'color',
-                    width: 75,
-                    align: 'center',
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'date',
-                    index: 'date',
-                    width: 75,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'AccountSiteCount',
-                    index: 'AccountSiteCount',
-                    width: 145,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'click_profit',
-                    index: 'click_profit',
-                    width: 85,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'profit2',
-                    index: 'profit2',
-                    width: 85,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'profit1',
-                    index: 'profit1',
-                    width: 85,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'profit3',
-                    index: 'profit3',
-                    width: 85,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'profit4',
-                    index: 'profit4',
-                    width: 85,
-                    align: 'center',
-                    sortable: false
-                }],
+                colNames: [
+                    '',
+                    'Дата',
+                    'Аккаунтов<br/>(Акт Аккаунтов/Сайтов)',
+                    'Средняя цена',
+                    'Процент<br/>отчисления',
+                    'Начислено<br/>партнёрам',
+                    'Отчислено<br/>Adload',
+                    'Осталось'
+                ],
+                colModel: [
+                    {
+                        name: 'color',
+                        index: 'color',
+                        width: 75,
+                        align: 'center',
+                        sortable: false,
+                        hidden: true
+                    },
+                    {
+                        name: 'date',
+                        index: 'date',
+                        width: 75,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'AccountSiteCount',
+                        index: 'AccountSiteCount',
+                        width: 145,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'click_profit',
+                        index: 'click_profit',
+                        width: 85,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'profit2',
+                        index: 'profit2',
+                        width: 85,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'profit1',
+                        index: 'profit1',
+                        width: 85,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'profit3',
+                        index: 'profit3',
+                        width: 85,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'profit4',
+                        index: 'profit4',
+                        width: 85,
+                        align: 'center',
+                        sortable: false
+                    }
+                ],
                 caption: "Общая статистика движения средств",
                 gridview: true,
                 rowNum: 10,
                 rownumbers: false,
                 height: '100%',
-                rowList: [10, 15, 20, 30, 100],
+                rowList: [
+                    10,
+                    15,
+                    20,
+                    30,
+                    100
+                ],
                 sortname: 'date',
                 sortorder: 'desc',
                 autowidth: true,
@@ -619,75 +758,103 @@ var ManagerUI = function () {
                 url: '/manager/overallSummaryByDays',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['', 'Дата', 'Аккаунтов<br/>(Акт Аккаунтов/Сайтов)', 'Показы блоков</br>не гарантированные', 'Показы<br/>блоков', 'Клики<br/>уникальные', 'CTR<br/>Блоков', 'Процент видимых показов', 'Социал<br/>клики', 'Ср.время</br>до клика'],
-                colModel: [{
-                    name: 'color',
-                    index: 'color',
-                    width: 75,
-                    align: 'center',
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'date',
-                    index: 'date',
-                    width: 75,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'AccountSiteCount',
-                    index: 'AccountSiteCount',
-                    width: 145,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'impressions_block_not_valid',
-                    index: 'impressions_block_not_valid',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'impressions_block',
-                    index: 'impressions_block',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'clicksUnique',
-                    index: 'clicksUnique',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'ctr_block',
-                    index: 'ctr_block',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'viewPort',
-                    index: 'viewPort',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'social_clicks',
-                    index: 'social_clicks',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'view_seconds_avg',
-                    index: 'view_seconds_avg',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }],
+                colNames: [
+                    '',
+                    'Дата',
+                    'Аккаунтов<br/>(Акт Аккаунтов/Сайтов)',
+                    'Показы блоков</br>не гарантированные',
+                    'Показы<br/>блоков',
+                    'Клики<br/>уникальные',
+                    'CTR<br/>Блоков',
+                    'Процент видимых показов',
+                    'Социал<br/>клики',
+                    'Ср.время</br>до клика'
+                ],
+                colModel: [
+                    {
+                        name: 'color',
+                        index: 'color',
+                        width: 75,
+                        align: 'center',
+                        sortable: false,
+                        hidden: true
+                    },
+                    {
+                        name: 'date',
+                        index: 'date',
+                        width: 75,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'AccountSiteCount',
+                        index: 'AccountSiteCount',
+                        width: 145,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'impressions_block_not_valid',
+                        index: 'impressions_block_not_valid',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'impressions_block',
+                        index: 'impressions_block',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'clicksUnique',
+                        index: 'clicksUnique',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'ctr_block',
+                        index: 'ctr_block',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'viewPort',
+                        index: 'viewPort',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'social_clicks',
+                        index: 'social_clicks',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'view_seconds_avg',
+                        index: 'view_seconds_avg',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    }
+                ],
                 caption: "Общая статистика",
                 gridview: true,
                 rowNum: 10,
                 rownumbers: false,
                 height: '100%',
-                rowList: [10, 15, 20, 30, 100],
+                rowList: [
+                    10,
+                    15,
+                    20,
+                    30,
+                    100
+                ],
                 sortname: 'date',
                 sortorder: 'desc',
                 pager: '#pagerOverallSummary',
@@ -706,99 +873,135 @@ var ManagerUI = function () {
                 url: '/manager/overallTeaserSummaryByDays',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['', 'Дата', 'Аккаунтов<br/>(Акт Аккаунтов/Сайтов)', 'Показы Блоков</br> не гарантированные', 'Показы<br/>Блоков', 'Показы РП</br> не гарантированные', 'Показы<br/>РП', 'Клики', 'Клики<br/>уник.', 'Сумма', 'CTR<br/>РП', 'CTR<br/>Блоков', 'Цена', 'Ср.время</br>до клика'],
-                colModel: [{
-                    name: 'color',
-                    index: 'color',
-                    width: 75,
-                    align: 'center',
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'date',
-                    index: 'date',
-                    width: 75,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'AccountSiteCount',
-                    index: 'AccountSiteCount',
-                    width: 145,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'impressions_block_not_valid',
-                    index: 'impressions_block_not_valid',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'impressions_block',
-                    index: 'impressions_block',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'impressions_not_valid',
-                    index: 'impressions_not_valid',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'impressions',
-                    index: 'impressions',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'clicks',
-                    index: 'clicks',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'clicksUnique',
-                    index: 'clicksUnique',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'profit',
-                    index: 'profit',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'ctr',
-                    index: 'ctr',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'ctr_block',
-                    index: 'ctr_block',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'click_cost',
-                    index: 'click_cost',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }, {
-                    name: 'view_seconds_avg',
-                    index: 'view_seconds_avg',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }],
+                colNames: [
+                    '',
+                    'Дата',
+                    'Аккаунтов<br/>(Акт Аккаунтов/Сайтов)',
+                    'Показы Блоков</br> не гарантированные',
+                    'Показы<br/>Блоков',
+                    'Показы РП</br> не гарантированные',
+                    'Показы<br/>РП',
+                    'Клики',
+                    'Клики<br/>уник.',
+                    'Сумма',
+                    'CTR<br/>РП',
+                    'CTR<br/>Блоков',
+                    'Цена',
+                    'Ср.время</br>до клика'
+                ],
+                colModel: [
+                    {
+                        name: 'color',
+                        index: 'color',
+                        width: 75,
+                        align: 'center',
+                        sortable: false,
+                        hidden: true
+                    },
+                    {
+                        name: 'date',
+                        index: 'date',
+                        width: 75,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'AccountSiteCount',
+                        index: 'AccountSiteCount',
+                        width: 145,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'impressions_block_not_valid',
+                        index: 'impressions_block_not_valid',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'impressions_block',
+                        index: 'impressions_block',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'impressions_not_valid',
+                        index: 'impressions_not_valid',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'impressions',
+                        index: 'impressions',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'clicks',
+                        index: 'clicks',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'clicksUnique',
+                        index: 'clicksUnique',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'profit',
+                        index: 'profit',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'ctr',
+                        index: 'ctr',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'ctr_block',
+                        index: 'ctr_block',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'click_cost',
+                        index: 'click_cost',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'view_seconds_avg',
+                        index: 'view_seconds_avg',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    }
+                ],
                 caption: "Общая статистика предложений",
                 gridview: true,
                 rowNum: 10,
                 rownumbers: false,
                 height: '100%',
-                rowList: [10, 15, 20, 30, 100],
+                rowList: [
+                    10,
+                    15,
+                    20,
+                    30,
+                    100
+                ],
                 sortname: 'date',
                 sortorder: 'desc',
                 autowidth: true,
@@ -821,60 +1024,78 @@ var ManagerUI = function () {
                     $('#tableUsersSummary .actionLink').click(openUserDetails);
                 },
                 mtype: 'GET',
-                colNames: ['Пользователь', 'Сегодня', 'Вчера', 'Позавчера', 'За неделю', 'За месяц', 'За год', 'Сумма на счету'],
-                colModel: [{
-                    name: 'user',
-                    index: 'user',
-                    width: 150,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summToday',
-                    index: 'summToday',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summYesterday',
-                    index: 'summYesterday',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summBeforeYesterday',
-                    index: 'summBeforeYesterday',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summWeek',
-                    index: 'summWeek',
-                    width: 95,
-                    align: 'center',
-                    sortable: true,
-                    hidden: !permissionViewAllUserStats
-                }, {
-                    name: 'summMonth',
-                    index: 'summMonth',
-                    width: 95,
-                    align: 'center',
-                    sortable: true,
-                    hidden: !permissionViewAllUserStats
-                }, {
-                    name: 'summYear',
-                    index: 'summYear',
-                    width: 90,
-                    align: 'center',
-                    sortable: true,
-                    hidden: !permissionViewAllUserStats
-                }, {
-                    name: 'summ',
-                    index: 'summ',
-                    width: 135,
-                    align: 'center',
-                    sortable: true,
-                    hidden: !permissionViewAllUserStats
-                }],
+                colNames: [
+                    'Пользователь',
+                    'Сегодня',
+                    'Вчера',
+                    'Позавчера',
+                    'За неделю',
+                    'За месяц',
+                    'За год',
+                    'Сумма на счету'
+                ],
+                colModel: [
+                    {
+                        name: 'user',
+                        index: 'user',
+                        width: 150,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summToday',
+                        index: 'summToday',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summYesterday',
+                        index: 'summYesterday',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summBeforeYesterday',
+                        index: 'summBeforeYesterday',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summWeek',
+                        index: 'summWeek',
+                        width: 95,
+                        align: 'center',
+                        sortable: true,
+                        hidden: !window.permissionViewAllUserStats
+                    },
+                    {
+                        name: 'summMonth',
+                        index: 'summMonth',
+                        width: 95,
+                        align: 'center',
+                        sortable: true,
+                        hidden: !window.permissionViewAllUserStats
+                    },
+                    {
+                        name: 'summYear',
+                        index: 'summYear',
+                        width: 90,
+                        align: 'center',
+                        sortable: true,
+                        hidden: !window.permissionViewAllUserStats
+                    },
+                    {
+                        name: 'summ',
+                        index: 'summ',
+                        width: 135,
+                        align: 'center',
+                        sortable: true,
+                        hidden: !window.permissionViewAllUserStats
+                    }
+                ],
                 viewrecords: false,
                 caption: "Суммарная статистика",
                 hiddengrid: true,
@@ -885,7 +1106,11 @@ var ManagerUI = function () {
                 rowNum: 900,
                 footerrow: true,
                 userDataOnFooter: true,
-                onSortCol: function (index, iCol, sortorder) {
+                onSortCol: function (
+                    index,
+                    iCol,
+                    sortorder
+                ) {
                     $('#tableUsersSummary').jqGrid('setGridParam', {datatype: "json"}).jqGrid('setGridParam',
                         {
                             url: "/manager/dataUsersSummary?sortcol=" + iCol + "&sortreverse=" + sortorder
@@ -901,109 +1126,141 @@ var ManagerUI = function () {
                     $('#tableTeaserUsersSummary .actionLink').click(openUserDetails);
                 },
                 mtype: 'GET',
-                colNames: ['Пользователь', 'Сегодня', 'Вчера', 'Позавчера', 'За неделю', 'За месяц', 'За год',
-                    'Средняя цена<br/>за сегодня', 'Средняя цена<br/>за вчера', 'Средняя цена<br/>за неделю',
-                    'CTR Блока<br/>за сегодня', 'CTR Блока<br/>за вчера', 'CTR Блока<br/>за неделю', 'CTR РП<br/>за сегодня', 'CTR РП<br/>за вчера', 'CTR РП<br/>за неделю'],
-                colModel: [{
-                    name: 'user',
-                    index: 'user',
-                    width: 150,
-                    align: 'center',
-                    sortable: true,
-                    classes: 'actionLink'
-                }, {
-                    name: 'summToday',
-                    index: 'summToday',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summYesterday',
-                    index: 'summYesterday',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summBeforeYesterday',
-                    index: 'summBeforeYesterday',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summWeek',
-                    index: 'summWeek',
-                    width: 95,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'summMonth',
-                    index: 'summMonth',
-                    width: 95,
-                    align: 'center',
-                    sortable: true,
-                    hidden: !permissionViewAllUserStats
-                }, {
-                    name: 'summYear',
-                    index: 'summYear',
-                    width: 90,
-                    align: 'center',
-                    sortable: true,
-                    hidden: !permissionViewAllUserStats
-                }, {
-                    name: 'dayCost',
-                    index: 'dayCost',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'yesterdayCost',
-                    index: 'yesterdayCost',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'weekCost',
-                    index: 'weekCost',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'dayCTR_block',
-                    index: 'dayCTR_block',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'ydayCTR_block',
-                    index: 'ydayCTR_block',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'weekCTR_block',
-                    index: 'weekCTR_block',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'dayCTR',
-                    index: 'dayCTR',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'ydayCTR',
-                    index: 'ydayCTR',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'weekCTR',
-                    index: 'weekCTR',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }],
+                colNames: [
+                    'Пользователь',
+                    'Сегодня',
+                    'Вчера',
+                    'Позавчера',
+                    'За неделю',
+                    'За месяц',
+                    'За год',
+                    'Средняя цена<br/>за сегодня',
+                    'Средняя цена<br/>за вчера',
+                    'Средняя цена<br/>за неделю',
+                    'CTR Блока<br/>за сегодня',
+                    'CTR Блока<br/>за вчера',
+                    'CTR Блока<br/>за неделю',
+                    'CTR РП<br/>за сегодня',
+                    'CTR РП<br/>за вчера',
+                    'CTR РП<br/>за неделю'
+                ],
+                colModel: [
+                    {
+                        name: 'user',
+                        index: 'user',
+                        width: 150,
+                        align: 'center',
+                        sortable: true,
+                        classes: 'actionLink'
+                    },
+                    {
+                        name: 'summToday',
+                        index: 'summToday',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summYesterday',
+                        index: 'summYesterday',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summBeforeYesterday',
+                        index: 'summBeforeYesterday',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summWeek',
+                        index: 'summWeek',
+                        width: 95,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'summMonth',
+                        index: 'summMonth',
+                        width: 95,
+                        align: 'center',
+                        sortable: true,
+                        hidden: !window.permissionViewAllUserStats
+                    },
+                    {
+                        name: 'summYear',
+                        index: 'summYear',
+                        width: 90,
+                        align: 'center',
+                        sortable: true,
+                        hidden: !window.permissionViewAllUserStats
+                    },
+                    {
+                        name: 'dayCost',
+                        index: 'dayCost',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'yesterdayCost',
+                        index: 'yesterdayCost',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'weekCost',
+                        index: 'weekCost',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'dayCTR_block',
+                        index: 'dayCTR_block',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'ydayCTR_block',
+                        index: 'ydayCTR_block',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'weekCTR_block',
+                        index: 'weekCTR_block',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'dayCTR',
+                        index: 'dayCTR',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'ydayCTR',
+                        index: 'ydayCTR',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'weekCTR',
+                        index: 'weekCTR',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    }
+                ],
                 viewrecords: false,
                 caption: "Суммарная статистика предложений",
                 gridview: true,
@@ -1015,7 +1272,11 @@ var ManagerUI = function () {
                 hiddengrid: true,
                 footerrow: true,
                 userDataOnFooter: true,
-                onSortCol: function (index, iCol, sortorder) {
+                onSortCol: function (
+                    index,
+                    iCol,
+                    sortorder
+                ) {
                     $('#tableTeaserUsersSummary').jqGrid('setGridParam', {datatype: "json"}).jqGrid('setGridParam',
                         {
                             url: "/manager/dataTeaserUsersSummary?sortcol=" + iCol + "&sortreverse=" + sortorder
@@ -1031,110 +1292,138 @@ var ManagerUI = function () {
                     $('#tableUsersImpressions .actionLink').click(openUserDetails);
                 },
                 mtype: 'GET',
-                colNames: ['Пользователь', 'Сегодня<br/>РП', 'Сегодня<br/>Блок', 'Вчера<br/>РП', 'Вчера<br/>Блок', 'Позавчера<br/>РП', 'Позавчера<br/>Блок', 'За неделю<br/>РП', 'За неделю<br/>Блок', 'За месяц<br/>РП', 'За месяц<br/>Блок', 'За год<br/>РП', 'За год<br/>Блок'],
-                colModel: [{
-                    name: 'user',
-                    index: 'user',
-                    width: 150,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'impToday',
-                    index: 'impToday',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impToday_block',
-                    index: 'impToday_block',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impYesterday',
-                    index: 'impYesterday',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impYesterday_block',
-                    index: 'impYesterday_block',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impBeforeYesterday',
-                    index: 'impBeforeYesterday',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impBeforeYesterday_block',
-                    index: 'impBeforeYesterday_block',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impWeek',
-                    index: 'impWeek',
-                    width: 80,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impWeek_block',
-                    index: 'impWeek_block',
-                    width: 80,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impMonth',
-                    index: 'impMonth',
-                    width: 80,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impMonth_block',
-                    index: 'impMonth_block',
-                    width: 80,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impYear',
-                    index: 'impYear',
-                    width: 85,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impYear_block',
-                    index: 'impYear_block',
-                    width: 85,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }],
+                colNames: [
+                    'Пользователь',
+                    'Сегодня<br/>РП',
+                    'Сегодня<br/>Блок',
+                    'Вчера<br/>РП',
+                    'Вчера<br/>Блок',
+                    'Позавчера<br/>РП',
+                    'Позавчера<br/>Блок',
+                    'За неделю<br/>РП',
+                    'За неделю<br/>Блок',
+                    'За месяц<br/>РП',
+                    'За месяц<br/>Блок',
+                    'За год<br/>РП',
+                    'За год<br/>Блок'
+                ],
+                colModel: [
+                    {
+                        name: 'user',
+                        index: 'user',
+                        width: 150,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'impToday',
+                        index: 'impToday',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impToday_block',
+                        index: 'impToday_block',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impYesterday',
+                        index: 'impYesterday',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impYesterday_block',
+                        index: 'impYesterday_block',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impBeforeYesterday',
+                        index: 'impBeforeYesterday',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impBeforeYesterday_block',
+                        index: 'impBeforeYesterday_block',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impWeek',
+                        index: 'impWeek',
+                        width: 80,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impWeek_block',
+                        index: 'impWeek_block',
+                        width: 80,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impMonth',
+                        index: 'impMonth',
+                        width: 80,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impMonth_block',
+                        index: 'impMonth_block',
+                        width: 80,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impYear',
+                        index: 'impYear',
+                        width: 85,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impYear_block',
+                        index: 'impYear_block',
+                        width: 85,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    }
+                ],
                 viewrecords: false,
                 caption: "Статистика по количеству показов",
                 gridview: true,
@@ -1145,7 +1434,11 @@ var ManagerUI = function () {
                 hiddengrid: true,
                 footerrow: true,
                 userDataOnFooter: true,
-                onSortCol: function (index, iCol, sortorder) {
+                onSortCol: function (
+                    index,
+                    iCol,
+                    sortorder
+                ) {
                     $('#tableUsersImpressions').jqGrid('setGridParam', {datatype: "json"}).jqGrid('setGridParam',
                         {
                             url: "/manager/dataUsersImpressions?sortcol=" + iCol + "&sortreverse=" + sortorder
@@ -1161,110 +1454,138 @@ var ManagerUI = function () {
                     $('#tableTeaserUsersImpressions .actionLink').click(openUserDetails);
                 },
                 mtype: 'GET',
-                colNames: ['Пользователь', 'Сегодня<br/>РП', 'Сегодня<br/>Блок', 'Вчера<br/>РП', 'Вчера<br/>Блок', 'Позавчера<br/>РП', 'Позавчера<br/>Блок', 'За неделю<br/>РП', 'За неделю<br/>Блок', 'За месяц<br/>РП', 'За месяц<br/>Блок', 'За год<br/>РП', 'За год<br/>Блок'],
-                colModel: [{
-                    name: 'user',
-                    index: 'user',
-                    width: 150,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'impToday',
-                    index: 'impToday',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impToday_block',
-                    index: 'impToday_block',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impYesterday',
-                    index: 'impYesterday',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impYesterday_block',
-                    index: 'impYesterday_block',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impBeforeYesterday',
-                    index: 'impBeforeYesterday',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impBeforeYesterday_block',
-                    index: 'impBeforeYesterday_block',
-                    width: 75,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impWeek',
-                    index: 'impWeek',
-                    width: 80,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impWeek_block',
-                    index: 'impWeek_block',
-                    width: 80,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impMonth',
-                    index: 'impMonth',
-                    width: 80,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impMonth_block',
-                    index: 'impMonth_block',
-                    width: 80,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impYear',
-                    index: 'impYear',
-                    width: 85,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }, {
-                    name: 'impYear_block',
-                    index: 'impYear_block',
-                    width: 85,
-                    align: 'center',
-                    formatter: 'integer',
-                    sorttype: 'integer',
-                    sortable: true
-                }],
+                colNames: [
+                    'Пользователь',
+                    'Сегодня<br/>РП',
+                    'Сегодня<br/>Блок',
+                    'Вчера<br/>РП',
+                    'Вчера<br/>Блок',
+                    'Позавчера<br/>РП',
+                    'Позавчера<br/>Блок',
+                    'За неделю<br/>РП',
+                    'За неделю<br/>Блок',
+                    'За месяц<br/>РП',
+                    'За месяц<br/>Блок',
+                    'За год<br/>РП',
+                    'За год<br/>Блок'
+                ],
+                colModel: [
+                    {
+                        name: 'user',
+                        index: 'user',
+                        width: 150,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'impToday',
+                        index: 'impToday',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impToday_block',
+                        index: 'impToday_block',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impYesterday',
+                        index: 'impYesterday',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impYesterday_block',
+                        index: 'impYesterday_block',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impBeforeYesterday',
+                        index: 'impBeforeYesterday',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impBeforeYesterday_block',
+                        index: 'impBeforeYesterday_block',
+                        width: 75,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impWeek',
+                        index: 'impWeek',
+                        width: 80,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impWeek_block',
+                        index: 'impWeek_block',
+                        width: 80,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impMonth',
+                        index: 'impMonth',
+                        width: 80,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impMonth_block',
+                        index: 'impMonth_block',
+                        width: 80,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impYear',
+                        index: 'impYear',
+                        width: 85,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    },
+                    {
+                        name: 'impYear_block',
+                        index: 'impYear_block',
+                        width: 85,
+                        align: 'center',
+                        formatter: 'integer',
+                        sorttype: 'integer',
+                        sortable: true
+                    }
+                ],
                 viewrecords: false,
                 caption: "Статистика по количеству показов за предложение",
                 gridview: true,
@@ -1275,7 +1596,11 @@ var ManagerUI = function () {
                 hiddengrid: true,
                 footerrow: true,
                 userDataOnFooter: true,
-                onSortCol: function (index, iCol, sortorder) {
+                onSortCol: function (
+                    index,
+                    iCol,
+                    sortorder
+                ) {
                     $('#tableTeaserUsersImpressions').jqGrid('setGridParam', {datatype: "json"}).jqGrid('setGridParam',
                         {
                             url: "/manager/dataTeaserUsersImpressions?sortcol=" + iCol + "&sortreverse=" + sortorder
@@ -1288,33 +1613,108 @@ var ManagerUI = function () {
                 url: '/manager/rating',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['РП', 'РК', 'Показы', 'Клики', 'CTR', 'Цена', 'Рейтинг', 'Время обнавления</br>Рейтинга', 'Показы<br/>до<br/>пересчета', 'Клики<br/>до<br/>пересчета', 'Старый<br/>CTR', 'Все<br/>показы', 'Все<br/>клики', 'Обший<br/>рейтинг', 'Время обнавления</br> Общего Рейтинга', 'Обший<br/>CTR'],
+                colNames: [
+                    'РП',
+                    'РК',
+                    'Показы',
+                    'Клики',
+                    'CTR',
+                    'Цена',
+                    'Рейтинг',
+                    'Время обнавления</br>Рейтинга',
+                    'Показы<br/>до<br/>пересчета',
+                    'Клики<br/>до<br/>пересчета',
+                    'Старый<br/>CTR',
+                    'Все<br/>показы',
+                    'Все<br/>клики',
+                    'Обший<br/>рейтинг',
+                    'Время обнавления</br> Общего Рейтинга',
+                    'Обший<br/>CTR'
+                ],
                 colModel: [
-                    {name: 'title', index: 'title', align: 'center'},
-                    {name: 'campaignTitle', index: 'campaignTitle', align: 'center'},
-                    {name: 'impressions', index: 'impressions', align: 'center', width: '70px', search: false},
-                    {name: 'clicks', index: 'clicks', align: 'center', width: '70px', search: false},
+                    {
+                        name: 'title',
+                        index: 'title',
+                        align: 'center'
+                    },
+                    {
+                        name: 'campaignTitle',
+                        index: 'campaignTitle',
+                        align: 'center'
+                    },
+                    {
+                        name: 'impressions',
+                        index: 'impressions',
+                        align: 'center',
+                        width: '70px',
+                        search: false
+                    },
+                    {
+                        name: 'clicks',
+                        index: 'clicks',
+                        align: 'center',
+                        width: '70px',
+                        search: false
+                    },
                     {
                         name: 'ctr',
                         index: 'ctr',
                         align: 'center',
                         width: '80px',
                         formatter: 'number',
-                        formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4},
+                        formatoptions: {
+                            decimalSeparator: ",",
+                            thousandsSeparator: ",",
+                            decimalPlaces: 4
+                        },
                         search: false
                     },
-                    {name: 'cost', index: 'cost', align: 'center', width: '70px', search: false},
-                    {name: 'rating', index: 'rating', align: 'center', width: '85px', search: false},
-                    {name: 'last_rating_update', index: 'rating', align: 'center', width: '85px', search: false},
-                    {name: 'old_impressions', index: 'old_impressions', align: 'center', width: '85px', search: false},
-                    {name: 'old_clicks', index: 'old_clicks', align: 'center', width: '85px', search: false},
+                    {
+                        name: 'cost',
+                        index: 'cost',
+                        align: 'center',
+                        width: '70px',
+                        search: false
+                    },
+                    {
+                        name: 'rating',
+                        index: 'rating',
+                        align: 'center',
+                        width: '85px',
+                        search: false
+                    },
+                    {
+                        name: 'last_rating_update',
+                        index: 'rating',
+                        align: 'center',
+                        width: '85px',
+                        search: false
+                    },
+                    {
+                        name: 'old_impressions',
+                        index: 'old_impressions',
+                        align: 'center',
+                        width: '85px',
+                        search: false
+                    },
+                    {
+                        name: 'old_clicks',
+                        index: 'old_clicks',
+                        align: 'center',
+                        width: '85px',
+                        search: false
+                    },
                     {
                         name: 'old_ctr',
                         index: 'old_ctr',
                         align: 'center',
                         width: '80px',
                         formatter: 'number',
-                        formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4},
+                        formatoptions: {
+                            decimalSeparator: ",",
+                            thousandsSeparator: ",",
+                            decimalPlaces: 4
+                        },
                         search: false
                     },
                     {
@@ -1324,22 +1724,50 @@ var ManagerUI = function () {
                         width: '90px',
                         search: false
                     },
-                    {name: 'full_clicks', index: 'full_clicks', align: 'center', width: '90px', search: false},
-                    {name: 'full_rating', index: 'full_rating', align: 'center', width: '85px', search: false},
-                    {name: 'last_full_rating_update', index: 'rating', align: 'center', width: '85px', search: false},
+                    {
+                        name: 'full_clicks',
+                        index: 'full_clicks',
+                        align: 'center',
+                        width: '90px',
+                        search: false
+                    },
+                    {
+                        name: 'full_rating',
+                        index: 'full_rating',
+                        align: 'center',
+                        width: '85px',
+                        search: false
+                    },
+                    {
+                        name: 'last_full_rating_update',
+                        index: 'rating',
+                        align: 'center',
+                        width: '85px',
+                        search: false
+                    },
                     {
                         name: 'full_ctr',
                         index: 'full_ctr',
                         align: 'center',
                         width: '80px',
                         formatter: 'number',
-                        formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4},
+                        formatoptions: {
+                            decimalSeparator: ",",
+                            thousandsSeparator: ",",
+                            decimalPlaces: 4
+                        },
                         search: false
-                    }],
+                    }
+                ],
                 caption: "Обший рейтинг рекламных предложений",
                 height: 'auto',
                 rowNum: 10,
-                rowList: [10, 20, 30, 100],
+                rowList: [
+                    10,
+                    20,
+                    30,
+                    100
+                ],
                 sortname: 'title',
                 sortorder: 'asc',
                 rownumbers: true,
@@ -1361,31 +1789,81 @@ var ManagerUI = function () {
                 url: '/manager/ratingForInformers',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['', 'Рекламный блок'],
+                colNames: [
+                    '',
+                    'Рекламный блок'
+                ],
                 colModel: [
-                    {name: 'adv', index: 'adv', align: 'center', key: true, hidden: true},
-                    {name: 'title', index: 'title', align: 'center', width: '1184px'}],
+                    {
+                        name: 'adv',
+                        index: 'adv',
+                        align: 'center',
+                        key: true,
+                        hidden: true
+                    },
+                    {
+                        name: 'title',
+                        index: 'title',
+                        align: 'center',
+                        width: '1184px'
+                    }
+                ],
                 caption: "Pейтинг рекламных предложений по рекламным блокам",
                 rownumbers: false,
                 sortable: true,
                 hiddengrid: true,
                 autowidth: true,
                 rowNum: 10,
-                rowList: [10, 20, 30, 100],
+                rowList: [
+                    10,
+                    20,
+                    30,
+                    100
+                ],
                 height: '100%',
                 subGrid: true,
-                subGridRowExpanded: function (subgrid_id, row_id) {
+                subGridRowExpanded: function (
+                    subgrid_id,
+                    row_id
+                ) {
                     var subgrid_table_id, pager_id;
                     subgrid_table_id = subgrid_id + "_t";
                     pager_id = "p_" + subgrid_table_id;
                     $("#" + subgrid_id).html("<table id='" + subgrid_table_id + "' class='scroll'></table><div id='" + pager_id + "' class='scroll'></div>");
-                    jQuery("#" + subgrid_table_id).jqGrid({
+                    $("#" + subgrid_table_id).jqGrid({
                         url: '/manager/ratingForInformers?subgrid=' + row_id,
                         datatype: "json",
-                        colNames: ['РП', 'РК', 'Показы', 'Клики', 'CTR', 'Цена', 'Рейтинг', 'Время обнавления</br>Рейтинга', 'Показы<br/>до<br/>пересчета', 'Клики<br/>до<br/>пересчета', 'Старый<br/>CTR', 'Все<br/>показы', 'Все<br/>клики', 'Обший<br/>Рейтинг', 'Время обнавления</br> Общего Рейтинга', 'Обший<br/>CTR'],
+                        colNames: [
+                            'РП',
+                            'РК',
+                            'Показы',
+                            'Клики',
+                            'CTR',
+                            'Цена',
+                            'Рейтинг',
+                            'Время обнавления</br>Рейтинга',
+                            'Показы<br/>до<br/>пересчета',
+                            'Клики<br/>до<br/>пересчета',
+                            'Старый<br/>CTR',
+                            'Все<br/>показы',
+                            'Все<br/>клики',
+                            'Обший<br/>Рейтинг',
+                            'Время обнавления</br> Общего Рейтинга',
+                            'Обший<br/>CTR'
+                        ],
                         colModel: [
-                            {name: 'title', index: 'title', align: 'center', sortable: true, sorttype: 'text'},
-                            {name: 'campaignTitle', index: 'campaignTitle', align: 'text'},
+                            {
+                                name: 'title',
+                                index: 'title',
+                                align: 'center',
+                                sortable: true,
+                                sorttype: 'text'
+                            },
+                            {
+                                name: 'campaignTitle',
+                                index: 'campaignTitle',
+                                align: 'text'
+                            },
                             {
                                 name: 'impressions',
                                 index: 'impressions',
@@ -1410,7 +1888,11 @@ var ManagerUI = function () {
                                 sorttype: 'integer',
                                 width: '70px',
                                 formatter: 'number',
-                                formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4}
+                                formatoptions: {
+                                    decimalSeparator: ",",
+                                    thousandsSeparator: ",",
+                                    decimalPlaces: 4
+                                }
                             },
                             {
                                 name: 'cost',
@@ -1459,7 +1941,11 @@ var ManagerUI = function () {
                                 sorttype: 'integer',
                                 width: '70px',
                                 formatter: 'number',
-                                formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4}
+                                formatoptions: {
+                                    decimalSeparator: ",",
+                                    thousandsSeparator: ",",
+                                    decimalPlaces: 4
+                                }
                             },
                             {
                                 name: 'full_impressions',
@@ -1500,8 +1986,13 @@ var ManagerUI = function () {
                                 sorttype: 'integer',
                                 width: '70px',
                                 formatter: 'number',
-                                formatoptions: {decimalSeparator: ",", thousandsSeparator: ",", decimalPlaces: 4}
-                            }],
+                                formatoptions: {
+                                    decimalSeparator: ",",
+                                    thousandsSeparator: ",",
+                                    decimalPlaces: 4
+                                }
+                            }
+                        ],
                         rownumbers: false,
                         loadonce: true,
                         sortable: true,
@@ -1522,7 +2013,7 @@ var ManagerUI = function () {
                 duration: 0,
                 defaultDate: null,
                 onSelect: function () {
-                    data_url = '/manager/WorkerNewStats?start_date=' + $('#workerNewStatsCalendar').val();
+                    var data_url = '/manager/WorkerNewStats?start_date=' + $('#workerNewStatsCalendar').val();
                     $('#tableWorkerNewStats').jqGrid().clearGridData();
                     $('#tableWorkerNewStats').setGridParam({url: data_url}).trigger("reloadGrid");
                 }
@@ -1535,102 +2026,134 @@ var ManagerUI = function () {
                 url: '/manager/WorkerNewStats?start_date=' + $('#workerNewStatsCalendar').val() + '&',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['Ветка алгоритма', 'Кол-во РП', 'Кол-во кликов по РП', '1 слово', '2 слова', '3 слова', 'Более 3 слов', 'Н+О', 'Клики Н+О', 'Ш', 'Клики Ш', 'Ф', 'Клики Ф', 'Т', 'Клики Т'],
-                colModel: [{
-                    name: 'branch',
-                    index: 'branch',
-                    align: 'left',
-                    width: 320,
-                    sortable: false
-                }, {
-                    name: 'imp_count',
-                    index: 'imp_count',
-                    align: 'center',
-                    width: 90,
-                    sortable: false
-                }, {
-                    name: 'click_count',
-                    index: 'click_count',
-                    align: 'center',
-                    width: 90,
-                    sortable: false
-                }, {
-                    name: 'word1',
-                    index: 'word1',
-                    align: 'center',
-                    width: 90,
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'word2',
-                    index: 'word2',
-                    align: 'center',
-                    width: 90,
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'word3',
-                    index: 'word3',
-                    align: 'center',
-                    width: 90,
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'word>3',
-                    index: 'word>3',
-                    align: 'center',
-                    width: 90,
-                    sortable: false,
-                    hidden: true
-                }, {
-                    name: 'imp_td',
-                    index: 'imp_td',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'click_td',
-                    index: 'click_td',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'imp_bm',
-                    index: 'imp_bm',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'click_bm',
-                    index: 'click_bm',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'imp_ph',
-                    index: 'imp_ph',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'click_ph',
-                    index: 'click_ph',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'imp_em',
-                    index: 'imp_em',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }, {
-                    name: 'click_em',
-                    index: 'click_em',
-                    align: 'center',
-                    width: 70,
-                    sortable: false
-                }],
+                colNames: [
+                    'Ветка алгоритма',
+                    'Кол-во РП',
+                    'Кол-во кликов по РП',
+                    '1 слово',
+                    '2 слова',
+                    '3 слова',
+                    'Более 3 слов',
+                    'Н+О',
+                    'Клики Н+О',
+                    'Ш',
+                    'Клики Ш',
+                    'Ф',
+                    'Клики Ф',
+                    'Т',
+                    'Клики Т'
+                ],
+                colModel: [
+                    {
+                        name: 'branch',
+                        index: 'branch',
+                        align: 'left',
+                        width: 320,
+                        sortable: false
+                    },
+                    {
+                        name: 'imp_count',
+                        index: 'imp_count',
+                        align: 'center',
+                        width: 90,
+                        sortable: false
+                    },
+                    {
+                        name: 'click_count',
+                        index: 'click_count',
+                        align: 'center',
+                        width: 90,
+                        sortable: false
+                    },
+                    {
+                        name: 'word1',
+                        index: 'word1',
+                        align: 'center',
+                        width: 90,
+                        sortable: false,
+                        hidden: true
+                    },
+                    {
+                        name: 'word2',
+                        index: 'word2',
+                        align: 'center',
+                        width: 90,
+                        sortable: false,
+                        hidden: true
+                    },
+                    {
+                        name: 'word3',
+                        index: 'word3',
+                        align: 'center',
+                        width: 90,
+                        sortable: false,
+                        hidden: true
+                    },
+                    {
+                        name: 'word>3',
+                        index: 'word>3',
+                        align: 'center',
+                        width: 90,
+                        sortable: false,
+                        hidden: true
+                    },
+                    {
+                        name: 'imp_td',
+                        index: 'imp_td',
+                        align: 'center',
+                        width: 70,
+                        sortable: false
+                    },
+                    {
+                        name: 'click_td',
+                        index: 'click_td',
+                        align: 'center',
+                        width: 70,
+                        sortable: false
+                    },
+                    {
+                        name: 'imp_bm',
+                        index: 'imp_bm',
+                        align: 'center',
+                        width: 70,
+                        sortable: false
+                    },
+                    {
+                        name: 'click_bm',
+                        index: 'click_bm',
+                        align: 'center',
+                        width: 70,
+                        sortable: false
+                    },
+                    {
+                        name: 'imp_ph',
+                        index: 'imp_ph',
+                        align: 'center',
+                        width: 70,
+                        sortable: false
+                    },
+                    {
+                        name: 'click_ph',
+                        index: 'click_ph',
+                        align: 'center',
+                        width: 70,
+                        sortable: false
+                    },
+                    {
+                        name: 'imp_em',
+                        index: 'imp_em',
+                        align: 'center',
+                        width: 70,
+                        sortable: false
+                    },
+                    {
+                        name: 'click_em',
+                        index: 'click_em',
+                        align: 'center',
+                        width: 70,
+                        sortable: false
+                    }
+                ],
                 caption: "Статистика работы нового воркера",
                 height: 'auto',
                 autowidth: true,
@@ -1650,59 +2173,77 @@ var ManagerUI = function () {
                 loadComplete: function () {
                     $('#managersSummaryByDate .actionLink').click(openUserDetails);
                 },
-                colNames: ['Дата', 'Менеджер', 'Отчислено партнёрам', 'Процент отчисления партнёру', 'Остаток', 'Отчислено Adload', 'Активных сайтов', 'Всего сайтов'],
-                colModel: [{
-                    name: 'date',
-                    index: 'date',
-                    width: 140,
-                    formatter: "date",
-                    formatoptions: {srcformat:'Y.m.d'},
-                    sortable: false,
-                    align: 'center'
-                }, {
-                    name: 'manager',
-                    index: 'manager',
-                    width: 140,
-                    align: 'center',
-                    sortable: false,
-                    classes: 'actionLink'
-                }, {
-                    name: 'totalCost',
-                    index: 'totalCost',
-                    width: 140,
-                    sortable: false,
-                    align: 'center'
-                }, {
-                    name: 'totalCost_persent',
-                    index: 'totalCost_persent',
-                    width: 140,
-                    sortable: false,
-                    align: 'center'
-                }, {
-                    name: 'income',
-                    index: 'income',
-                    width: 140,
-                    sortable: false,
-                    align: 'center'
-                }, {
-                    name: 'adload_cost',
-                    index: 'adload_cost',
-                    width: 140,
-                    sortable: false,
-                    align: 'center'
-                }, {
-                    name: 'activ_users',
-                    index: 'activ_users',
-                    width: 140,
-                    sortable: false,
-                    align: 'center'
-                }, {
-                    name: 'all_users',
-                    index: 'all_users',
-                    width: 140,
-                    sortable: false,
-                    align: 'center'
-                }],
+                colNames: [
+                    'Дата',
+                    'Менеджер',
+                    'Отчислено партнёрам',
+                    'Процент отчисления партнёру',
+                    'Остаток',
+                    'Отчислено Adload',
+                    'Активных сайтов',
+                    'Всего сайтов'
+                ],
+                colModel: [
+                    {
+                        name: 'date',
+                        index: 'date',
+                        width: 140,
+                        formatter: "date",
+                        formatoptions: {srcformat: 'Y.m.d'},
+                        sortable: false,
+                        align: 'center'
+                    },
+                    {
+                        name: 'manager',
+                        index: 'manager',
+                        width: 140,
+                        align: 'center',
+                        sortable: false,
+                        classes: 'actionLink'
+                    },
+                    {
+                        name: 'totalCost',
+                        index: 'totalCost',
+                        width: 140,
+                        sortable: false,
+                        align: 'center'
+                    },
+                    {
+                        name: 'totalCost_persent',
+                        index: 'totalCost_persent',
+                        width: 140,
+                        sortable: false,
+                        align: 'center'
+                    },
+                    {
+                        name: 'income',
+                        index: 'income',
+                        width: 140,
+                        sortable: false,
+                        align: 'center'
+                    },
+                    {
+                        name: 'adload_cost',
+                        index: 'adload_cost',
+                        width: 140,
+                        sortable: false,
+                        align: 'center'
+                    },
+                    {
+                        name: 'activ_users',
+                        index: 'activ_users',
+                        width: 140,
+                        sortable: false,
+                        align: 'center'
+                    },
+                    {
+                        name: 'all_users',
+                        index: 'all_users',
+                        width: 140,
+                        sortable: false,
+                        align: 'center'
+                    }
+                ],
                 caption: "Доход менеджеров за 30 дней по дням",
                 gridview: true,
                 hiddengrid: true,
@@ -1720,50 +2261,68 @@ var ManagerUI = function () {
                 url: '/manager/monthProfitPerDate',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['Дата', '', 'Отчислено партнёрам', 'Процент отчисления партнёру', 'Остаток', 'Отчислено Adload', 'Активных сайтов', 'Всего сайтов'],
-                colModel: [{
-                    name: 'date',
-                    index: 'date',
-                    width: 140,
-                    align: 'center',
-                    formatter: "date"
-                }, {
-                    name: 'manager',
-                    index: 'manager',
-                    width: 140,
-                    hidden: true,
-                    align: 'center'
-                }, {
-                    name: 'totalCost',
-                    index: 'totalCost',
-                    width: 140,
-                    align: 'center'
-                }, {
-                    name: 'totalCost_persent',
-                    index: 'totalCost_persent',
-                    width: 140,
-                    align: 'center'
-                }, {
-                    name: 'income',
-                    index: 'income',
-                    width: 140,
-                    align: 'center'
-                }, {
-                    name: 'adload_cost',
-                    index: 'adload_cost',
-                    width: 140,
-                    align: 'center'
-                }, {
-                    name: 'activ_users',
-                    index: 'activ_users',
-                    width: 140,
-                    align: 'center'
-                }, {
-                    name: 'all_users',
-                    index: 'all_users',
-                    width: 140,
-                    align: 'center'
-                }],
+                colNames: [
+                    'Дата',
+                    '',
+                    'Отчислено партнёрам',
+                    'Процент отчисления партнёру',
+                    'Остаток',
+                    'Отчислено Adload',
+                    'Активных сайтов',
+                    'Всего сайтов'
+                ],
+                colModel: [
+                    {
+                        name: 'date',
+                        index: 'date',
+                        width: 140,
+                        align: 'center',
+                        formatter: "date"
+                    },
+                    {
+                        name: 'manager',
+                        index: 'manager',
+                        width: 140,
+                        hidden: true,
+                        align: 'center'
+                    },
+                    {
+                        name: 'totalCost',
+                        index: 'totalCost',
+                        width: 140,
+                        align: 'center'
+                    },
+                    {
+                        name: 'totalCost_persent',
+                        index: 'totalCost_persent',
+                        width: 140,
+                        align: 'center'
+                    },
+                    {
+                        name: 'income',
+                        index: 'income',
+                        width: 140,
+                        align: 'center'
+                    },
+                    {
+                        name: 'adload_cost',
+                        index: 'adload_cost',
+                        width: 140,
+                        align: 'center'
+                    },
+                    {
+                        name: 'activ_users',
+                        index: 'activ_users',
+                        width: 140,
+                        align: 'center'
+                    },
+                    {
+                        name: 'all_users',
+                        index: 'all_users',
+                        width: 140,
+                        align: 'center'
+                    }
+                ],
                 caption: "Отчисления за 30 дней по дням",
                 hiddengrid: true,
                 gridview: true,
@@ -1778,121 +2337,159 @@ var ManagerUI = function () {
                 url: '/manager/dataUserImpressionsClick?' + '&start_date=' + $('#ImpClickCalendar1').val() + '&',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['Сайт Партнёр', 'Показы Блоков</br> не гарантированные', 'Показы<br/>Блоков', 'Процент видимых показов', 'Социальные показы РП</br> не гарантированные', 'Социальные показы РП', 'Социальные клики', 'Уникальные Социальные клики', 'Социальный CTR', 'Показы РП</br> не гарантированные', 'Показы РП', 'Клики', 'Уникальные клики', 'CTR', 'Разница', 'Ср.время</br>до клика'],
-                colModel: [{
-                    name: 'domain',
-                    index: 'domain',
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'impressions_block_not_valid',
-                    index: 'impressions_block_not_valid',
-                    align: 'center',
-                    formatter: 'integer',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'impressions_block',
-                    index: 'impressions_block',
-                    align: 'center',
-                    formatter: 'integer',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'viewPort',
-                    index: 'viewPort',
-                    align: 'center',
-                    formatter: 'integer',
-                    width: 100,
-                    sortable: false
-                }, {
-                    name: 'social_impressions_not_valid',
-                    index: 'social_impressions_not_valid',
-                    align: 'center',
-                    formatter: 'integer',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'social_impressions',
-                    index: 'social_impressions',
-                    align: 'center',
-                    formatter: 'integer',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'social_clicks',
-                    index: 'social_clicks',
-                    formatter: 'integer',
-                    align: 'center',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'social_clicksUnique',
-                    index: 'social_clicksUnique',
-                    formatter: 'integer',
-                    align: 'center',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'ctr_social_impressions',
-                    index: 'ctr_social_impressions',
-                    formatter: 'integer',
-                    align: 'center',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'impressions_not_valid',
-                    index: 'impressions_not_valid',
-                    align: 'center',
-                    formatter: 'integer',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'impressions',
-                    index: 'impressions',
-                    align: 'center',
-                    formatter: 'integer',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'clicks',
-                    index: 'clicks',
-                    formatter: 'integer',
-                    align: 'center',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'clicksUnique',
-                    index: 'clicksUnique',
-                    formatter: 'integer',
-                    align: 'center',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'ctr_impressions',
-                    index: 'ctr_impressions',
-                    formatter: 'integer',
-                    align: 'center',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'ctr_difference_impressions',
-                    index: 'ctr_difference_impressions',
-                    formatter: 'integer',
-                    align: 'center',
-                    width: 100,
-                    sortable: true
-                }, {
-                    name: 'view_seconds_avg',
-                    index: 'view_seconds_avg',
-                    width: 70,
-                    align: 'center',
-                    sortable: false
-                }],
+                colNames: [
+                    'Сайт Партнёр',
+                    'Показы Блоков</br> не гарантированные',
+                    'Показы<br/>Блоков',
+                    'Процент видимых показов',
+                    'Социальные показы РП</br> не гарантированные',
+                    'Социальные показы РП',
+                    'Социальные клики',
+                    'Уникальные Социальные клики',
+                    'Социальный CTR',
+                    'Показы РП</br> не гарантированные',
+                    'Показы РП',
+                    'Клики',
+                    'Уникальные клики',
+                    'CTR',
+                    'Разница',
+                    'Ср.время</br>до клика'
+                ],
+                colModel: [
+                    {
+                        name: 'domain',
+                        index: 'domain',
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'impressions_block_not_valid',
+                        index: 'impressions_block_not_valid',
+                        align: 'center',
+                        formatter: 'integer',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'impressions_block',
+                        index: 'impressions_block',
+                        align: 'center',
+                        formatter: 'integer',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'viewPort',
+                        index: 'viewPort',
+                        align: 'center',
+                        formatter: 'integer',
+                        width: 100,
+                        sortable: false
+                    },
+                    {
+                        name: 'social_impressions_not_valid',
+                        index: 'social_impressions_not_valid',
+                        align: 'center',
+                        formatter: 'integer',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'social_impressions',
+                        index: 'social_impressions',
+                        align: 'center',
+                        formatter: 'integer',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'social_clicks',
+                        index: 'social_clicks',
+                        formatter: 'integer',
+                        align: 'center',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'social_clicksUnique',
+                        index: 'social_clicksUnique',
+                        formatter: 'integer',
+                        align: 'center',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'ctr_social_impressions',
+                        index: 'ctr_social_impressions',
+                        formatter: 'integer',
+                        align: 'center',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'impressions_not_valid',
+                        index: 'impressions_not_valid',
+                        align: 'center',
+                        formatter: 'integer',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'impressions',
+                        index: 'impressions',
+                        align: 'center',
+                        formatter: 'integer',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'clicks',
+                        index: 'clicks',
+                        formatter: 'integer',
+                        align: 'center',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'clicksUnique',
+                        index: 'clicksUnique',
+                        formatter: 'integer',
+                        align: 'center',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'ctr_impressions',
+                        index: 'ctr_impressions',
+                        formatter: 'integer',
+                        align: 'center',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'ctr_difference_impressions',
+                        index: 'ctr_difference_impressions',
+                        formatter: 'integer',
+                        align: 'center',
+                        width: 100,
+                        sortable: true
+                    },
+                    {
+                        name: 'view_seconds_avg',
+                        index: 'view_seconds_avg',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    }
+                ],
                 caption: "Статистика пользователей GetMyAd по количеству показов и кликов",
                 height: 'auto',
-                rowNum: 10,
-                rowList: [10, 20, 30, 100],
+                rowList: [
+                    10,
+                    20,
+                    30,
+                    100
+                ],
                 sortname: 'domain',
                 sortorder: 'asc',
                 rownumbers: true,
@@ -1921,35 +2518,49 @@ var ManagerUI = function () {
                 url: '/manager/moneyOutHistory',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['Дата', 'Сумма', 'Примечания'],
-                colModel: [{
-                    name: 'Date',
-                    index: 'Date',
-                    width: 140,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'Summ',
-                    index: 'Summ',
-                    width: 140,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'Comment',
-                    index: 'Comment',
-                    width: 440,
-                    align: 'center',
-                    sortable: true
-                }],
+                colNames: [
+                    'Дата',
+                    'Сумма',
+                    'Примечания'
+                ],
+                colModel: [
+                    {
+                        name: 'Date',
+                        index: 'Date',
+                        width: 140,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'Summ',
+                        index: 'Summ',
+                        width: 140,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'Comment',
+                        index: 'Comment',
+                        width: 440,
+                        align: 'center',
+                        sortable: true
+                    }
+                ],
                 caption: "Вывод денег",
                 gridview: true,
                 rownumbers: false,
                 rowNum: 10,
                 loadonce: true,
                 forceFit: true,
-                toolbar: [true, 'top'],
+                toolbar: [
+                    true,
+                    'top'
+                ],
                 pager: "#pagerAccountMoneyOut",
-                beforeSelectRow: function (rowid, e) {
+                beforeSelectRow: function (
+                    rowid,
+                    e
+                ) {
                     if (rowid) {
                         if ($("#tableAccountMoneyOut").getRowData(rowid)['Comment'] == "заявка обрабатывается...")
                             buttonCancelMoneyOutRequest.attr('disabled', false);
@@ -1978,12 +2589,13 @@ var ManagerUI = function () {
                         var table = $("#tableAccountMoneyOut");
                         var id = table.jqGrid('getGridParam', 'selrow');
                         $.ajax({
-                            url: "/manager/moneyOutRemove?id=" + id + "&token=" + token,
+                            url: "/manager/moneyOutRemove?id=" + id + "&token=" + window.token,
                             dataType: 'json',
                             success: function (result) {
                                 if (result.error) {
-                                    if (result.error_type == "authorizedError")
-                                        window.location.replace("/")
+                                    if (result.error_type == "authorizedError"){
+                                        window.location.replace("/");
+                                    }
                                     else if (result.msg) {
                                         alert(result.msg);
                                     }
@@ -1994,7 +2606,11 @@ var ManagerUI = function () {
                                 else
                                     reloadMoneyOutHistoryGrid();
                             },
-                            error: function (error, ajaxOptions, thrownError) {
+                            error: function (
+                                error,
+                                ajaxOptions,
+                                thrownError
+                            ) {
                                 alert(error.responseText);
                             }
                         });
@@ -2045,7 +2661,7 @@ var ManagerUI = function () {
                                         user: row.user,
                                         domain: row.domain,
                                         approved: 'true',
-                                        token: token
+                                        token: window.token
                                     }, function (data) {
                                         if (data.error) {
                                             if (data.error_type == "authorizedError")
@@ -2081,8 +2697,9 @@ var ManagerUI = function () {
                     $("#tableDomainRegistration .actionLink2").click(function () {
                         var grid = $("#tableDomainRegistration");
                         var rowId = grid.getGridParam('selrow');
-                        if (rowId == null)
+                        if (rowId === null){
                             return;
+                        }
                         var row = grid.jqGrid('getRowData', rowId);
                         var message = "<p>Отклонить заявку на добавление домена <b>" + row.domain +
                             "</b> пользователя " +
@@ -2096,11 +2713,12 @@ var ManagerUI = function () {
                                         user: row.user,
                                         domain: row.domain,
                                         approved: 'true',
-                                        token: token
+                                        token: window.token
                                     }, function (data) {
                                         if (data.error) {
-                                            if (data.error_type == "authorizedError")
-                                                window.location.replace("/main/index")
+                                            if (data.error_type == "authorizedError"){
+                                                window.location.replace("/main/index");
+                                            }
                                             else if (data.msg) {
                                                 alert(msg);
                                                 return;
@@ -2112,12 +2730,12 @@ var ManagerUI = function () {
                                         }
                                         else {
                                             $.getJSON("/manager/domainsRequests", function (json) {
-                                                dataDomainRequests = json;
+                                                window.dataDomainRequests = json;
                                                 dialog.dialog('close');
                                                 $('#tableDomainRegistration').trigger('reloadGrid');
-                                            })
+                                            });
                                         }
-                                    })
+                                    });
                                 },
                                 'Нет': function () {
                                     dialog.dialog('close');
@@ -2128,44 +2746,58 @@ var ManagerUI = function () {
 
 
                 },
-                colNames: ['Пользователь', 'Дата', 'Домен', 'Примечания', '', ''],
-                colModel: [{
-                    name: 'user',
-                    index: 'user',
-                    width: 90,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'date',
-                    index: 'date',
-                    width: 100,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'domain',
-                    index: 'domain',
-                    width: 180,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'comments',
-                    index: 'comments',
-                    width: 400,
-                    align: 'left',
-                    sortable: true
-                }, {
-                    name: 'actions',
-                    index: 'actions',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }, {
-                    name: 'actions',
-                    index: 'actions',
-                    width: 80,
-                    align: 'center',
-                    sortable: true
-                }],
+                colNames: [
+                    'Пользователь',
+                    'Дата',
+                    'Домен',
+                    'Примечания',
+                    '',
+                    ''
+                ],
+                colModel: [
+                    {
+                        name: 'user',
+                        index: 'user',
+                        width: 90,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'date',
+                        index: 'date',
+                        width: 100,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'domain',
+                        index: 'domain',
+                        width: 180,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'comments',
+                        index: 'comments',
+                        width: 400,
+                        align: 'left',
+                        sortable: true
+                    },
+                    {
+                        name: 'actions',
+                        index: 'actions',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'actions',
+                        index: 'actions',
+                        width: 80,
+                        align: 'center',
+                        sortable: true
+                    }
+                ],
                 caption: "Заявки на добавление домена",
                 rownumbers: true,
                 height: 'auto',
@@ -2182,53 +2814,674 @@ var ManagerUI = function () {
             var login = this.innerText || this.text || this.textContent;
             var div = "userDetails";
             openUserDetailsByLogin(login, div);
-        };
+        }
+
         function closeUserDetails() {
             if (userDetailsTabs) {
                 $("#tabs").tabs('remove', $("#tabs").tabs('length') - 1);
             }
             userDetailsTabs = false;
-        };
+        }
 
-        function openUserDetailsByLogin(login, div) {
-            if (permissionEditUserAccount) {
-                $.getJSON("/manager/checkCurrentUser?token=" + token, function (result) {
-                    if (result.error)
+        function openUserDetailsByLogin(
+            login,
+            div
+        ) {
+            if (window.permissionEditUserAccount) {
+                $.getJSON("/manager/checkCurrentUser?token=" + window.token, function (result) {
+                    if (result.error){
                         window.location.replace("/main/index");
+                    }
                 });
-                var url = "/manager/userDetails?login=" + encodeURIComponent(login) +
-                    "&token=" +
-                    token +
-                    "&div=" +
-                    div;
+                var url = ["/manager/userDetails?login=", encodeURIComponent(login), "&token=", window.token, "&div=", div];
                 closeUserDetails();
                 userDetailsTabs = true;
-                $("#tabs").tabs('add', url, login);
+                $("#tabs").tabs('add', url.join(''), login);
             }
         }
 
 
         prepareUi();
-        $.getJSON("/manager/checkCurrentUser?token=" + token, function (result) {
-            if (result.error)
+        $.getJSON("/manager/checkCurrentUser?token=" + window.token, function (result) {
+            if (result.error){
                 window.location.replace("/main/index");
+            }
             $("#loading").hide();
             $("#tabs").css("visibility", "visible");
-            checkDataUpdate();
+            window.checkDataUpdate();
         });
     });
 
 };
 
+var UserDetailUI = function (id, login, block_cost_data, div_to_open, domains_categories, categories, accountMoneyOutHistory) {
+    "use strict";
+    var closeUserDetails = function () {
+        if (userDetailsTabs) {
+            $("#tabs").tabs('remove', $("#tabs").tabs('length') - 1);
+        }
+        userDetailsTabs = false;
+    };
+    $('tr.hide').each(function () {
+        $(this).find('span').text(function (
+            _,
+            value
+        ) {
+            return value == '→' ? '↓' : '→'
+        });
+        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        });
+    });
+    $('tr.header').click(function () {
+        $(this).find('span').text(function (
+            _,
+            value
+        ) {
+            return value == '→' ? '↓' : '→'
+        });
+        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        });
+    });
+    // $("#tabs").tabs();
 
-function checkDataUpdate() {
-    CheckUser();
-    $.getJSON("/manager/checkCurrentUser?token=" + token, function (result) {
-        if (result.error)
-            window.location.replace("/main/index");
+    $("#accordion").accordion(
+        {
+            autoHeight: false
+        }
+    );
+    if (window.div_to_open === "edit_domain_categories") {
+        $("#accordion").accordion("activate", 1);
+    }
+
+    $("#dialogSetPassword").dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            'Сохранить': function () {
+                if ($("#dialogSetPassword_psw1").val().length < 6) {
+                    displayPswMessage('Длина пароля должна быть не меньше шести символов');
+                    return;
+                }
+                if ($("#dialogSetPassword_psw1").val() != $("#dialogSetPassword_psw2").val()) {
+                    displayPswMessage('Повторный пароль неверен!');
+                    return;
+                }
+                $.getJSON("/manager/setNewPassword", {
+                    psw: $("#dialogSetPassword_psw1").val(),
+                    login: $("#login").val(),
+                    token: $("#token").val()
+                }, function (json) {
+                    if (json.error) {
+                        if (json.error_type = "authorizedError"){
+                            window.location.replace("/main/index");
+                        }
+                        else{
+                            displayPswMessage('Ошибка сохранения пароля!');
+                        }
+                        return;
+                    }
+                    else {
+                        $("#dialogSetPassword").dialog('close');
+                    }
+
+                });
+            },
+            'Отменить': function () {
+                $(this).dialog('close');
+            }
+
+        }
+
+    });
+    $("#dialogDeleteAccount").dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            'Удалить': function () {
+                $.getJSON("/manager/deleteAccount", {
+                    login: $("#login").val(),
+                    token: $("#token").val()
+                }, function (json) {
+                    if (json.error) {
+                        if (json.error_type === "authorizedError")
+                        {
+                            window.location.replace("/main/index");
+                        }
+                        else{
+                            displayDeleteMessage('Ошибка удаления!');
+                        }
+                        return;
+                    }
+                    else {
+                        $("#dialogDeleteAccount").dialog('close');
+                        closeUserDetails();
+                    }
+
+                });
+            },
+            'Отменить': function () {
+                $(this).dialog('close');
+            }
+
+        }
+
     });
 
-    if (permissionViewMoneyOut) {
+    $("#generate-psw-button").click(function () {
+        $.getJSON("/manager/generateNewPassword", function (json) {
+            if (json.error) {
+                displayPswMessage('Ошибка генерации пароля!');
+            } else {
+                $('#dialogSetPassword_psw1').val(json.new_password);
+                $('#dialogSetPassword_psw2').val(json.new_password);
+            }
+        });
+        return false;
+    });
+
+    $("#edit-psw-button").click(function () {
+        $('#dialogSetPassword_psw1').val('');
+        $('#dialogSetPassword_psw2').val('');
+        $('#psw-error-message').html('');
+        $('#dialogSetPassword_user').html($('#login').val());
+        $("#dialogSetPassword").dialog('open');
+    });
+    $("#delete-account-button").click(function () {
+        $('#delete-error-message').html('');
+        $('#dialogDeleteAccount_user').html($('#login').val());
+        $("#dialogDeleteAccount").dialog('open');
+    });
+
+    function displayMessage(message) {
+        $("#error-message").show().text(message).fadeOut(2500);
+    }
+
+    function displayCategoriesMessage(message) {
+        $("#categories-error-message").show().text(message).fadeOut(2500);
+    }
+
+    function displayPswMessage(message) {
+        $("#psw-error-message").show().text(message);
+    }
+
+    function displayDeleteMessage(message) {
+        $("#delete-error-message").show().text(message);
+    }
+
+    function displayFieldsMessage(message) {
+        $("#fields-error-message").show().text(message);
+    }
+
+    $('#user-details-'+ id +' button.submit-button').click(function () {
+        $('#user-details-'+ id).ajaxSubmit({
+            dataType: 'json',
+            beforeSubmit: function () {
+                $('#user-details-'+ id +' button.submit-button').attr('disabled', true);
+            },
+            success: function (result) {
+                if (result.error === false) {
+                    displayFieldsMessage('');
+                    displayMessage("Изменения успешно сохранены.");
+                }
+                else {
+                    if (result.error_type === "authorizedError"){
+                        window.location.replace("/main/index");
+                    }
+                    else if (result.msg) {
+                        displayFieldsMessage(result.msg);
+                        displayMessage("Ошибка сохранения!");
+                    }
+                    else{
+                        displayMessage("Ошибка сохранения!");
+                    }
+
+                }
+            },
+            error: function () {
+                displayMessage("Ошибка сохранения! Попробуйте сохранить ещё раз.");
+            },
+            complete: function () {
+                $('#user-details-'+ id +' button.submit-button').attr('disabled', false);
+            }
+        });
+        return false;
+
+    });
+
+
+    $("#account_domains").change(function () {
+        var domain = $("#account_domains").val();
+        var cat_count = categories.length;
+        var i = 0;
+        while (i < cat_count) {
+            var selected = false;
+            for (var j = 0; j < domains_categories[domain].length; j++) {
+                if (domains_categories[domain][j] === categories[i].guid){
+                    selected = true;
+                }
+            }
+            document.getElementById("categories").options[i] = new Option(
+                categories[i].title,
+                categories[i].guid,
+                selected, selected);
+            i++;
+        }
+    });
+
+    $('#save-domain-categories-'+ id +' button.submit-button').click(function () {
+        $('#save-domain-categories-'+ id).ajaxSubmit({
+            dataType: 'json',
+            beforeSubmit: function () {
+                $('#save-domain-categories-'+ id +' button.submit-button').attr('disabled', true);
+            },
+            success: function (result) {
+                if (result.error === false) {
+                    displayCategoriesMessage("Изменения успешно сохранены.");
+                    domains_categories = result.domains_categories;
+                }
+                else if (result.error_type === "authorizedError"){
+                    window.location.replace("/main/index");
+                }
+                else {
+                    if (result.msg){
+                        displayCategoriesMessage(result.msg);
+                    }
+                    else{
+                        displayCategoriesMessage("Ошибка сохранения!");
+                    }
+                }
+            },
+            error: function () {
+                displayCategoriesMessage("Ошибка сохранения! Попробуйте сохранить ещё раз.");
+            },
+            complete: function () {
+                $("#save-domain-categories-"+ id +" button.submit-button").attr('disabled', false);
+            }
+        });
+        return false;
+
+    });
+
+        $("#accountMoneyOutHistoryTable").jqGrid({
+            datatype: function () {
+                this.addJSONData(accountMoneyOutHistory);
+            },
+            mtype: 'GET',
+            colNames: [
+                'Пользователь',
+                'Дата',
+                'Сумма',
+                'Подтверждено',
+                'Разрешено',
+                'Оплачено',
+                'Телефон',
+                'Оплата',
+                'Код протекции',
+                'Истикает',
+                'Примечания'
+            ],
+            colModel: [
+                {
+                    name: 'user',
+                    index: 'user',
+                    width: 110,
+                    align: 'center',
+                    sortable: false,
+                    hidden: true
+                },
+                {
+                    name: 'date',
+                    index: 'date',
+                    width: 100,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'sum',
+                    index: 'sum',
+                    width: 100,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'user_confirmed',
+                    index: 'user_confirmed',
+                    width: 80,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'manager_agreed',
+                    index: 'manager_agreed',
+                    width: 80,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'approved',
+                    index: 'approved',
+                    width: 80,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'phone',
+                    index: 'phone',
+                    width: 140,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'payment_type',
+                    index: 'payment_type',
+                    width: 110,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'protectionCode',
+                    index: 'protectionCode',
+                    width: 80,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'protectionDate',
+                    index: 'protectionDate',
+                    width: 80,
+                    align: 'center',
+                    sortable: false
+                },
+                {
+                    name: 'details',
+                    index: 'details',
+                    width: 420,
+                    align: 'left',
+                    sortable: false
+                }
+            ],
+            caption: "История вывода средств",
+            gridview: true,
+            rownumbers: false,
+            rowNum: 30,
+            forceFit: true,
+            height: 250
+        });
+
+    $("#accountDomainsStatsTable").jqGrid({
+        caption: "Статистика доменов пользователя",
+        datatype: 'json',
+        url: '/manager/userDomainDetails',
+        postData: {user: login},
+        mtype: 'GET',
+        gridview: true,
+        rowNum: 1000,
+        height: 250,
+        forceFit: true,
+        colNames: [
+            'Дата',
+            'Домен',
+            'Показы РБ</br>не гарантированные',
+            'Показы</br>РБ',
+            'Показы РП</br>не гарантированные',
+            'Показы</br>РП',
+            'Клики',
+            'Уникальные клики',
+            'Ср цена</br>РП',
+            'CTR РП, %',
+            'CTR РБ, %',
+            'Итого',
+            'Социальные</br>Клики',
+            'Социальные</br>Показы</br>РП</br>не гарантированные',
+            'Социальные</br>Показы</br>РП',
+            'Показы в видимой области'
+        ],
+        colModel: [
+            {
+                name: 'date',
+                index: 'date',
+                width: 140,
+                align: 'center',
+                sortable: true,
+                firstsortorder: 'desc'
+            },
+            {
+                name: 'domain',
+                index: 'domain',
+                width: 200,
+                align: 'center',
+                sortable: true
+            },
+            {
+                name: 'imp_block_nv',
+                index: 'imp_block_nv',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'imp_block',
+                index: 'imp_block',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'imp_nv',
+                index: 'imp_nv',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'imp',
+                index: 'imp',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'clicks',
+                index: 'clicks',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'unique',
+                index: 'unique',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'cost',
+                index: 'cost',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'ctr',
+                index: 'ctr',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'ctr_block',
+                index: 'ctr_block',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'summ',
+                index: 'summ',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'soc_clicks',
+                index: 'soc_clicks',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'soc_imp_nv',
+                index: 'soc_imp_nv',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'soc_imp',
+                index: 'soc_imp',
+                width: 80,
+                align: 'center',
+                sortable: false
+            },
+            {
+                name: 'viewport',
+                index: 'viewport',
+                width: 80,
+                align: 'center',
+                sortable: false
+            }
+        ]
+    });
+
+    var editrulecp = {
+        minValue: 1,
+        maxValue: 100,
+        number: true
+    };
+    var editrulecn = {
+        minValue: 0.01,
+        maxValue: 100.0,
+        number: true
+    };
+    var editrulecm = {
+        minValue: 0.01,
+        maxValue: 100.0,
+        number: true
+    };
+    $(document).ready(function () {
+        $("#table_block_cost").jqGrid({
+            datatype: 'local',
+            data: block_cost_data,
+            colNames: [
+                '',
+                'Ред/Сох',
+                'Название',
+                'Процент цены</br>за клик',
+                'Минимальная цена</br>за клик',
+                'Максимальная цена</br>за клик'
+            ],
+            colModel: [
+                {
+                    name: 'act',
+                    index: 'act',
+                    width: 45,
+                    sortable: false
+                },
+                {
+                    name: 'id',
+                    index: 'id',
+                    align: 'center',
+                    hidden: true
+                },
+                {
+                    name: 'title',
+                    index: 'title',
+                    align: 'center',
+                    sortable: false,
+                    editable: false,
+                    width: 270
+                },
+                {
+                    name: 'click_percent',
+                    index: 'click_percent',
+                    sortable: false,
+                    width: 100,
+                    align: 'center',
+                    editable: true,
+                    edittype: "text",
+                    editoptions: {
+                        size: 10,
+                        maxlength: 5
+                    },
+                    editrules: editrulecp
+                },
+                {
+                    name: 'click_cost_min',
+                    index: 'click_cost_min',
+                    sortable: false,
+                    width: 125,
+                    align: 'center',
+                    editable: true,
+                    edittype: "text",
+                    editoptions: {
+                        size: 10,
+                        maxlength: 5
+                    },
+                    editrules: editrulecn
+                },
+                {
+                    name: 'click_cost_max',
+                    index: 'click_cost_max',
+                    sortable: false,
+                    width: 125,
+                    align: 'center',
+                    editable: true,
+                    edittype: "text",
+                    editoptions: {
+                        size: 10,
+                        maxlength: 5
+                    },
+                    editrules: editrulecm
+                }
+            ],
+            gridComplete: function () {
+                var table_block_cost = $("#table_block_cost");
+                var ids = table_block_cost.jqGrid('getDataIDs');
+                for (var i = 0; i < ids.length; i++) {
+                    var cl = ids[i];
+                    var be = "<input style='height:22px;width:40px;' type='button' value='Ред' " +
+                        "onclick=\"$('#table_block_cost').editRow('" + cl + "');\"  />";
+                    var se = "<input style='height:22px;width:40px;' type='button' value='Сох' " +
+                        "onclick=\"$('#table_block_cost').saveRow('" + cl + "');\"  />";
+                    var re = "<input style='height:22px;width:40px;' type='button' value='Отм' " +
+                        "onclick=\"$('#table_block_cost').restoreRow('" + cl + "');\"  />";
+                    table_block_cost.jqGrid('setRowData', ids[i], {act: be + se + re});
+                }
+            },
+            caption: "Установка цен для РБ",
+            editurl: "/manager/informer_cost_save",
+            height: 'auto',
+            sortname: 'title',
+            sortorder: 'asc',
+            viewrecords: true,
+            rowNum: 900,
+            autowidth: true,
+            hiddengrid: false
+        });
+
+    });
+};
+
+window.checkDataUpdate = function() {
+    "use strict";
+    window.CheckUser();
+    $.getJSON("/manager/checkCurrentUser?token=" + window.token, function (result) {
+        if (result.error){
+            window.location.replace("/main/index");
+        }
+    });
+
+    if (window.permissionViewMoneyOut) {
         var new_notApprovedRequests = 0;
         $.get("/manager/notApprovedActiveMoneyOutRequests", function (res) {
             new_notApprovedRequests = res;
@@ -2238,9 +3491,9 @@ function checkDataUpdate() {
             else {
                 $("#href_moneyOutRequests").html("Вывод средств");
             }
-            if (notApprovedRequests != new_notApprovedRequests) {
-                notApprovedRequests = new_notApprovedRequests
-                $("#notApprovedRequests").html(notApprovedRequests);
+            if (window.notApprovedRequests !== new_notApprovedRequests) {
+                window.notApprovedRequests = new_notApprovedRequests;
+                $("#notApprovedRequests").html(window.notApprovedRequests);
                 $('#tableMoneyOutRequest').trigger('reloadGrid');
             }
         });
@@ -2248,21 +3501,19 @@ function checkDataUpdate() {
 
     var new_dataDomainRequests;
     $.getJSON("/manager/domainsRequests", function (json) {
-        new_dataDomainRequests = json
-        if (new_dataDomainRequests['records'] > 0) {
+        new_dataDomainRequests = json;
+        if (new_dataDomainRequests.records > 0) {
             $("#href_moderation").html('Модерация <font color="red"><b> ! </b></font>');
             // Поменять заголовок когда разобрались со всеми заявками!!!
         }
         else {
             $("#href_moderation").html('Модерация');
         }
-        if (new_dataDomainRequests != dataDomainRequests) {
-            dataDomainRequests = new_dataDomainRequests;
+        if (new_dataDomainRequests !== window.dataDomainRequests) {
+            window.dataDomainRequests = new_dataDomainRequests;
             $("#tableDomainRegistration").trigger('reloadGrid');
         }
     });
+    setTimeout(window.checkDataUpdate(), 60000);
 
-
-    setTimeout("checkDataUpdate()", 60000);
-
-} // end checkDataUpdate()
+};
