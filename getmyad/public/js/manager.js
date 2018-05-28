@@ -2859,6 +2859,10 @@ var ManagerUI = function () {
     });
 
 };
+$(document).ready(function () {
+    "use strict";
+    ManagerUI();
+});
 
 var UserDetailUI = function (id, login, block_cost_data, div_to_open, domains_categories, categories, accountMoneyOutHistory) {
     "use strict";
