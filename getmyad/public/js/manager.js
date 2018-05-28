@@ -1,4 +1,5 @@
 window.CheckUser = function () {
+    "use strict";
             if (document.cookie.indexOf('getmyad=') === -1){
                 window.location.replace('/');
             }
