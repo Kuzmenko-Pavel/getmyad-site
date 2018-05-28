@@ -1,3 +1,8 @@
+window.CheckUser = function () {
+            if (document.cookie.indexOf('getmyad=') === -1){
+                window.location.replace('/');
+            }
+};
 var userDetailsTabs = false;
 var ManagerUI = function () {
     "use strict";
@@ -3514,6 +3519,5 @@ window.checkDataUpdate = function() {
             $("#tableDomainRegistration").trigger('reloadGrid');
         }
     });
-    setTimeout(window.checkDataUpdate(), 60000);
-
 };
+setInterval(window.checkDataUpdate(), 60000);
