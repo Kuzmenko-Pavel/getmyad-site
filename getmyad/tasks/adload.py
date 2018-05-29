@@ -467,11 +467,12 @@ def campaign_offer_update(campaign_id, **kwargs):
                     except Exception as ex:
                         print(ex, "offer.save", x['id'])
 
-                if len(operations) >= 10000:
-                    try:
-                        db.offer.bulk_write(operations, ordered=False)
-                    except BulkWriteError as bwe:
-                        print(bwe.details)
+                if len(res_task_img) >= 10000:
+                    if operations:
+                        try:
+                            db.offer.bulk_write(operations, ordered=False)
+                        except BulkWriteError as bwe:
+                            print(bwe.details)
 
                     for task_img in res_task_img:
                         task_resize_image.delay(task_img[0], task_img[1], task_img[2])
