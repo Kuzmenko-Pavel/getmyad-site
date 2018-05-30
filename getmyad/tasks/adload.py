@@ -11,6 +11,7 @@ from uuid import uuid4
 
 import magic
 import pymongo
+from pymongo import WriteConcern
 from pymongo.errors import BulkWriteError
 import erequests as requests
 from PIL import Image
@@ -288,6 +289,7 @@ def resize_and_upload_image(db, urls, logo):
     try:
         trum_height, trum_width = image_trumb_height_width
         result = []
+        coll = db.get_collection('images', write_concern=WriteConcern(w=0))
         for url in urls:
             rec = check_image(db, url, logo)
             if rec:
@@ -309,8 +311,8 @@ def resize_and_upload_image(db, urls, logo):
             buf_webp.seek(0)
 
             cdn_url = cdn_loader(buf_png, buf_webp)
-            db.images.update({'src': url.strip(), 'logo': logo},
-                              {'$set': {'url': cdn_url, 'dt': datetime.datetime.now()}}, upsert=True)
+            coll.update({'src': url.strip(), 'logo': logo},
+                        {'$set': {'url': cdn_url, 'dt': datetime.datetime.now()}}, upsert=True)
             result.append(cdn_url)
         return result
     except Exception as ex:
@@ -347,7 +349,8 @@ def resize_image(offer_id=None, urls=None, logo=None, campaign_id=None, **kwargs
         db = _mongo_main_db()
         if offer_id and urls:
             images = resize_and_upload_image(db, urls, logo)
-            db.offer.update({'guid': offer_id, }, {'$set': {"image":  " , ".join(images)}}, upsert=False)
+            coll = db.get_collection('offer', write_concern=WriteConcern(w=0))
+            coll.update({'guid': offer_id, }, {'$set': {"image":  " , ".join(images)}}, upsert=False)
         if campaign_id:
             campaign_update(campaign_id)
     except Exception as ex:
@@ -429,6 +432,7 @@ def campaign_offer_update(campaign_id, **kwargs):
 
             operations = []
             res_task_img = []
+            coll = db.get_collection('offer', write_concern=WriteConcern(w=0))
             for x in ad.offers.itervalues():
 
                 images = x['image'].split(',')
@@ -470,7 +474,7 @@ def campaign_offer_update(campaign_id, **kwargs):
                 if len(res_task_img) >= 10000:
                     if operations:
                         try:
-                            db.offer.bulk_write(operations, ordered=False)
+                            coll.bulk_write(operations, ordered=False)
                         except BulkWriteError as bwe:
                             print(bwe.details)
 

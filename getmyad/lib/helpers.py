@@ -12,7 +12,7 @@ from webhelpers.html.tags import *
 from datetime import datetime
 from pylons.controllers.util import redirect
 import json
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import bson.json_util
 
@@ -91,7 +91,7 @@ def trim_time(datetime_object):
 
 def userNotAuthorizedError():
     return JSON({'error': True, 'error_type': 'authorizedError',
-                 'msg': u"Пожалуйста, войдите в систему GetMyAd", 'ok': False}) 
+                 'msg': u"Пожалуйста, войдите в систему GetMyAd", 'ok': False})
 
 
 def insufficientRightsError():
@@ -202,7 +202,10 @@ def secontToString(seconds, format):
 
 
 def uuid_to_long(uuid):
-    return long(UUID(uuid.encode('utf-8')).int >> 64 & ((1 << 64) / 2) - 2)
+    try:
+        return long(UUID(uuid.encode('utf-8')).int >> 64 & ((1 << 64) / 2) - 2)
+    except Exception as e:
+        return long(uuid4.int >> 64 & ((1 << 64) / 2) - 2)
 
 
 def to_int(value, default=0):

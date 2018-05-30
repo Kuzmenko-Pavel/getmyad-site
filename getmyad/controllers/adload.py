@@ -22,7 +22,8 @@ def current_user_check(f):
 
     def wrapper(*args):
         user = request.environ.get('CURRENT_USER')
-        if not user: return h.userNotAuthorizedError()
+        if not user:
+            return h.redirect(url_for(controller="adload", action="index"))
         c.manager_login = user
         return f(*args)
 
@@ -39,7 +40,7 @@ def expandtoken(f):
             c.info = session.get(token)
         except:
             return h.JSON(
-                {"error": True, 'msg': u"Ошибка, вы вышли из аккаунта!"})  # TODO: Ошибку на нормальной странице
+                {"error": True, 'msg': "Ошибка, вы вышли из аккаунта!"})  # TODO: Ошибку на нормальной странице
         return f(*args)
 
     return wrapper
@@ -56,7 +57,7 @@ def authcheck(f):
             return h.JSON({"error": True, 'msg': "Не задана переменная info во время вызова authcheck"})
         except:
             return h.JSON(
-                {"error": True, 'msg': u"Ошибка, вы вышли из аккаунта!"})  # TODO: Ошибку на нормальной странице
+                {"error": True, 'msg': "Ошибка, вы вышли из аккаунта!"})  # TODO: Ошибку на нормальной странице
         return f(*args)
 
     return wrapper
