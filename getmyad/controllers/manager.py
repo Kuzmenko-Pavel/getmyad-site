@@ -279,6 +279,8 @@ class ManagerController(BaseController):
             impressions_block = int(x.get('impressions_block', 0))
             impressions_block_not_valid = int(x.get('impressions_block_not_valid', 0))
             clicks = int(x.get('clicks', 0))
+            social_impressions = int(x.get('social_impressions', 0))
+            social_impressions_not_valid = int(x.get('social_impressions_not_valid', 0))
             social_clicks = int(x.get('social_clicks', 0))
             view_seconds = float(x.get('view_seconds', 0))
             view_seconds_avg = view_seconds / (clicks + social_clicks) if ((clicks + social_clicks) > 0) else 0
@@ -298,6 +300,9 @@ class ManagerController(BaseController):
                    clicks,
                    clicks_unique,
                    h.formatMoney(total_cost),
+                   social_impressions_not_valid,
+                   social_impressions,
+                   social_clicks,
                    '%.3f' % ctr,
                    '%.3f' % ctr_block,
                    '%.2f ¢' % (click_cost_avg * 100),

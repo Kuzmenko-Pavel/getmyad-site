@@ -890,6 +890,9 @@ var ManagerUI = function () {
                     'Клики',
                     'Клики<br/>уник.',
                     'Сумма',
+                    'Соц. Показы РП</br> не гарантированные',
+                    'Соц. Показы<br/>РП',
+                    'Соц. Клики',
                     'CTR<br/>РП',
                     'CTR<br/>Блоков',
                     'Цена',
@@ -921,8 +924,9 @@ var ManagerUI = function () {
                     {
                         name: 'impressions_block_not_valid',
                         index: 'impressions_block_not_valid',
-                        width: 70,
+                        width: 105,
                         align: 'center',
+                        classes: 'block-column',
                         sortable: false
                     },
                     {
@@ -930,13 +934,15 @@ var ManagerUI = function () {
                         index: 'impressions_block',
                         width: 70,
                         align: 'center',
+                        classes: 'block-column',
                         sortable: false
                     },
                     {
                         name: 'impressions_not_valid',
                         index: 'impressions_not_valid',
-                        width: 70,
+                        width: 105,
                         align: 'center',
+                        classes: 'offer-column',
                         sortable: false
                     },
                     {
@@ -944,6 +950,7 @@ var ManagerUI = function () {
                         index: 'impressions',
                         width: 70,
                         align: 'center',
+                        classes: 'offer-column',
                         sortable: false
                     },
                     {
@@ -951,6 +958,7 @@ var ManagerUI = function () {
                         index: 'clicks',
                         width: 70,
                         align: 'center',
+                        classes: 'offer-column',
                         sortable: false
                     },
                     {
@@ -958,11 +966,36 @@ var ManagerUI = function () {
                         index: 'clicksUnique',
                         width: 70,
                         align: 'center',
+                        classes: 'offer-column',
                         sortable: false
                     },
                     {
                         name: 'profit',
                         index: 'profit',
+                        width: 70,
+                        align: 'center',
+                        sortable: false
+                    },
+                    {
+                        name: 'social_impressions_not_valid',
+                        index: 'social_impressions_not_valid',
+                        width: 105,
+                        align: 'center',
+                        classes: 'social-column',
+                        sortable: false
+                    },
+                    {
+                        name: 'social_impressions',
+                        index: 'social_impressions',
+                        width: 70,
+                        align: 'center',
+                        classes: 'social-column',
+                        sortable: false
+                    },
+                    {
+                        name: 'social_clicks',
+                        index: 'social_clicks',
+                        classes: 'social-column',
                         width: 70,
                         align: 'center',
                         sortable: false
@@ -2373,6 +2406,7 @@ var ManagerUI = function () {
                         index: 'impressions_block_not_valid',
                         align: 'center',
                         formatter: 'integer',
+                        classes: 'block-column',
                         width: 100,
                         sortable: true
                     },
@@ -2381,6 +2415,7 @@ var ManagerUI = function () {
                         index: 'impressions_block',
                         align: 'center',
                         formatter: 'integer',
+                        classes: 'block-column',
                         width: 100,
                         sortable: true
                     },
@@ -2397,6 +2432,7 @@ var ManagerUI = function () {
                         index: 'social_impressions_not_valid',
                         align: 'center',
                         formatter: 'integer',
+                        classes: 'social-column',
                         width: 100,
                         sortable: true
                     },
@@ -2405,6 +2441,7 @@ var ManagerUI = function () {
                         index: 'social_impressions',
                         align: 'center',
                         formatter: 'integer',
+                        classes: 'social-column',
                         width: 100,
                         sortable: true
                     },
@@ -2412,6 +2449,7 @@ var ManagerUI = function () {
                         name: 'social_clicks',
                         index: 'social_clicks',
                         formatter: 'integer',
+                        classes: 'social-column',
                         align: 'center',
                         width: 100,
                         sortable: true
@@ -2420,6 +2458,7 @@ var ManagerUI = function () {
                         name: 'social_clicksUnique',
                         index: 'social_clicksUnique',
                         formatter: 'integer',
+                        classes: 'social-column',
                         align: 'center',
                         width: 100,
                         sortable: true
@@ -2429,6 +2468,7 @@ var ManagerUI = function () {
                         index: 'ctr_social_impressions',
                         formatter: 'integer',
                         align: 'center',
+                        classes: 'social-column',
                         width: 100,
                         sortable: true
                     },
@@ -2437,6 +2477,7 @@ var ManagerUI = function () {
                         index: 'impressions_not_valid',
                         align: 'center',
                         formatter: 'integer',
+                        classes: 'offer-column',
                         width: 100,
                         sortable: true
                     },
@@ -2445,6 +2486,7 @@ var ManagerUI = function () {
                         index: 'impressions',
                         align: 'center',
                         formatter: 'integer',
+                        classes: 'offer-column',
                         width: 100,
                         sortable: true
                     },
@@ -2453,6 +2495,7 @@ var ManagerUI = function () {
                         index: 'clicks',
                         formatter: 'integer',
                         align: 'center',
+                        classes: 'offer-column',
                         width: 100,
                         sortable: true
                     },
@@ -2461,6 +2504,7 @@ var ManagerUI = function () {
                         index: 'clicksUnique',
                         formatter: 'integer',
                         align: 'center',
+                        classes: 'offer-column',
                         width: 100,
                         sortable: true
                     },
@@ -2468,6 +2512,7 @@ var ManagerUI = function () {
                         name: 'ctr_impressions',
                         index: 'ctr_impressions',
                         formatter: 'integer',
+                        classes: 'offer-column',
                         align: 'center',
                         width: 100,
                         sortable: true
@@ -2511,7 +2556,7 @@ var ManagerUI = function () {
                 duration: 0,
                 defaultDate: null,
                 onSelect: function () {
-                    data_url = '/manager/dataUserImpressionsClick?' + '&start_date=' + $('#ImpClickCalendar1').val();
+                    var data_url = '/manager/dataUserImpressionsClick?' + '&start_date=' + $('#ImpClickCalendar1').val();
                     $('#tableUsersImpressionsClick').jqGrid().clearGridData();
                     $('#tableUsersImpressionsClick').setGridParam({url: data_url}).trigger("reloadGrid");
                 }
@@ -2568,10 +2613,13 @@ var ManagerUI = function () {
                     e
                 ) {
                     if (rowid) {
-                        if ($("#tableAccountMoneyOut").getRowData(rowid)['Comment'] == "заявка обрабатывается...")
+                        if ($("#tableAccountMoneyOut").getRowData(rowid)['Comment'] == "заявка обрабатывается..."){
                             buttonCancelMoneyOutRequest.attr('disabled', false);
+                        }
                         else
+                        {
                             buttonCancelMoneyOutRequest.attr('disabled', true);
+                        }
                     }
                     return true;
                 }
@@ -2609,8 +2657,10 @@ var ManagerUI = function () {
                                         alert("Неизвестная ошибка.");
                                     }
                                 }
-                                else
+                                else{
                                     reloadMoneyOutHistoryGrid();
+                                }
+
                             },
                             error: function (
                                 error,
@@ -2643,7 +2693,7 @@ var ManagerUI = function () {
             // Таблица заявок на добавление домена
             $("#tableDomainRegistration").jqGrid({
                 datatype: function () {
-                    var data = dataDomainRequests;
+                    var data = window.dataDomainRequests;
                     for (var i = 0; i < data.rows.length; i++) {
                         data.rows[i].cell.push('<a href="javascript:;" class="actionLink">Одобрить</a>');
                         data.rows[i].cell.push('<a href="javascript:;" class="actionLink2">Отклонить</a>');
@@ -2652,8 +2702,9 @@ var ManagerUI = function () {
                     $("#tableDomainRegistration .actionLink").click(function () {
                         var grid = $("#tableDomainRegistration");
                         var rowId = grid.getGridParam('selrow');
-                        if (rowId == null)
+                        if (rowId === null){
                             return;
+                        }
                         var row = grid.jqGrid('getRowData', rowId);
                         var message = "<p>Одобрить домен <b>" + row.domain +
                             "</b> для пользователя " +
@@ -2670,10 +2721,11 @@ var ManagerUI = function () {
                                         token: window.token
                                     }, function (data) {
                                         if (data.error) {
-                                            if (data.error_type == "authorizedError")
-                                                window.location.replace("/main/index")
+                                            if (data.error_type == "authorizedError"){
+                                                window.location.replace("/main/index");
+                                            }
                                             else if (data.msg) {
-                                                alert(msg);
+                                                alert(data.msg);
                                                 return;
                                             }
                                             else {
@@ -2683,14 +2735,13 @@ var ManagerUI = function () {
                                         }
                                         else {
                                             $.getJSON("/manager/domainsRequests", function (json) {
-                                                dataDomainRequests = json;
+                                                window.dataDomainRequests = json;
                                                 dialog.dialog('close');
-                                                login = row.user;
                                                 $('#tableDomainRegistration').trigger('reloadGrid');
-                                                openUserDetailsByLogin(login, "edit_domain_categories");
+                                                openUserDetailsByLogin(row.user, "edit_domain_categories");
                                             });
                                         }
-                                    })
+                                    });
                                 },
                                 'Нет': function () {
                                     dialog.dialog('close');
@@ -2726,7 +2777,7 @@ var ManagerUI = function () {
                                                 window.location.replace("/main/index");
                                             }
                                             else if (data.msg) {
-                                                alert(msg);
+                                                alert(data.msg);
                                                 return;
                                             }
                                             else {
@@ -3525,4 +3576,4 @@ window.checkDataUpdate = function() {
         }
     });
 };
-setInterval(window.checkDataUpdate(), 60000);
+setInterval(window.checkDataUpdate, 60000);

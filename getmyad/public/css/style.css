@@ -960,3 +960,21 @@ ul.skype {
         list-style-image: url('/img/skype_14.png');
         padding: 0 0 0 20px;
 }
+
+
+.block-column{
+    background-color: #bcfdc2;
+}
+.offer-column{
+    background-color: #eeeeee;
+}
+.social-column{
+    background-color: #faffd5;
+}
+
+.sunday .block-column, .sunday .offer-column, .sunday .social-column,
+.ui-state-highlight .block-column, .ui-state-highlight .offer-column, .ui-state-highlight .social-column,
+.ui-state-hover .block-column, .ui-state-hover .offer-column, .ui-state-hover .social-column
+{
+    background-color: transparent;
+}
