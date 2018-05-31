@@ -12,16 +12,26 @@
 							   'guid': x.guid,
 							   'domain': x.domain}
 							   for x in c.informers])
-	
-	domainsJSON = c.domains						   
 %>
 
 
     <script type="text/javascript">
-        var account_data = {};
-		var advertiseList = ${informersJSON};
-		var domains = ${domainsJSON}
-		var token = ${h.JSON(c.token)};
+        Array.prototype.remove = function() {
+            var what, a = arguments, L = a.length, ax;
+            while (L && this.length) {
+                what = a[--L];
+                while ((ax = this.indexOf(what)) !== -1) {
+                    this.splice(ax, 1);
+                }
+            }
+            return this;
+        };
+
+        window.account_data = {};
+		window.advertiseList = ${informersJSON};
+		window.domains = ${c.domains};
+		window.remove_domains = ${h.JSON([x[0] for x in c.remove_domains])};
+		window.token = ${h.JSON(c.token)};
 	</script>
 	<script async defer  type="text/javascript" src="/js/statistics.js?v=1"></script>
 	<script src="/js/ajaxupload.3.6.js" type="text/javascript"></script>
@@ -183,20 +193,24 @@
     <!--div #informers-->
     <div id="informers">
         <div id="startwork" style="display:none"><h3> Добро пожаловать в GetMyAd! Для того чтоб начать работу, создайте, пожалуйста, информер.</h3></div>
-        
-        <p><a href="/advertise/create#size" class="link-button" target="_blank">Создать новый рекламный блок</a></p>
-        <p><a href="/advertise/create_dynamic" class="link-button" target="_blank">Создать адаптивный рекламный блок</a></p>
-        <div id="textCreateInformerHint">
-             Предлагаем Вам  установить дополнительные рекламные блоки на сайте  – это позволит приумножить Ваш заработок.<br/>
-             Исходя из наших данных и опыта наилучшая эффективность достигается посредством 3-х рекламных блоков, одновременно установленных на сайте. 
-             (<a href="/info/increase#Dohodnye_mesta" target="_blank">подробнее</a>).
+
+        <div id="CreateAdvertise">
+            <p><a href="/advertise/create#size" class="link-button" target="_blank">Создать новый рекламный блок</a></p>
+            <p><a href="/advertise/create_dynamic" class="link-button" target="_blank">Создать адаптивный рекламный блок</a></p>
+            <div id="textCreateInformerHint">
+                 Предлагаем Вам  установить дополнительные рекламные блоки на сайте  – это позволит приумножить Ваш заработок.<br/>
+                 Исходя из наших данных и опыта наилучшая эффективность достигается посредством 3-х рекламных блоков, одновременно установленных на сайте.
+                 (<a href="/info/increase#Dohodnye_mesta" target="_blank">подробнее</a>).
+            </div>
         </div>
         
         <p><a href="javascript:;" class="link-button" id="btnRegisterDomain">Зарегистрировать сайт</a></p>
         <div id="textRegisterDomainHint">Регистрация нового сайта необходима в том случае, если Вы хотите установить рекламный блок на новом сайте.</div>
-        
-        <p><a href="javascript:;" class="link-button" id="btnRemoveDomain">Удалить сайт</a></p>
-        <div id="textRemoveDomainHint">При удалении сайта удаляться и все рекламные блоки созданные для него.</div>
+
+        <div id="RemoveDomain">
+            <p><a href="javascript:;" class="link-button" id="btnRemoveDomain">Удалить сайт</a></p>
+            <div id="textRemoveDomainHint">При удалении сайта удаляться и все рекламные блоки созданные для него.</div>
+        </div>
 
         <div id="tableInformers">
                 <p/>

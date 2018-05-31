@@ -110,12 +110,12 @@ class PrivateController(BaseController):
         c.moneyOutEnabled = (account.prepayment or
                              c.accountSumm >= c.min_out_sum)
         domains = account.domains.list()
+        c.remove_domains = [(x, x) for x in domains]
         requests = account.domains.list_request()
         for x in requests:
             domains.append(str(x) + u' (ожидает подтверждения)')
         if (ad._domainsAdvertises('')):
             domains.append('')
-        c.remove_domains = [(x, x) for x in domains]
         c.domains = h.jgridDataWrapper([(x, '') for x in domains])
         return render('/statistics.mako.html')
 

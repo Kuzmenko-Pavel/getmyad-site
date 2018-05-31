@@ -301,8 +301,6 @@ function drawChartUsingFilter() {
 
             // Список существующих информеров (для редактирования)
             $("#tableExistingInformers").jqGrid({
-                // url: 'private/accountDomains',
-                // datatype: 'json',
                 datatype: function () {
                     this.addJSONData(window.domains);
                     var tableExistingInformers = $("#tableExistingInformers");
@@ -320,7 +318,6 @@ function drawChartUsingFilter() {
                 caption: "Список существующих рекламных блоков",
                 rownumbers: true,
                 rowNum: 50,
-                //pager: "#pagerExistingInformers",
                 subGrid: true,
                 subGridBeforeExpand: function (subgrid_id, row_id) {
                     var index = $("#tableExistingInformers").jqGrid('getRowData', row_id).Domain.indexOf('ожидает подтверждения', 0);
@@ -572,18 +569,6 @@ function drawChartUsingFilter() {
         }  // end prepareUi()
 
         // -----------------------------------------
-
-
-        /*
-         * Перезагружает таблицу доменов/информеров
-         */
-        /*	   function reloadTableExistingInformers() {
-         $('#tableExistingInformers')
-         .jqGrid('setGridParam',{datatype: "json"})
-         .jqGrid('setGridParam',{url: "private/accountDomains"})
-         .trigger("reloadGrid");
-         }
-         */
 
         /* В диалоге вывода средств отображение полей в соответствии с типом вывода средств*/
         function showRightMoneyOutBlock() {
@@ -1064,7 +1049,7 @@ function drawChartUsingFilter() {
                                     }
                                 });
                                 // перезагрузить таблицу
-                                $("#tableExistingInformers").trigger("reloadGrid");
+                                window.tableInformersReload();
 
                             }
                             else if (reply.error) {
@@ -1107,6 +1092,8 @@ function drawChartUsingFilter() {
                         },
                         success: function (reply) {
                             if (reply.error === false) {
+                                var d = $("#formRemoveDomain option:selected").val();
+                                window.remove_domains.remove(d);
                                 $('#dialogRemoveDomain').dialog('close');
                                 $("<p>Сайт успешно удален!</p>").dialog({
                                     modal: true,
@@ -1118,8 +1105,7 @@ function drawChartUsingFilter() {
                                     }
                                 });
                                 // перезагрузить таблицу
-                                $("#tableExistingInformers").trigger("reloadGrid");
-//							reloadTableExistingInformers();
+                                window.tableInformersReload();
 
                             }
                             else if (reply.error) {
@@ -1170,8 +1156,7 @@ function drawChartUsingFilter() {
                                     }
                                 });
                                 // перезагрузить таблицу
-                                $("#tableExistingInformers").trigger("reloadGrid");
-//							reloadTableExistingInformers();
+                                window.tableInformersReload();
 
                             }
                             else if (reply.error) {
@@ -1244,17 +1229,35 @@ function drawChartUsingFilter() {
             prepareUi();
             $("#tabs").css("visibility", "visible");
             showRightMoneyOutBlock();
-            if (window.advertiseList.length < 1) {
-                $("#tableExistingInformers").css({display: 'none'});
-                $("#tableInformers").css({display: 'none'});
-                $("#startwork").css({display: 'block'});
-                $("#linkinformers").click();
-            }
+            window.tableInformersReload();
 
 
         }, function () {
             window.alert('failes');
         });
+        window.tableInformersReload = function () {
+            if (window.remove_domains && window.remove_domains < 1) {
+                $("#RemoveDomain").hide();
+                $("#CreateAdvertise").hide();
+            }
+            else{
+                $("#RemoveDomain").show();
+                $("#CreateAdvertise").show();
+            }
+            if (window.domains && window.domains.rows && window.domains.rows.length < 1) {
+                $("#tableExistingInformers").hide();
+                $("#tableInformers").hide();
+            }
+            else{
+                $("#tableExistingInformers").show();
+                $("#tableInformers").show();
+            }
+            if (window.advertiseList.length < 1) {
+                $("#startwork").css({display: 'block'});
+                $("#linkinformers").click();
+            }
+            $("#tableExistingInformers").trigger("reloadGrid");
+        };
 
 
         window.ytt.event(['1', '2', '3'], 'remove');

@@ -101,23 +101,37 @@ class Informer:
             update['title'] = self.title
         if self.admaker:
             update['admaker'] = self.admaker
+        if not self.domain:
+            record = self.db.domain.find_one({'login': self.user_login})
+            if record:
+                obj = record.get('domains', {})
+                if obj.values():
+                    self.domain = obj.values()[0]
+                else:
+                    raise ValueError('Domain not set!')
+            else:
+                raise ValueError('Domain not set!')
         if self.domain:
             update['domain'] = self.domain
             record = self.db.domain.find_one({'login': self.user_login})
-            if not self.domain_guid:
-                obj = record.get('domains', {})
-                for k, v in obj.iteritems():
-                    if v == self.domain:
-                        self.domain_guid = k
-                        break
-            if not self.domain_guid_int:
-                obj = record.get('domains_int', {})
-                for k, v in obj.iteritems():
-                    if v == self.domain:
-                        self.domain_guid_int = k
-                        break
-                else:
-                    self.domain_guid_int = uuid_to_long(self.domain_guid)
+            if record:
+                if not self.domain_guid:
+                    obj = record.get('domains', {})
+                    for k, v in obj.iteritems():
+                        if v == self.domain:
+                            self.domain_guid = k
+                            break
+                if not self.domain_guid_int:
+                    obj = record.get('domains_int', {})
+                    for k, v in obj.iteritems():
+                        if v == self.domain:
+                            self.domain_guid_int = k
+                            break
+                    else:
+                        self.domain_guid_int = uuid_to_long(self.domain_guid)
+            else:
+                raise ValueError('Domain not set!')
+
         if self.user_guid:
             update['user_guid'] = self.user_guid
 
