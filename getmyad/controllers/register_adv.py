@@ -115,8 +115,15 @@ class RegisterAdvController(BaseController):
                 c.money_factura = False if request.params.get('money_factura') == None else True
                 c.money_yandex = False if request.params.get('money_yandex') == None else True
                 c.category = request.params.getall('categories')
-                if (
-                                                not c.money_card and not c.money_web_z and not c.money_factura and not c.money_cash and not c.money_card_pb_ua and not c.money_card_pb_us and not c.money_web_r and not c.money_web_u and not c.money_yandex):
+                if (not c.money_card
+                    and not c.money_web_z
+                    and not c.money_factura
+                    and not c.money_cash
+                    and not c.money_card_pb_ua
+                    and not c.money_card_pb_us
+                    and not c.money_web_r
+                    and not c.money_web_u
+                    and not c.money_yandex):
                     raise RegisterAdvController.PaymentTypeNotDefined('Payment_type_not_defined')
             except formencode.Invalid, error:
                 c.user_error_messages = '<br/>\n'.join([x.msg for x in error.error_dict.values()])

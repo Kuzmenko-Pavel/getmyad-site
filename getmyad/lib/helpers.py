@@ -205,7 +205,8 @@ def uuid_to_long(uuid):
     try:
         return long(UUID(uuid.encode('utf-8')).int >> 64 & ((1 << 64) / 2) - 2)
     except Exception as e:
-        return long(uuid4.int >> 64 & ((1 << 64) / 2) - 2)
+        print(e)
+        return long(uuid4().int >> 64 & ((1 << 64) / 2) - 2)
 
 
 def to_int(value, default=0):

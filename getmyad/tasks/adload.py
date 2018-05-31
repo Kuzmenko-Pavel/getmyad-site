@@ -427,7 +427,7 @@ def campaign_offer_update(campaign_id, **kwargs):
                 {'$match': {'campaignId': campaign_id}},
                 {'$group': {'_id': {'_id': '$_id', 'hash': '$hash'}}}
             ]
-            cursor = db.offer.aggregate(pipeline=pipeline, cursor={})
+            cursor = db.offer.aggregate(pipeline=pipeline, cursor={}, allowDiskUse=True)
             hashes = {doc['_id']['hash']: doc['_id']['_id'] for doc in cursor}
 
             operations = []

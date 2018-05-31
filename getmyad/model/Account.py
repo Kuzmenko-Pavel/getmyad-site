@@ -152,8 +152,12 @@ class Account(object):
                 guid = uuid4()
                 guid_int = uuid_to_long(str(guid))
                 self.db.domain.update({'login': self.account.login},
-                                      {'$set': {('domains.' + str(guid)): domain}},
-                                      {'$set': {('domains_int.' + str(guid_int)): domain}},
+                                      {
+                                          '$set': {
+                                              'domains.' + str(guid): domain,
+                                              'domains_int.' + str(guid_int): domain
+                                          }
+                                      },
                                       upsert=True)
                 MQ().domain_start(domain)
                 MQ().account_update(self.account.login)
