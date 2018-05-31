@@ -242,10 +242,15 @@ class Account(object):
             data = self.db.domain.find({'login': self.account.login})
             for item in data:
                 domains = item.get('domains', {})
+                domains_int = item.get('domains_int', {})
                 for key, value in domains.items():
                     if value == domain or ('http://%s' % value) == domain or ('https://%s' % value) == domain:
                         del domains[key]
+                for key, value in domains_int.items():
+                    if value == domain or ('http://%s' % value) == domain or ('https://%s' % value) == domain:
+                        del domains_int[key]
                 item['domains'] = domains
+                item['domains_int'] = domains_int
                 self.db.domain.save(item)
 
             for informer in self.db.informer.find({'domain': domain}):

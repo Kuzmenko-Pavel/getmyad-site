@@ -297,8 +297,6 @@ class AdvertiseController(BaseController):
                          (round(x['unique'] * 100 / x['impressions_block_not_valid'], 3)
                           if x['impressions_block_not_valid'] else 0),
                          '%.3f%%' % x['difference_impressions_block'],
-                         h.secontToString((float(x['view_seconds']) / (x['clicks'] + x['social_clicks']) if (
-                             (x['clicks'] + x['social_clicks']) > 0) else 0), "{m}m : {s}s"),
                          '%.2f грн' %
                          ((round(x['summ'] / x['unique'], 3)
                            if x['unique'] > 0 else 0)),
@@ -333,8 +331,6 @@ class AdvertiseController(BaseController):
                      '%.3f%%' % round(r['unique'] * 100.0 / r['impressions_block_not_valid'], 3)
                      if r['impressions_block_not_valid'] else 0,
                      '%.3f%%' % r['difference_impressions_block'],
-                     h.secontToString((float(r['view_seconds']) / (r['clicks'] + r['social_clicks']) if (
-                         (r['clicks'] + r['social_clicks']) > 0) else 0), "{m}m : {s}s"),
                      '%.2f грн' %
                      ((round(r['totalCost'] / r['unique'], 3)
                        if r['unique'] > 0 else 0)),
@@ -351,12 +347,6 @@ class AdvertiseController(BaseController):
 
         totalCost = sum([r['totalCost'] for r in reportData if 'totalCost' in r])
 
-        view_seconds = sum([r['view_seconds'] for r in reportData if 'view_seconds' in r])
-
-        clicks = sum([r['clicks'] for r in reportData if 'clicks' in r])
-
-        social_clicks = sum([r['social_clicks'] for r in reportData if 'social_clicks' in r])
-
         result = {
             'total': len(data),
             'page': 1,
@@ -372,8 +362,6 @@ class AdvertiseController(BaseController):
                 "ViewPort": '%.3f%%' % \
                             (round(100.0 * totalImpressions / impressions_block_not_valid, 3) \
                                  if impressions_block_not_valid > totalImpressions else 100),
-                "ViewSecond": h.secontToString(
-                    view_seconds / (clicks + social_clicks) if ((clicks + social_clicks) > 0) else 0, "{m}m : {s}s"),
                 "Cost": '%.2f грн' % \
                         (round(totalCost / totalUnique, 3) \
                              if totalUnique > 0 else 0),

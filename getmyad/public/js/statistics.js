@@ -93,14 +93,13 @@ function drawChartUsingFilter() {
                 url: surl,
                 mtype: 'GET',
                 colNames: ['Рекламные блоки', 'Показы', 'Клики',
-                    'CTR', 'Показы в видимой части экрана', 'Среднее время до клика', 'Средняя цена', 'Расчетный доход'],
+                    'CTR', 'Показы в видимой части экрана', 'Средняя цена', 'Расчетный доход'],
                 colModel: [
                     {name: 'Title', index: 'Title', width: 200, align: 'left', sortable: false},
                     {name: 'Impressions', index: 'Impressions', width: 80, align: 'center', sortable: false},
                     {name: 'Clicks', index: 'Clicks', width: 80, align: 'center', sortable: false},
                     {name: 'CTR', index: 'CTR', width: 90, align: 'center', sortable: false},
                     {name: 'ViewPort', index: 'ViewPort', width: 90, align: 'center', sortable: false},
-                    {name: 'ViewSecond', index: 'ViewSecond', width: 90, align: 'center', sortable: false},
                     {name: 'Cost', index: 'Cost', width: 85, align: 'center', sortable: false},
                     {name: 'Summ', index: 'Summ', width: 80, align: 'center', sortable: false},
                 ],
@@ -126,7 +125,7 @@ function drawChartUsingFilter() {
                         datatype: 'json',
                         mtype: 'GET',
                         colNames: ['Дата', 'Показы', 'Клики',
-                            'CTR', 'Показы в видимой части экрана', 'Среднее время до клика', 'Средняя цена', 'Расчетный доход'],
+                            'CTR', 'Показы в видимой части экрана', 'Средняя цена', 'Расчетный доход'],
                         colModel: [
                             {
                                 name: 'Title',
@@ -163,14 +162,6 @@ function drawChartUsingFilter() {
                             {
                                 name: 'ViewPort',
                                 index: 'ViewPort',
-                                width: 90,
-                                align: 'center',
-                                sortable: false,
-                                classes: 'subgrid_cell'
-                            },
-                            {
-                                name: 'ViewSecond',
-                                index: 'ViewSecond',
                                 width: 90,
                                 align: 'center',
                                 sortable: false,
@@ -733,7 +724,6 @@ function drawChartUsingFilter() {
             plotOptions.xaxis.min = date1 ? date1.getTime() + utc : null;
             plotOptions.xaxis.max = date2 ? date2.getTime() + utc : null;
             window.drawChartUsingFilter();
-
 
         } // end refreshData()
 

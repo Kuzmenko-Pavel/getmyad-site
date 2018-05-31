@@ -96,6 +96,17 @@ class Informer:
             update['range_search'] = self.range_search
             update['retargeting_capacity'] = self.range_retargeting
 
+        domain_exists = False
+        record = self.db.domain.find_one({'login': self.user_login})
+        if record:
+            obj = record.get('domains', {})
+            for k, v in obj.iteritems():
+                if v == self.domain:
+                    domain_exists = True
+                    break
+        if not domain_exists:
+            raise ValueError('Domain not set!')
+
         update['dynamic'] = self.dynamic
         if self.title:
             update['title'] = self.title
