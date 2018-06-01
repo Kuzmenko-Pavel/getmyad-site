@@ -112,14 +112,17 @@ class AdloadData(object):
             cursor_a = self.connection_adload.cursor()
             # Частные предложения (информеры)
             cursor_a.execute('''
-                SELECT TOP %s  Lot.LotID AS LotID, Lot.Title AS Title, Lot.RetargetingID AS RetargetingID, ExternalURL AS UrlToMarket, [ClickCost], 
-                    ISNULL(Lot.Descript, '') AS About,
-                    Lot.ImgURL 
-                    ,ISNULL(lot.Logo, '') Logo
-                    ,ISNULL(lot.Price, '') Price
-                    ,Lot.DateCreate AS DateAdvert
-                    ,Advertise.UserID AS UserID
-                    ,Lot.Recommended AS Recommended
+                SELECT TOP %s  Lot.LotID AS LotID,
+                Lot.Title AS Title,
+                Lot.RetargetingID AS RetargetingID,
+                ExternalURL AS UrlToMarket,
+                ClickCost, 
+                ISNULL(Lot.Descript, '') AS About,
+                Lot.ImgURL 
+                ,ISNULL(lot.Logo, '') Logo
+                ,ISNULL(lot.Price, '') Price
+                ,Advertise.UserID AS UserID
+                ,Lot.Recommended AS Recommended
                 FROM Lot 
                 INNER JOIN LotByAdvertise ON LotByAdvertise.LotID = Lot.LotID
                 INNER JOIN Advertise ON Advertise.AdvertiseID = LotByAdvertise.AdvertiseID
@@ -139,7 +142,6 @@ class AdloadData(object):
                 data['image'] = row['ImgURL']
                 data['logo'] = row['Logo']
                 data['description'] = row['About']
-                data['dateAdded'] = row['DateAdvert']
                 data['RetargetingID'] = row.get('RetargetingID', '').strip()
                 data['Recommended'] = row['Recommended']
                 try:
