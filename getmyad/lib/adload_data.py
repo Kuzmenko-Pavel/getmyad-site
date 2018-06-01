@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import logging
 import uuid
+import time
 import shelve
 import os
 
@@ -84,6 +85,7 @@ class AdloadData(object):
 
     def offers_list(self, campaign, load_count=100):
         print 'Get Offers'
+        start_time_main = time.time()
         """ Возвращает список активных рекламных предложений,
             относящихся к рекламной кампании ``campaign``. 
 
@@ -151,6 +153,7 @@ class AdloadData(object):
             print 'Connection Adload closed'
         except Exception, ex:
             raise
+        print("--- Get Offers %s seconds ---" % (time.time() - start_time_main))
 
     offers_list.signature = [['struct', 'string']]
 

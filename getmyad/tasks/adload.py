@@ -389,6 +389,7 @@ def campaign_offer_update(campaign_id, **kwargs):
     
     Если в кампании нет активных предложений, она будет остановлена.
     '''
+    start_time_main = time.time()
     try:
         db = _mongo_main_db()
         connection_adload = mssql_connection_adload()
@@ -408,7 +409,9 @@ def campaign_offer_update(campaign_id, **kwargs):
         camp.save()
         with AdloadData(connection_adload=connection_adload) as ad:
             ad.offers_list(campaign_id, camp.load_count)
+            start_time = time.time()
             offers_len = len(ad.offers)
+            print("--- Count offers %s seconds ---" % (time.time() - start_time))
             if offers_len < 1:
                 camp.update_status = 'complite'
                 camp.last_update = datetime.datetime.now()
@@ -427,12 +430,15 @@ def campaign_offer_update(campaign_id, **kwargs):
                 {'$match': {'campaignId': campaign_id}},
                 {'$group': {'_id': {'_id': '$_id', 'hash': '$hash'}}}
             ]
+            start_time = time.time()
             cursor = db.offer.aggregate(pipeline=pipeline, cursor={}, allowDiskUse=True)
             hashes = {doc['_id']['hash']: doc['_id']['_id'] for doc in cursor}
+            print("--- Get Hashes %s seconds ---" % (time.time() - start_time))
 
             operations = []
             res_task_img = []
             coll = db.get_collection('offer', write_concern=WriteConcern(w=0))
+            start_time_iter = time.time()
             for x in ad.offers.itervalues():
 
                 images = x['image'].split(',')
@@ -473,31 +479,40 @@ def campaign_offer_update(campaign_id, **kwargs):
 
                 if len(res_task_img) >= 10000:
                     if operations:
+                        start_time_bulk_write = time.time()
                         try:
                             coll.bulk_write(operations, ordered=False)
                         except BulkWriteError as bwe:
                             print(bwe.details)
+                        print("--- Bulk Write %s seconds ---" % (time.time() - start_time_bulk_write))
 
+                    start_time_task_img = time.time()
                     for task_img in res_task_img:
                         task_resize_image.delay(task_img[0], task_img[1], task_img[2])
+                    print("--- Create image task %s seconds ---" % (time.time() - start_time_task_img))
 
                     res_task_img = []
                     operations = []
 
+            print("--- Iterate offer %s seconds ---" % (time.time() - start_time_iter))
             for value in hashes.itervalues():
                 operations.append(
                     pymongo.DeleteOne({'_id': value})
                 )
             try:
                 if operations:
+                    start_time_bulk_write = time.time()
                     db.offer.bulk_write(operations, ordered=False)
+                    print("--- Bulk Write End %s seconds ---" % (time.time() - start_time_bulk_write))
             except BulkWriteError as bwe:
                 print(bwe.details)
 
+            start_time_task_img = time.time()
             for task_img in res_task_img:
                 task_resize_image.delay(task_img[0], task_img[1], task_img[2])
             if work:
                 task_resize_image.delay(campaign_id=campaign_id)
+            print("--- Create image task End %s seconds ---" % (time.time() - start_time_task_img))
 
     except Exception as ex:
         campaign_offer_update.retry(args=[campaign_id], kwargs=kwargs, exc=ex)
@@ -506,6 +521,7 @@ def campaign_offer_update(campaign_id, **kwargs):
         camp.update_status = 'complite'
         camp.last_update = datetime.datetime.now()
         camp.save()
+    print("--- Task execution %s seconds ---" % (time.time() - start_time_main))
 
 
 @task(max_retries=10, default_retry_delay=10)
