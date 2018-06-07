@@ -85,6 +85,7 @@ class AdvertiseController(BaseController):
     def save(self):
         try:
             user = session.get('user')
+            isManager = session.get('isManager', False)
             if not user:
                 return h.JSON({'error': True, 'message': u'Не выполнен вход'})
             id = request.params.get('adv_id')
@@ -93,35 +94,37 @@ class AdvertiseController(BaseController):
             informer.loadGuid(id)
             informer.guid = id
             informer.dynamic = False
-            informer.user_login = user
+            if not isManager:
+                informer.user_login = user
             informer.admaker = object.get('options')
             informer.css = None
             informer.css_banner = None
             informer.title = object.get('title')
-            informer.domain = object.get('domain')
+            if object.get('domain'):
+                informer.domain = object.get('domain')
             informer.non_relevant = object.get('nonRelevant')
             informer.height = object.get('height')
             informer.width = object.get('width')
             informer.height_banner = object.get('height_banner')
             informer.width_banner = object.get('width_banner')
-            if object.get('html_notification') is not None:
+            if object.get('html_notification'):
                 informer.html_notification = object.get('html_notification')
-            if object.get('plase_branch') is not None:
+            if object.get('plase_branch'):
                 informer.plase_branch = object.get('plase_branch')
-            if object.get('retargeting_branch') is not None:
+            if object.get('retargeting_branch'):
                 informer.retargeting_branch = object.get('retargeting_branch')
             informer.auto_reload = object.get('auto_reload', 0)
-            if object.get('blinking') is not None:
+            if object.get('blinking'):
                 informer.blinking = object.get('blinking', 0)
-            if object.get('shake') is not None:
+            if object.get('shake'):
                 informer.shake = object.get('shake', 0)
-            if object.get('rating_division') is not None:
+            if object.get('rating_division'):
                 informer.rating_division = object.get('rating_division', 1000)
-            if object.get('blinking_reload') is not None:
+            if object.get('blinking_reload'):
                 informer.blinking_reload = object.get('blinking_reload')
-            if object.get('shake_reload') is not None:
+            if object.get('shake_reload'):
                 informer.shake_reload = object.get('shake_reload')
-            if object.get('shake_mouse') is not None:
+            if object.get('shake_mouse'):
                 informer.shake_mouse = object.get('shake_mouse')
             informer.save()
             return h.JSON({'error': False, 'id': informer.guid})
@@ -133,6 +136,7 @@ class AdvertiseController(BaseController):
     def save_dynamic(self):
         try:
             user = session.get('user')
+            isManager = session.get('isManager', False)
             if not user:
                 return h.JSON({'error': True, 'message': u'Не выполнен вход'})
             id = request.params.get('adv_id')
@@ -141,13 +145,15 @@ class AdvertiseController(BaseController):
             informer.loadGuid(id)
             informer.guid = id
             informer.dynamic = True
-            informer.user_login = user
+            if not isManager:
+                informer.user_login = user
             informer.admaker = object.get('options')
             informer.non_relevant = object.get('nonRelevant')
             informer.css = ' '
             informer.css_banner = ' '
             informer.title = object.get('title')
-            informer.domain = object.get('domain')
+            if object.get('domain'):
+                informer.domain = object.get('domain')
             informer.height = 1
             informer.width = 1
             informer.height_banner = 1
