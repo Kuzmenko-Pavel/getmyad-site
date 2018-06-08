@@ -113,7 +113,7 @@ def mssql_connection_adload():
 
 def check_image(db, url, logo):
     try:
-        rec = db.images.find_one({'src': url.strip(), 'logo': logo})
+        rec = db.images.find_one({'src': url.strip(), 'logo': logo.strip()})
         if rec:
             return rec.get('url')
         return None
@@ -151,16 +151,17 @@ def cdn_loader(png, webp):
     if not cdn_server_url or not cdn_api_list:
         raise Exception('Wrong settings')
     new_filename = uuid4().get_hex()
+    prefix = new_filename[:2]
     url_path = datetime.datetime.now().strftime('img10/%m/%d')
     for host in cdn_api_list:
         png.seek(0)
-        url = '%s/%s/%s.png' % (host, url_path, new_filename)
+        url = '%s/%s/%s/%s.png' % (host, url_path, prefix, new_filename)
         send(url, '%s.png' % new_filename, png)
 
         webp.seek(0)
-        url = '%s/%s/%s.webp' % (host, url_path, new_filename)
+        url = '%s/%s/%s/%s.webp' % (host, url_path, prefix, new_filename)
         send(url, '%s.webp' % new_filename, webp)
-    return '%s/%s/%s.png' % (cdn_server_url, url_path, new_filename)
+    return '%s/%s/%s/%s.png' % (cdn_server_url, url_path, prefix, new_filename)
 
 
 def resizer(url, trum_height, trum_width, logo):
@@ -311,7 +312,7 @@ def resize_and_upload_image(db, urls, logo):
             buf_webp.seek(0)
 
             cdn_url = cdn_loader(buf_png, buf_webp)
-            coll.update({'src': url.strip(), 'logo': logo},
+            coll.update({'src': url.strip(), 'logo': logo.strip()},
                         {'$set': {'url': cdn_url, 'dt': datetime.datetime.now()}}, upsert=True)
             result.append(cdn_url)
         return result
