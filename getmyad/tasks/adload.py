@@ -180,15 +180,15 @@ def resizer(url, trum_height, trum_width, logo):
     headers = {
         'User-agent': 'Mozilla/5.0'
     }
-    r = requests.get(url, headers=headers)
+    r = requests.get(url.strip(), headers=headers)
     if r.status_code != requests.codes.ok:
-        raise Exception('URLError = %s %s' % (r.status_code, url))
+        raise Exception('URLError = %s %s' % (r.status_code, url.strip()))
     i = Image.open(BytesIO(r.content)).convert('RGBA')
     width, height = i.size
     if logo and logo != '':
-        r = requests.get(logo, headers=headers)
+        r = requests.get(logo.strip(), headers=headers)
         if r.status_code != requests.codes.ok:
-            raise Exception('URLError = %s %s' % (r.status_code, logo))
+            raise Exception('URLError = %s %s' % (r.status_code, logo.strip()))
         l = Image.open(BytesIO(r.content)).convert('RGBA')
         l.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
 
