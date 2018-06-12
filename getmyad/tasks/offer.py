@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 import hashlib
-from getmyad.lib.helpers import uuid_to_long
+
 import pymongo
 
-from pylons import app_globals
+from getmyad.lib.helpers import uuid_to_long
 
 
 class Offer(object):
@@ -66,30 +66,33 @@ class Offer(object):
         self._image_hash = str(hashlib.md5(str(imageHash)).hexdigest())
         return self._image_hash
 
-    @property
-    def save(self):
+    def save(self, without_ratings=None):
         'Сохраняет предложение в базу данных'
         ctr = 0.06 * 100000
         rating = round((ctr * self.cost), 4)
+        data = {'title': self._trim_by_words(self.title, 35),
+                'price': self.price,
+                'url': self.url,
+                'image': '',
+                'description': self._trim_by_words(self.description, 70),
+                'campaignId': self.campaign,
+                'campaignId_int': long(self.campaign_int),
+                'campaignTitle': self.campaignTitle,
+                'retargeting': self.retargeting,
+                'rating': rating,
+                'full_rating': rating,
+                'hash': self.hash,
+                'image_hash': self.image_hash,
+                'cost': self.cost,
+                'accountId': self.accountId,
+                'RetargetingID': self.RetargetingID,
+                'Recommended': self.Recommended
+                }
+        if without_ratings:
+            del data['rating']
+            del data['full_rating']
         return pymongo.UpdateOne({'guid': self.id, 'guid_int': long(self.id_int)},
-                                 {'$set': {'title': self._trim_by_words(self.title, 35),
-                                           'price': self.price,
-                                           'url': self.url,
-                                           'image': '',
-                                           'description': self._trim_by_words(self.description, 70),
-                                           'campaignId': self.campaign,
-                                           'campaignId_int': long(self.campaign_int),
-                                           'campaignTitle': self.campaignTitle,
-                                           'retargeting': self.retargeting,
-                                           'rating': rating,
-                                           'full_rating': rating,
-                                           'hash': self.hash,
-                                           'image_hash': self.image_hash,
-                                           'cost': self.cost,
-                                           'accountId': self.accountId,
-                                           'RetargetingID': self.RetargetingID,
-                                           'Recommended': self.Recommended
-                                           }},
+                                 {'$set': data},
                                  upsert=True)
 
     def _trim_by_words(self, str, max_len):

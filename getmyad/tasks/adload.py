@@ -322,27 +322,29 @@ def resize_and_upload_image(db, urls, logo):
 
 
 @task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='small-image')
-def small_resize_image(offer_id=None, urls=None, logo=None, campaign_id=None, **kwargs):
+def small_resize_image(offer_id=None, urls=None, logo=None, image_hash=None, campaign_id=None, **kwargs):
     """
 
     Args:
         offer_id:
         urls:
         logo:
+        image_hash:
         campaign_id:
         kwargs:
     """
-    resize_image(offer_id, urls, logo, campaign_id, **kwargs)
+    resize_image(offer_id, urls, logo, image_hash, campaign_id, **kwargs)
 
 
 @task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='image')
-def resize_image(offer_id=None, urls=None, logo=None, campaign_id=None, **kwargs):
+def resize_image(offer_id=None, urls=None, logo=None, image_hash=None, campaign_id=None, **kwargs):
     """
 
     Args:
         offer_id:
         urls:
         logo:
+        image_hash:
         campaign_id:
         kwargs:
     """
@@ -351,7 +353,8 @@ def resize_image(offer_id=None, urls=None, logo=None, campaign_id=None, **kwargs
         if offer_id and urls:
             images = resize_and_upload_image(db, urls, logo)
             coll = db.get_collection('offer', write_concern=WriteConcern(w=0))
-            data = {"image":  " , ".join(images)}
+            data = {"image":  " , ".join(images),
+                    "image_hash": image_hash}
             if len(urls) != len(images):
                 data['image_hash'] = ''
             coll.update_many({'guid': offer_id, }, {'$set': data}, upsert=False)
@@ -431,14 +434,14 @@ def campaign_offer_update(campaign_id, **kwargs):
 
             pipeline = [
                 {'$match': {'campaignId': campaign_id}},
-                {'$group': {'_id': {'_id': '$_id', 'hash': '$hash', 'image_hash': '$image_hash'}}}
+                {'$group': {'_id': {'_id': '$guid', 'hash': '$hash', 'image_hash': '$image_hash'}}}
             ]
             start_time = time.time()
             cursor = db.offer.aggregate(pipeline=pipeline, cursor={}, allowDiskUse=True)
             hashes = {}
             image_hashes = {}
             for doc in cursor:
-                hashes[doc['_id'].get('hash', '?')] = doc['_id']['_id']
+                hashes[doc['_id'].get('_id', '?')] = doc['_id']['hash']
                 image_hashes[doc['_id'].get('image_hash', '?')] = doc['_id']['_id']
 
             print("--- Get Hashes %s seconds ---" % (time.time() - start_time))
@@ -470,21 +473,30 @@ def campaign_offer_update(campaign_id, **kwargs):
                 else:
                     try:
                         preload_image.delay(offer.image, offer.logo)
-                        res_task_img.append((offer.id, offer.image, offer.logo))
+                        res_task_img.append((offer.id, offer.image, offer.logo, offer.image_hash))
                     except Exception as ex:
                         print(ex, "offer.save", x['id'])
 
-                if offer.hash in hashes:
+                temp_hash = hashes.get(offer.id)
+                if temp_hash:
                     try:
-                        del hashes[offer.hash]
+                        del hashes[offer.id]
                     except Exception as e:
                         print('remove hash %s' % str(e))
+                    if offer.hash != temp_hash:
+                        try:
+                            offer.cost = x['ClickCost']
+                            offer.campaignTitle = campaignTitle
+                            offer.accountId = x['accountId']
+                            operations.append(offer.save(without_ratings=True))
+                        except Exception as ex:
+                            print(ex, "offer.save", x['id'])
                 else:
                     try:
                         offer.cost = x['ClickCost']
                         offer.campaignTitle = campaignTitle
                         offer.accountId = x['accountId']
-                        operations.append(offer.save)
+                        operations.append(offer.save())
                     except Exception as ex:
                         print(ex, "offer.save", x['id'])
 
@@ -498,17 +510,17 @@ def campaign_offer_update(campaign_id, **kwargs):
                         print("--- Bulk Write %s seconds ---" % (time.time() - start_time_bulk_write))
 
                     start_time_task_img = time.time()
-                    for task_img in res_task_img:
-                        task_resize_image.delay(task_img[0], task_img[1], task_img[2])
+                    if res_task_img:
+                        task_resize_image.starmap(res_task_img).apply_async()
                     print("--- Create image task %s seconds ---" % (time.time() - start_time_task_img))
 
                     res_task_img = []
                     operations = []
 
             print("--- Iterate offer %s seconds ---" % (time.time() - start_time_iter))
-            for value in hashes.itervalues():
+            for guid in hashes.iterkeys():
                 operations.append(
-                    pymongo.DeleteOne({'_id': value})
+                    pymongo.DeleteOne({'guid': guid})
                 )
             try:
                 if operations:
@@ -519,11 +531,15 @@ def campaign_offer_update(campaign_id, **kwargs):
                 print(bwe.details)
 
             start_time_task_img = time.time()
-            for task_img in res_task_img:
-                task_resize_image.delay(task_img[0], task_img[1], task_img[2])
             if work:
-                task_resize_image.delay(campaign_id=campaign_id)
+                res_task_img.append((None, None, None, None, campaign_id))
+            if res_task_img:
+                task_resize_image.starmap(res_task_img).apply_async()
             print("--- Create image task End %s seconds %s ---" % (time.time() - start_time_task_img, len(res_task_img)))
+            del res_task_img
+            del hashes
+            del image_hashes
+            del operations
 
     except Exception as ex:
         campaign_offer_update.retry(args=[campaign_id], kwargs=kwargs, exc=ex)
