@@ -365,7 +365,7 @@ def resize_image(offer_id=None, urls=None, logo=None, image_hash=None, campaign_
         resize_image.retry(args=[offer_id, urls, logo, campaign_id], kwargs=kwargs, exc=ex)
 
 
-@task(max_retries=10, default_retry_delay=10, acks_late=False, ignore_result=True, queue='preload-image')
+@task(acks_late=False, ignore_result=True, queue='preload-image')
 def preload_image(urls=None, logo=None, **kwargs):
     """
 
@@ -382,7 +382,6 @@ def preload_image(urls=None, logo=None, **kwargs):
             resize_and_upload_image(db, urls, logo)
     except Exception as ex:
         print('Task preload_image %s' % ex)
-        resize_image.retry(args=[urls, logo], kwargs=kwargs, exc=ex)
 
 
 @task(max_retries=10, ignore_result=True, acks_late=True, default_retry_delay=10)
