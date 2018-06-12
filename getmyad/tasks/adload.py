@@ -510,8 +510,8 @@ def campaign_offer_update(campaign_id, **kwargs):
                         print("--- Bulk Write %s seconds ---" % (time.time() - start_time_bulk_write))
 
                     start_time_task_img = time.time()
-                    if res_task_img:
-                        task_resize_image.starmap(res_task_img).apply_async()
+                    for task_img in res_task_img:
+                        task_resize_image.delay(*task_img)
                     print("--- Create image task %s seconds ---" % (time.time() - start_time_task_img))
 
                     res_task_img = []
@@ -533,8 +533,8 @@ def campaign_offer_update(campaign_id, **kwargs):
             start_time_task_img = time.time()
             if work:
                 res_task_img.append((None, None, None, None, campaign_id))
-            if res_task_img:
-                task_resize_image.starmap(res_task_img).apply_async()
+            for task_img in res_task_img:
+                task_resize_image.delay(*task_img)
             print("--- Create image task End %s seconds %s ---" % (time.time() - start_time_task_img, len(res_task_img)))
             del res_task_img
             del hashes
