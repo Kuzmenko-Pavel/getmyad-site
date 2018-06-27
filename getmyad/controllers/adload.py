@@ -637,8 +637,7 @@ class AdloadController(BaseController):
             domains = request.params.getall('common-domains-list')
             for domain in domains:
                 app_globals.db.campaign.update({'guid': c.campaign_id},
-                                               {'$addToSet': {'showConditions.allowed.domains': domain}}, safe=True,
-                                               upsert=True)
+                                               {'$addToSet': {'showConditions.allowed.domains': domain}}, upsert=True)
             model.mq.MQ().campaign_update(c.campaign_id)
         except:
             log.debug('error')
