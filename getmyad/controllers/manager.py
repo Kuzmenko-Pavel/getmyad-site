@@ -180,8 +180,8 @@ class ManagerController(BaseController):
             impressions_block_not_valid = int(x.get('impressions_block_not_valid', 0))
             difference_impressions_block = int(x.get('difference_impressions_block', 0))
             clicks_unique = int(x.get('clicksUnique', 0))
-            ctr_block = 100.0 * clicks_unique / impressions_block_not_valid if (
-                clicks_unique > 0 and impressions_block_not_valid > 0) else 0
+            ctr_block = 100.0 * clicks_unique / impressions_block if (
+                clicks_unique > 0 and impressions_block > 0) else 0
             view_seconds = float(x.get('view_seconds', 0))
             view_seconds_avg = view_seconds / (clicks + social_clicks) if ((clicks + social_clicks) > 0) else 0
             row = (x['date'].weekday(),
@@ -285,8 +285,8 @@ class ManagerController(BaseController):
             view_seconds = float(x.get('view_seconds', 0))
             view_seconds_avg = view_seconds / (clicks + social_clicks) if ((clicks + social_clicks) > 0) else 0
             clicks_unique = int(x.get('clicksUnique', 0))
-            ctr_block = 100.0 * clicks_unique / impressions_block_not_valid if (
-                clicks_unique > 0 and impressions_block_not_valid > 0) else 0
+            ctr_block = 100.0 * clicks_unique / impressions_block if (
+                clicks_unique > 0 and impressions_block > 0) else 0
             ctr = 100.0 * clicks_unique / impressions if (clicks_unique > 0 and impressions > 0) else 0
             total_cost = x.get('totalCost', 0)
             click_cost_avg = total_cost / clicks_unique if (clicks_unique > 0 and total_cost > 0) else 0
@@ -2328,7 +2328,7 @@ class ManagerController(BaseController):
     @expandtoken
     @authcheck
     def deleteAccount(self):
-        """ Устанавливает новый пароль для пользователя"""
+        """ """
         try:
             login = request.params['login']
             delete_account.delay(login)

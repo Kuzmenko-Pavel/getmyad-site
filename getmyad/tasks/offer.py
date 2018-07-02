@@ -68,7 +68,7 @@ class Offer(object):
 
     def save(self, without_ratings=None):
         'Сохраняет предложение в базу данных'
-        ctr = 0.06 * 100000
+        ctr = 0.25 * 100000
         rating = round((ctr * self.cost), 4)
         data = {'title': self._trim_by_words(self.title, 35),
                 'price': self.price,
