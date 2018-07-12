@@ -775,6 +775,8 @@ class AdloadController(BaseController):
                                                       'showConditions.UnicImpressionLot': 1,
                                                       'showConditions.offer_by_campaign_unique': 1,
                                                       'showConditions.load_count': 1}):
+            if item['guid'] in app_globals.hidden_campaign:
+                continue
             get_campaigns[item['guid']] = item
 
         c.campaigns = []
