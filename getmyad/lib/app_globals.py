@@ -31,6 +31,8 @@ class Globals(object):
         self.cache = CacheManager(**parse_cache_config_options(config))
         self.db = self.create_mongo_connection()
         self.db_m = self.create_master_mongo_connection()
+        self.hidden_campaign = ['f3aa8177-b156-4788-a320-78278cf21ee7', 'a853b173-c168-40e1-9cb5-f1b0eec82b7e',
+                                'e98c809f-be3f-4b71-af8e-c6e881848b06']
 
     def create_mongo_connection(self):
         ''' Подключается к монге, возвращает объект подключения '''

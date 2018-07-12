@@ -1004,7 +1004,12 @@ class ManagerController(BaseController):
         else:
             sord = DESCENDING
         data = []
-        campaignIdList = [x['guid'] for x in app_globals.db.campaign.find({"showConditions.retargeting": False})]
+        campaignIdList = []
+        for x in app_globals.db.campaign.find({"showConditions.retargeting": False}, {'guid':1}):
+            if x['guid'] in app_globals.hidden_campaign:
+                continue
+            campaignIdList.append(x['guid'])
+
         query = {"campaignId": {"$in": campaignIdList}}
         if _search:
             query['$or'] = [{'title': {'$regex': request.params.get('title', '______')}},
@@ -1074,7 +1079,11 @@ class ManagerController(BaseController):
             sord = DESCENDING
         data = []
         if get_subgrid:
-            campaignIdList = [x['guid'] for x in app_globals.db.campaign.find({"showConditions.retargeting": False})]
+            campaignIdList = []
+            for x in app_globals.db.campaign.find({"showConditions.retargeting": False}, {'guid': 1}):
+                if x['guid'] in app_globals.hidden_campaign:
+                    continue
+                campaignIdList.append(x['guid'])
             queri = {'adv': get_subgrid, 'full_rating': {'$exists': True}, "campaignId": {"$in": campaignIdList}}
             count = app_globals.db.stats_daily.rating.find(queri).count()
             if count > 0 and limit > 0:

@@ -186,7 +186,10 @@ class AdloadData(object):
                         WHERE m.Name IS NOT NULL AND isActive=1 ORDER BY Title''')
         result = []
         for row in cursor:
-            adv = {'id': str(row['AdvertiseID']).lower(),
+            id = str(row['AdvertiseID']).lower()
+            if id in app_globals.hidden_campaign:
+                continue
+            adv = {'id': id,
                    'user': str(row['UserID']).lower(),
                    'user_name': row['Login'],
                    'manager': row['Manager'],
