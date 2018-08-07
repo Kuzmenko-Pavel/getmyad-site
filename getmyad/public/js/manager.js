@@ -774,7 +774,10 @@ var ManagerUI = function () {
                     'CTR<br/>Блоков',
                     'Процент видимых показов',
                     'Социал<br/>клики',
-                    'Ср.время</br>до клика'
+                    'Ср.время</br>до клика',
+                    'Подозри</br>тельные</br>клики',
+                    'Отфильтро</br>ванные</br>клики',
+                    'Забаненые</br>клики'
                 ],
                 colModel: [
                     {
@@ -847,6 +850,27 @@ var ManagerUI = function () {
                         width: 70,
                         align: 'center',
                         sortable: false
+                    },
+                    {
+                        name: 'click_warning',
+                        index: 'click_warning',
+                        width: 50,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'click_filtered',
+                        index: 'click_filtered',
+                        width: 50,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'click_bann',
+                        index: 'click_bann',
+                        width: 50,
+                        align: 'center',
+                        sortable: true
                     }
                 ],
                 caption: "Общая статистика",
@@ -2390,6 +2414,9 @@ var ManagerUI = function () {
                     'Показы РП',
                     'Клики',
                     'Уникальные клики',
+                    'Подозри</br>тельные</br>клики',
+                    'Отфильтро</br>ванные</br>клики',
+                    'Забаненые</br>клики',
                     'CTR',
                     'Разница',
                     'Ср.время</br>до клика'
@@ -2496,7 +2523,7 @@ var ManagerUI = function () {
                         formatter: 'integer',
                         align: 'center',
                         classes: 'offer-column',
-                        width: 100,
+                        width: 50,
                         sortable: true
                     },
                     {
@@ -2505,7 +2532,28 @@ var ManagerUI = function () {
                         formatter: 'integer',
                         align: 'center',
                         classes: 'offer-column',
-                        width: 100,
+                        width: 50,
+                        sortable: true
+                    },
+                    {
+                        name: 'click_warning',
+                        index: 'click_warning',
+                        width: 50,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'click_filtered',
+                        index: 'click_filtered',
+                        width: 50,
+                        align: 'center',
+                        sortable: true
+                    },
+                    {
+                        name: 'click_bann',
+                        index: 'click_bann',
+                        width: 50,
+                        align: 'center',
                         sortable: true
                     },
                     {

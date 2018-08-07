@@ -193,7 +193,10 @@ class ManagerController(BaseController):
                    '%.3f' % ctr_block,
                    '%.3f' % difference_impressions_block,
                    social_clicks,
-                   h.secontToString(view_seconds_avg, "{m}m : {s}s")
+                   h.secontToString(view_seconds_avg, "{m}m : {s}s"),
+                   x.get('click_warning', 0),
+                   x.get('click_filtered', 0),
+                   x.get('click_bann', 0)
                    )
             data.append(row)
         return h.jgridDataWrapper(data, page=page, count=count, total_pages=total_pages)
@@ -2281,7 +2284,8 @@ class ManagerController(BaseController):
                  'view_seconds': True, 'date': True, 'domain': True, 'social_clicks': True, 'social_clicksUnique': True,
                  'social_impressions': True, 'social_impressions_not_valid': True, 'clicks': True, 'clicksUnique': True,
                  'impressions': True, 'impressions_not_valid': True,
-                 'ctr_social_impressions': True, 'ctr_impressions': True, 'ctr_difference_impressions': True}
+                 'ctr_social_impressions': True, 'ctr_impressions': True, 'ctr_difference_impressions': True,
+                 'click_bann': True, 'click_filtered': True, 'click_warning': True}
         count = app_globals.db.stats.daily.domain.find(queri).count()
         if count > 0 and limit > 0:
             total_pages = int(count / limit)
@@ -2313,6 +2317,9 @@ class ManagerController(BaseController):
                          item.get('impressions', 0),
                          clicks,
                          item.get('clicksUnique', 0),
+                         item.get('click_warning', 0),
+                         item.get('click_filtered', 0),
+                         item.get('click_bann', 0),
                          "%.2f" % item.get('ctr_impressions', 0),
                          "%.2f" % item.get('ctr_difference_impressions', 0),
                          h.secontToString(view_seconds_avg, "{m}m : {s}s")
