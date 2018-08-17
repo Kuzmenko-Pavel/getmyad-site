@@ -464,7 +464,9 @@ def campaign_offer_update(campaign_id, **kwargs):
                 offer.image = x['image'].split(',')
                 offer.logo = x['logo']
 
-                if offer.image_hash in image_hashes:
+                temp_hash = hashes.get(offer.id)
+
+                if offer.image_hash in image_hashes and offer.hash == temp_hash:
                     try:
                         del image_hashes[offer.image_hash]
                     except Exception as e:
@@ -476,7 +478,6 @@ def campaign_offer_update(campaign_id, **kwargs):
                     except Exception as ex:
                         print(ex, "offer.save", x['id'])
 
-                temp_hash = hashes.get(offer.id)
                 if temp_hash:
                     try:
                         del hashes[offer.id]
