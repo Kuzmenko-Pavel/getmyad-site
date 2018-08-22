@@ -405,9 +405,9 @@ def campaign_offer_update(campaign_id, **kwargs):
         try:
             camp.load()
         except Campaign.NotFoundError:
+            campaign_stop(campaign_id)
             return
 
-        campaign_stop(campaign_id)
         camp.last_update = datetime.datetime.now()
         camp.project = 'adload'
         camp.update_status = 'start'
