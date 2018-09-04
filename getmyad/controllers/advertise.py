@@ -8,6 +8,7 @@ import bson.json_util
 from pylons import request, session, tmpl_context as c, app_globals
 from pylons.controllers.util import redirect
 from routes.util import url_for
+from webhelpers.html.builder import escape
 
 import getmyad.lib.helpers as h
 import getmyad.model as model
@@ -59,7 +60,6 @@ class AdvertiseController(BaseController):
         c.shake_mouse = str(adv.get('shake_mouse', False)).lower()
         c.retargeting_branch = str(adv.get('retargeting_branch', True)).lower()
         c.non_relevant = adv.get('nonRelevant', {})
-        from webhelpers.html.builder import escape
         c.non_relevant['userCode'] = escape(adv.get('nonRelevant', {}).get('userCode', ''))
         c.non_relevant = h.JSON(c.non_relevant)
         return render('/admaker.mako.html')
@@ -420,7 +420,7 @@ class AdvertiseController(BaseController):
                      'shake_reload': bool(x.get('shake_reload', False)),
                      'shake_mouse': bool(x.get('shake_mouse', False))
                      }
-        from webhelpers.html.builder import escape
+
         advertise['non_relevant']['userCode'] = escape(advertise['non_relevant'].get('userCode', ''))
         c.patterns = self._patterns()
         c.advertise = advertise
@@ -451,7 +451,7 @@ class AdvertiseController(BaseController):
                      'shake_reload': bool(x.get('shake_reload', False)),
                      'shake_mouse': bool(x.get('shake_mouse', False))
                      }
-        from webhelpers.html.builder import escape
+
         advertise['non_relevant']['userCode'] = escape(advertise['non_relevant'].get('userCode', ''))
         c.patterns = self._patterns()
         c.advertise = advertise
