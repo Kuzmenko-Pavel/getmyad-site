@@ -543,8 +543,12 @@ function AdMaker()
 	$("#saveButton").click(function() {
 		var data = getData();
         var seting = getSeting();
+        var save_url = 'save';
+        if (dynamic){
+        	save_url = 'save_dynamic';
+		}
 		$.ajax({
-			url: '/advertise/save?adv_id=' + CurrentAdvertiseId,
+			url: '/advertise/'+ save_url +'?adv_id=' + CurrentAdvertiseId,
 			type: 'POST',
 			data: JSON.stringify({
 				options: data,

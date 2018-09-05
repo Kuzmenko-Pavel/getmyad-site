@@ -49,6 +49,7 @@ class AdvertiseController(BaseController):
         t = adv.get('admaker')
         c.admaker = h.JSON(t) if t else None
         c.adv_id = id
+        c.dynamic = str(adv.get('dynamic', False)).lower()
         c.html_notification = str(adv.get('html_notification', False)).lower()
         c.plase_branch = str(adv.get('plase_branch', True)).lower()
         c.auto_reload = adv.get('auto_reload', 0)
