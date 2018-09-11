@@ -25,7 +25,7 @@ def make_map(config):
     map.connect('/rpc', controller='rpc')
     map.connect('/adload', controller='adload', action="index")
     map.connect('/adload/', controller='adload', action="index")
-    map.connect('/manager/checkInformers/{country}', controller='manager', action='checkInformers')
+    map.connect('/manager/checkInformers', controller='manager', action='checkInformers')
 
     map.connect('/', controller='main', action='index')
     map.connect('/{controller}/{action}')

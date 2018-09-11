@@ -62,7 +62,7 @@
 		service_links.append(('/advertise/showList', u'Расширенная настройка информеров'))
                     if c.permission.has(Permission.MANAGE_USER_INFORMERS):
 		service_links.append(('/advertise/patternList', u'Редактирование шаблонов'))
-                    service_links.append(('/manager/checkInformers/UA', u'Проверка работоспособности информеров'))
+                    service_links.append(('/manager/checkInformers?adsbyyottos_test=true&adsbyyottos_country=UA', u'Проверка работоспособности информеров'))
                 %>
                 ${' | '.join(['<a class="service_links" href="%s" target="_blank">%s</a>' % x for x in service_links]) }
 

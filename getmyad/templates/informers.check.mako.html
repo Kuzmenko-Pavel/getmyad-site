@@ -3,6 +3,7 @@
 <%def name="head()">
 <title>GetMyAd | Проверка работоспособности рекламных выгрузок</title>
 <meta name="description" content="Рекламная партнерская сеть Yottos GetMyAd: для владельцев сайтов. Программа размещает объявления с товарными предложениями на вашем сайте — вы получаете деньги за клики. Это простой заработок на своем сайте без вложений"/>
+<script src="https://cdn.yottos.com/adsbyyottos.js"></script>
 </%def>
 <div id="checkInformers">
 	<h1>Проверка работоспособности информеров</h1>
@@ -36,13 +37,13 @@
 				var selectCountry = document.getElementById("selectCountry"); 
 				selectCountry.value = '${c.country or "UA"}';
 				selectCountry.onchange = function() {
-					window.location.href = '/manager/checkInformers/' + selectCountry.value;
-				}
+					window.location.href = '/manager/checkInformers?adsbyyottos_test=true&adsbyyottos_country=' + selectCountry.value;
+				};
 				regiontargeting.onchange = function() {
-					var url = "/manager/checkInformers/" + selectCountry.value;
+					var url = "/manager/checkInformers?adsbyyottos_test=true&adsbyyottos_country=" + selectCountry.value;
 					var region = regiontargeting.value;
 					if (region)
-						url += "?region=" + escape(regiontargeting.value);
+						url += "&adsbyyottos_region=" + escape(regiontargeting.value);
 					window.location.href = url;
 				}
 			</script>
@@ -80,26 +81,25 @@
 		
 		/** Возвращает html для проверки информера informer */
 		function InformerHtml(informer) {
-			var url = "${c.getmyad_worker_server}";
-			url += '?scr=' 		+ informer.guid +
-				   '&test=true' + 
-				   '&mod=' + informer.lastModified + 
-				   '&country=' 	+ $('#selectCountry').val() +
-				   '&region=' 	+ encodeURIComponent($("#regiontargeting").val());
-			return '<h2><u>' + informer.domain + '</u> ' + informer.title + '</h2>' + 
-				   '<ifr' + 'ame src="' + url + '" ' +
-					'width="' + informer.width + '" height="' + informer.height + 
-					'" frameborder="0" scrolling="no"></iframe>';
+
+		    return '<h2><u>' + informer.domain + '</u> ' + informer.title + '</h2>' +
+            '<div style="display:block; width:' + informer.width + 'px; height:' + informer.height + 'px;">' +
+                    '<ins class="adsbyyottos" style="display:block;" '+
+                    'data-ad-client="'+
+                     informer.guid +
+                    '"></ins></div>';
 		}
 		
 		/** Отображает для проверки все информеры пользователя user */
 		function ShowInformersByUser(user) {
 			var content = '<h1> Проверка информеров пользователя ' + user + '</h1>';
 			for (var i = 0; i < informers.length; i++) {
-				if (informers[i].user == user)
+				if (informers[i].user === user)
 					content += InformerHtml(informers[i]);
 			}
+			$("#informerView").html('');
 			$("#informerView").html(content);
+			adsbyyottos.start();
 		}
 		
 		$(".account-link").click(function() {

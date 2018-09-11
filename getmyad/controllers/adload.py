@@ -117,7 +117,7 @@ class AdloadController(BaseController):
             <a href="/adload/adload_campaign_list">Список всех рекламных кампаний</a> |
             <a href="/adload/categories_settings">Управление тематическими категориями</a> |
 <!--        <a href="/adload/campaign_update_all">Обновить все кампании</a> | -->
-            <a href="/manager/checkInformers/UA" target="_blank">Проверка работы информеров</a> |
+            <a href="/manager/checkInformers?adsbyyottos_test=true&adsbyyottos_country=UA" target="_blank">Проверка работы информеров</a> |
 <!--        <a href="/adload/currency_cost" target="_blank">Курс доллара</a> | -->
             <a href="/adload/offer_rating" target="_blank">Рейтинг Рекламных Предложений</a> |
             <a href="/adload/social" target="_blank">Соц статистика</a>

@@ -572,7 +572,7 @@ def delete_account(login, **kwargs):
             y = x.get('domains', [])
             for value in y:
                 domain_list.append(value)
-        print(db.stats_user_summary.remove({'user': login}))
+        print(db.stats.user.summary.remove({'user': login}))
         print(db.users.remove({'login': login}))
         print(db.informer.remove({'user': login}))
         print(db.domain.remove({'login': login}))
@@ -580,9 +580,9 @@ def delete_account(login, **kwargs):
         print(db.domain.categories.remove({'domain': {'$in': domain_list}}))
         print(db.money_out_request.remove({'user.login': login}))
         print(db.stats_daily.rating.remove({'adv': {'$in': informer_list}}))
-        print(db.stats_daily_adv.remove({'user': login}))
-        print(db.stats_daily_domain.remove({'user': login}))
-        print(db.stats_daily_user.remove({'user': login}))
+        print(db.stats.daily.adv.remove({'user': login}))
+        print(db.stats.daily.domain.remove({'user': login}))
+        print(db.stats.daily.user.remove({'user': login}))
         account_update(login)
     except Exception as ex:
         delete_account.retry(args=[login], kwargs=kwargs, exc=ex)

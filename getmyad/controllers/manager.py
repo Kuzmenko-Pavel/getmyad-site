@@ -2579,13 +2579,14 @@ class ManagerController(BaseController):
             content_type.get(extension, 'application/octet-stream')
         return file
 
-    def checkInformers(self, country):
+    def checkInformers(self):
         """ Страница проверки работоспособности информеров в стране ``country`` """
         user = request.environ.get('CURRENT_USER') or session.get('adload_user')
         if not user:
             return h.userNotAuthorizedError()
 
-        region = request.params.get('region', '')
+        country = request.params.get('adsbyyottos_country', '')
+        region = request.params.get('adsbyyottos_region', '')
 
         def get_int(str):
             try:
