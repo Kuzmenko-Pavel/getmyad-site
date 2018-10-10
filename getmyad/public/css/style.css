@@ -979,3 +979,6 @@ ul.skype {
 {
     background-color: transparent;
 }
+.grecaptcha-badge{
+		display:none;
+}

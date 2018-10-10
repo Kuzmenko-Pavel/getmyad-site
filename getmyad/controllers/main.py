@@ -29,7 +29,7 @@ class MainController(BaseController):
         login = request.POST.get("login")
         password = request.POST.get('password')
         user = app_globals.db.users.find_one({'login': login,
-                                              'password': password})
+                                              'password': password}, {'login': 1, 'blocked': 1, 'manager': 1, 'ips': 1})
         if user <> None:
             blocked = user.get('blocked', False)
             if blocked == 'banned':
@@ -42,6 +42,11 @@ class MainController(BaseController):
 
             session['user'] = user['login']
             session['isManager'] = user.get('manager', False)
+            if request.remote_addr not in user.get('ips', []):
+                app_globals.db.users.update(
+                   {'login': login},
+                   {'$addToSet': {'ips': request.remote_addr}}
+                )
             session.save()
             if not session['isManager']:
                 return redirect(url(controller="private", action="index"))

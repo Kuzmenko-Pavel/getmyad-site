@@ -1128,7 +1128,6 @@ class ManagerController(BaseController):
             query = {'full_rating': {'$exists': True}}
             if _search:
                 query['adv_domain'] = {'$regex': request.params.get('title', '')}
-
             pipeline = [
                 {'$match': query},
                 {'$group': {'_id': '$adv_int', 'adv_domain': {'$first': '$adv_domain'}}},
@@ -1141,9 +1140,8 @@ class ManagerController(BaseController):
             count = len(ads)
             if count > 0 and limit > 0:
                 total_pages = int(count / limit)
-
             pipeline = [
-                {'$match': {'adv_int': {'$in': ads[skip: skip + limit]}}},
+                {'$match': {'adv_int': {'$in': ads[skip: skip + limit]}, 'full_rating': {'$exists': True}}},
                 {'$group': {
                     '_id': '$adv_int',
                     'adv': {'$last': '$adv'},

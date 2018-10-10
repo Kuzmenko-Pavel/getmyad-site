@@ -1133,3 +1133,8 @@ a.setstartlink ,a.setstartlink:active, a.setstartlink:hover, a.setstartlink:visi
     height: auto; 
     padding: 0px;
 }
+
+
+.grecaptcha-badge{
+		display:none;
+}
