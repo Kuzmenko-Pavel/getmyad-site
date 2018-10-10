@@ -413,6 +413,7 @@ def campaign_offer_update(campaign_id, **kwargs):
         camp.update_status = 'start'
         work = camp.is_working()
         camp.save()
+        print("--- Campaign %s start ---" % campaign_id)
         with AdloadData(connection_adload=connection_adload) as ad:
             ad.offers_list(campaign_id, camp.load_count)
             start_time = time.time()
