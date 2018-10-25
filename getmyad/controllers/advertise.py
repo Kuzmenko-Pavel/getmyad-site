@@ -299,11 +299,11 @@ class AdvertiseController(BaseController):
                      'cell': (
                          "<b>%s</b>" % x['date'].strftime("%d.%m.%Y"),
                          x['impressions_block_not_valid'],
+                         x['impressions_block'],
                          x['unique'],
                          '%.3f%%' %
-                         (round(x['unique'] * 100 / x['impressions_block_not_valid'], 3)
-                          if x['impressions_block_not_valid'] else 0),
-                         '%.3f%%' % x['difference_impressions_block'],
+                         (round(x['unique'] * 100 / x['impressions_block'], 3)
+                          if x['impressions_block'] else 0),
                          '%.2f грн' %
                          ((round(x['summ'] / x['unique'], 3)
                            if x['unique'] > 0 else 0)),
@@ -334,10 +334,10 @@ class AdvertiseController(BaseController):
                  'cell': [
                      r['advTitle'],
                      r['impressions_block_not_valid'],
+                     r['impressions_block'],
                      r['unique'],
-                     '%.3f%%' % round(r['unique'] * 100.0 / r['impressions_block_not_valid'], 3)
-                     if r['impressions_block_not_valid'] else 0,
-                     '%.3f%%' % r['difference_impressions_block'],
+                     '%.3f%%' % round(r['unique'] * 100.0 / r['impressions_block'], 3)
+                     if r['impressions_block'] else 0,
                      '%.2f грн' %
                      ((round(r['totalCost'] / r['unique'], 3)
                        if r['unique'] > 0 else 0)),
@@ -362,16 +362,10 @@ class AdvertiseController(BaseController):
             'userdata': {
                 "Title": u"ИТОГО",
                 "Impressions": impressions_block_not_valid,
+                "ImpressionsValid": totalImpressions,
                 "Clicks": totalUnique,
-                "CTR": '%.3f%%' % \
-                       round(totalUnique * 100.0 / impressions_block_not_valid, 3) \
-                    if impressions_block_not_valid else 0,
-                "ViewPort": '%.3f%%' % \
-                            (round(100.0 * totalImpressions / impressions_block_not_valid, 3) \
-                                 if impressions_block_not_valid > totalImpressions else 100),
-                "Cost": '%.2f грн' % \
-                        (round(totalCost / totalUnique, 3) \
-                             if totalUnique > 0 else 0),
+                "CTR": '%.3f%%' % round(totalUnique * 100.0 / totalImpressions, 3) if totalImpressions else 0,
+                "Cost": '%.2f грн' % (round(totalCost / totalUnique, 3) if totalUnique > 0 else 0),
                 "Summ": '%.2f грн' % totalCost
             }}
 
@@ -482,7 +476,6 @@ class AdvertiseController(BaseController):
             guid = request.params.get('ads_id')
             app_globals.db.informer.remove({'guid': guid})
         except Exception as e:
-            raise
             return h.JSON({'error': True, 'msg': e})
         else:
             return h.JSON({'error': False})

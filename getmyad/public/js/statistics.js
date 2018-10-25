@@ -92,16 +92,16 @@ function drawChartUsingFilter() {
                 datatype: "json",
                 url: surl,
                 mtype: 'GET',
-                colNames: ['Рекламные блоки', 'Показы', 'Клики',
-                    'CTR', 'Показы в видимой части экрана', 'Средняя цена', 'Расчетный доход'],
+                colNames: ['Рекламные блоки', 'Показы', 'Видимые показы рекламы', 'Клики',
+                    'CTR', 'Средняя цена', 'Расчетный доход'],
                 colModel: [
                     {name: 'Title', index: 'Title', width: 200, align: 'left', sortable: false},
                     {name: 'Impressions', index: 'Impressions', width: 80, align: 'center', sortable: false},
+                    {name: 'ImpressionsValid', index: 'ImpressionsValid', width: 80, align: 'center', sortable: false},
                     {name: 'Clicks', index: 'Clicks', width: 80, align: 'center', sortable: false},
                     {name: 'CTR', index: 'CTR', width: 90, align: 'center', sortable: false},
-                    {name: 'ViewPort', index: 'ViewPort', width: 90, align: 'center', sortable: false},
                     {name: 'Cost', index: 'Cost', width: 85, align: 'center', sortable: false},
-                    {name: 'Summ', index: 'Summ', width: 80, align: 'center', sortable: false},
+                    {name: 'Summ', index: 'Summ', width: 80, align: 'center', sortable: false}
                 ],
                 caption: "Заработок по всем рекламным блокам",
                 footerrow: true,
@@ -124,8 +124,8 @@ function drawChartUsingFilter() {
                         url: url,
                         datatype: 'json',
                         mtype: 'GET',
-                        colNames: ['Дата', 'Показы', 'Клики',
-                            'CTR', 'Показы в видимой части экрана', 'Средняя цена', 'Расчетный доход'],
+                        colNames: ['Дата', 'Показы', 'Видимые показы рекламы', 'Клики',
+                            'CTR', 'Средняя цена', 'Расчетный доход'],
                         colModel: [
                             {
                                 name: 'Title',
@@ -144,6 +144,14 @@ function drawChartUsingFilter() {
                                 classes: 'subgrid_cell'
                             },
                             {
+                                name: 'ImpressionsValid',
+                                index: 'ImpressionsValid',
+                                width: 80,
+                                align: 'center',
+                                sortable: false,
+                                classes: 'subgrid_cell'
+                            },
+                            {
                                 name: 'Clicks',
                                 index: 'Clicks',
                                 width: 80,
@@ -154,14 +162,6 @@ function drawChartUsingFilter() {
                             {
                                 name: 'CTR',
                                 index: 'CTR',
-                                width: 90,
-                                align: 'center',
-                                sortable: false,
-                                classes: 'subgrid_cell'
-                            },
-                            {
-                                name: 'ViewPort',
-                                index: 'ViewPort',
                                 width: 90,
                                 align: 'center',
                                 sortable: false,
@@ -203,13 +203,13 @@ function drawChartUsingFilter() {
                 url: '/advertise/daysSummary',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['Дата', 'Показы', 'Клики', 'CTR', 'Показы в видимой части экрана', 'Средняя цена', 'Расчетный доход'],
+                colNames: ['Дата', 'Показы', 'Видимые показы рекламы', 'Клики', 'CTR', 'Средняя цена', 'Расчетный доход'],
                 colModel: [
                     {name: 'Date', index: 'Date', width: 100, align: 'center', sortable: false},
                     {name: 'Impressions', index: 'Impressions', width: 90, align: 'center', sortable: false},
+                    {name: 'ImpressionsValid', index: 'ImpressionsValid', width: 80, align: 'center', sortable: false},
                     {name: 'Clicks', index: 'Clicks', width: 95, align: 'center', sortable: false},
                     {name: 'CTR', index: 'CTR', width: 100, align: 'center', sortable: false},
-                    {name: 'ViewPort', index: 'ViewPort', width: 100, align: 'center', sortable: false},
                     {name: 'Cost', index: 'Cost', width: 100, align: 'center', sortable: false, hidden: true},
                     {name: 'Summ', index: 'Summ', width: 100, align: 'center', sortable: false, hidden: true}
                 ],
@@ -230,7 +230,7 @@ function drawChartUsingFilter() {
                 url: '/private/accountIncome',
                 datatype: 'json',
                 mtype: 'GET',
-                colNames: ['Дата', 'Показы', 'Клики', 'Средняя цена', 'Расчетный доход'],
+                colNames: ['Дата', 'Показы рекламы', 'Клики', 'Средняя цена', 'Расчетный доход'],
                 colModel: [
                     {name: 'Date', index: 'Date', width: 120, align: 'center', sortable: false},
                     {name: 'Impressions', index: 'Impressions', width: 90, align: 'center', sortable: false},
