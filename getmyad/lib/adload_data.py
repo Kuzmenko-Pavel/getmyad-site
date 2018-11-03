@@ -21,6 +21,8 @@ class AdloadData(object):
         else:
             self.connection_adload = connection_adload
         self._shelve_file = uuid.uuid4().get_hex() + '.shelve'
+        print(__file__)
+        print(self._shelve_file)
         self.offers = shelve.open(self._shelve_file)
 
     def __enter__(self):
