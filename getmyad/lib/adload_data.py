@@ -23,7 +23,6 @@ class AdloadData(object):
         dir_path = os.path.dirname(os.path.realpath(__file__))
         shelve_name = uuid.uuid4().get_hex() + '.shelve'
         self._shelve_file = os.path.join(dir_path, shelve_name)
-        print(self._shelve_file)
         self.offers = shelve.open(self._shelve_file)
 
     def __enter__(self):
