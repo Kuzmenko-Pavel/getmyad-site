@@ -71,10 +71,11 @@ class AdloadData(object):
             # Частные предложения (информеры)
             cursor_a.execute('''
                 SELECT count(*) AS count
-                FROM View_Lot 
-                INNER JOIN LotByAdvertise ON LotByAdvertise.LotID = View_Lot.LotID
-                WHERE LotByAdvertise.AdvertiseID = %s AND View_Lot.ExternalURL <> '' 
-                    AND View_Lot.isTest = 1 AND View_Lot.isAdvertising = 1
+                FROM View_Lot as vl
+                INNER JOIN LotByAdvertise as la ON la.LotID = vl.LotID
+                INNER JOIN View_Advertise as va ON va.AdvertiseID = la.AdvertiseID
+                WHERE la.AdvertiseID = %s AND vl.ExternalURL <> '' 
+                    AND vl.isTest = 1 AND va.isActive = 1 AND vl.isAdvertising = 1
                 ''', campaign)
             for row in cursor_a:
                 count += int(row.get('count', 0))
@@ -114,22 +115,22 @@ class AdloadData(object):
             cursor_a = self.connection_adload.cursor()
             # Частные предложения (информеры)
             cursor_a.execute('''
-                SELECT TOP %s  View_Lot.LotID AS LotID,
-                View_Lot.Title AS Title,
-                View_Lot.RetargetingID AS RetargetingID,
-                View_Lot.ExternalURL AS UrlToMarket,
-                View_Lot.ClickCost, 
-                ISNULL(View_Lot.Descript, '') AS About,
-                View_Lot.ImgURL 
-                ,ISNULL(View_Lot.Logo, '') Logo
-                ,ISNULL(View_Lot.Price, '') Price
-                ,View_Advertise.UserID AS UserID
-                ,View_Lot.Recommended AS Recommended
-                FROM View_Lot 
-                INNER JOIN LotByAdvertise ON LotByAdvertise.LotID = View_Lot.LotID
-                INNER JOIN View_Advertise ON View_Advertise.AdvertiseID = LotByAdvertise.AdvertiseID
-                WHERE View_Advertise.AdvertiseID = %s AND View_Lot.ExternalURL <> '' 
-                    AND View_Lot.isTest = 1 AND View_Lot.isAdvertising = 1
+                SELECT TOP %s  vl.LotID AS LotID,
+                vl.Title AS Title,
+                vl.RetargetingID AS RetargetingID,
+                vl.ExternalURL AS UrlToMarket,
+                vl.ClickCost, 
+                ISNULL(vl.Descript, '') AS About,
+                vl.ImgURL 
+                ,ISNULL(vl.Logo, '') Logo
+                ,ISNULL(vl.Price, '') Price
+                ,va.UserID AS UserID
+                ,vl.Recommended AS Recommended
+                FROM View_Lot as vl
+                INNER JOIN LotByAdvertise as la ON la.LotID = vl.LotID
+                INNER JOIN View_Advertise as va ON va.AdvertiseID = la.AdvertiseID
+                WHERE va.AdvertiseID = %s AND vl.ExternalURL <> '' 
+                    AND vl.isTest = 1 AND va.isActive = 1 AND vl.isAdvertising = 1
                 ''', (load_count, campaign))
             for row in cursor_a:
                 click_cost = float(row['ClickCost'])
@@ -179,13 +180,13 @@ class AdloadData(object):
         ``getmyad`` показывает, рекламируется ли кампания в GetMyAd или нет.
         """
         cursor = self.connection_adload.cursor()
-        cursor.execute('''SELECT a.AdvertiseID AS AdvertiseID, a.UserID, Title, Login, m.Name AS Manager,
+        cursor.execute('''SELECT a.AdvertiseID AS AdvertiseID, a.UserID, a.Title, u.Login, m.Name AS Manager,
                             CASE WHEN ag.AdvertiseID IS NULL THEN 0 ELSE 1 END AS InGetMyAd
-                        FROM View_Advertise a
+                        FROM View_Advertise as a
                         LEFT OUTER JOIN AdvertiseInGetMyAd ag ON ag.AdvertiseID = a.AdvertiseID
-                        LEFT OUTER JOIN Users u ON u.UserID = a.UserID
-                        LEFT OUTER JOIN Manager m  ON u.ManagerID = m.id
-                        WHERE m.Name IS NOT NULL AND isActive=1 ORDER BY Title''')
+                        INNER JOIN Users u ON u.UserID = a.UserID
+                        INNER JOIN Manager m  ON u.ManagerID = m.id
+                        WHERE m.Name IS NOT NULL AND a.isActive=1 ORDER BY Title''')
         result = []
         for row in cursor:
             id = str(row['AdvertiseID']).lower()
@@ -216,12 +217,12 @@ class AdloadData(object):
             (struct-end)
         '''
         cursor = self.connection_adload.cursor()
-        cursor.execute('''SELECT a.AdvertiseId AS AdvertiseID, a.UserID AS UserID, Title, m.Name AS Manager, 
+        cursor.execute('''SELECT a.AdvertiseId AS AdvertiseID, a.UserID AS UserID, a.Title, m.Name AS Manager, 
                             CASE WHEN ag.AdvertiseID IS NULL THEN 0 ELSE 1 END AS InGetMyAd
-                        FROM View_Advertise a
+                        FROM View_Advertise as a
                         LEFT OUTER JOIN AdvertiseInGetMyAd ag ON ag.AdvertiseID = a.AdvertiseID
-                        LEFT OUTER JOIN Users u ON u.UserID = a.UserID
-                        LEFT OUTER JOIN Manager m  ON u.ManagerID = m.id
+                        INNER JOIN  Users u ON u.UserID = a.UserID
+                        INNER JOIN  Manager m  ON u.ManagerID = m.id
                         WHERE a.AdvertiseID = %s''', campaign)
         row = cursor.fetchone()
         if not row:
