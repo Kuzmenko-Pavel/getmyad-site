@@ -52,10 +52,11 @@ def authcheck(f):
     def wrapper(*args):
         try:
             c.campaign_id = c.info['campaign_id']
-            if c.info['user'] != session.get('user'): raise
+            if c.info['user'] != session.get('user'):
+                raise Exception
         except NameError:
             return h.JSON({"error": True, 'msg': "Не задана переменная info во время вызова authcheck"})
-        except:
+        except Exception:
             return h.JSON(
                 {"error": True, 'msg': "Ошибка, вы вышли из аккаунта!"})  # TODO: Ошибку на нормальной странице
         return f(*args)
@@ -404,15 +405,15 @@ class AdloadController(BaseController):
         showCondition.UnicImpressionLot = UnicImpressionLot
         showCondition.gender = int(request.params.get('gender', 0))
         showCondition.cost = int(request.params.get('cost', 0))
-        showCondition.contextOnly = True if request.params.get('contextOnly') else False
+        showCondition.contextOnly = False
         showCondition.retargeting = True if request.params.get('retargeting') else False
-        showCondition.html_notification = True if request.params.get('html_notification') else False
+        showCondition.html_notification = False
         showCondition.recomendet_type = request.params.get('recomendet_type', 'all')
         showCondition.retargeting_type = request.params.get('retargeting_type', 'offer')
         RecomendetCount = request.params.get('recomendet_count', 10)
         if RecomendetCount.isdigit():
             showCondition.recomendet_count = int(RecomendetCount)
-        showCondition.target = request.params.get('target', '')
+        showCondition.target = ''
         offer_by_campaign_unique = request.params.get('offer_by_campaign_unique')
         if offer_by_campaign_unique.isdigit():
             showCondition.offer_by_campaign_unique = int(offer_by_campaign_unique)
@@ -437,7 +438,7 @@ class AdloadController(BaseController):
         campaign.disabled_recomendet_style = True if request.params.get('disabledRecomendetStyle') else False
         campaign.social = True if request.params.get('socialCampaign') else False
         campaign.yottos_partner_marker = True if request.params.get('yottosPartnerMarker') else False
-        campaign.yottos_translit_marker = True if request.params.get('yottosTranslitMarker') else False
+        campaign.yottos_translit_marker = True
         campaign.yottos_hide_site_marker = True if request.params.get('yottosHideSiteMarker') else False
         campaign.save()
         if campaign.is_working() and not campaign.is_update():
@@ -1040,8 +1041,8 @@ class ShowCondition:
         self.offer_by_campaign_unique = cond.get('offer_by_campaign_unique', 1)
         self.load_count = cond.get('load_count', 100)
         self.retargeting = cond.get('retargeting', False)
-        self.html_notification = cond.get('html_notification', False)
-        self.target = cond.get('target', '')
+        self.html_notification = False
+        self.target = ''
         self.recomendet_type = cond.get('recomendet_type', 'all')
         self.retargeting_type = cond.get('retargeting_type', 'offer')
         self.recomendet_count = cond.get('recomendet_count', 10)

@@ -36,6 +36,9 @@
     .jq-select-multiple ul {
         min-height: 400px;
     }
+    tr > td > hr {
+        margin: 20px 0 5px;
+    }
 </style>
 
 <div id="conditions" class="conditions">
@@ -45,12 +48,22 @@
         <input type="hidden" name="token" value="${c.token}"/>
         <table>
             <tr>
+                <td colspan="2">
+                    <hr>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <h2>Настройка времени показа рекламы:</h2>
+                </th>
+            </tr>
+            <tr>
                 <th>
                     <label for="time_from">Время показа: </label>
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <%
                         def timeToStr(time):
 							time = int(time)
@@ -111,7 +124,7 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <%
                         daysOfWeek = [u'Пн', u'Вт', u'Ср', u'Чт', u'Пт', u'Сб', u'Вс']
                         i = 0
@@ -134,60 +147,23 @@
                     % endfor
                 </td>
             </tr>
-            <tr>
-                <th>
-                    <label for="UnicImpressionLot">Уникальность показа: </label>
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="number" min="1" max="10" name="UnicImpressionLot" id="UnicImpressionLot"
-                           value="${c.UnicImpressionLot}"/>
+             <tr>
+                <td colspan="2">
+                    <hr>
                 </td>
             </tr>
             <tr>
                 <th>
-                    <label for="offer_by_campaign_unique">Кол-во РП в рекламном блоке: </label>
+                    <h2>Настройка Гео таргетинга:</h2>
                 </th>
             </tr>
-            <tr>
-                <td>
-                    <input type="number" name="offer_by_campaign_unique" id="offer_by_campaign_unique"
-                           value="${c.offer_by_campaign_unique}"/>
-                </td>
-            </tr>
+
             <tr>
                 <th>
-                    <label for="load_count">Кол-во загружаемых РП: </label>
+                    <label for="geoTargeting">Страна</label>
                 </th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="number" min="100" max="2000000" name="load_count" id="load_count"
-                           value="${c.load_count}"/>
-                </td>
-            </tr>
-            <tr>
                 <th>
-                    <label for="all_categories">Категория товаров:</label>
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <select id="all_categories" name="all_categories" multiple="true" size='10'>
-                        % for x in c.all_categories:
-                            % if x['guid'] in c.categories:
-                                <option value="${x['guid']}" selected='true'>${x['title']}</option>
-                            % else:
-                                <option value="${x['guid']}">${x['title']}</option>
-                            % endif
-                        % endfor
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="geoTargeting">Геотаргетинг</label>
+                     <label for="regionTargeting">Город</label>
                 </th>
             </tr>
             <tr>
@@ -209,8 +185,79 @@
                             %endif
                         %endfor
                     </select>
+                </td>
+                <td>
                     ${h.select(name="regionTargeting", selected_values=c.regionTargeting, options=c.all_geo_regions, multiple=True, size=8) }
                 </td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <hr>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <h2>Настройка категорий сайта:</h2>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <label for="all_categories">Категория сайтов:</label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <select id="all_categories" name="all_categories" multiple="true" size='10'>
+                        % for x in c.all_categories:
+                            % if x['guid'] in c.categories:
+                                <option value="${x['guid']}" selected='true'>${x['title']}</option>
+                            % else:
+                                <option value="${x['guid']}">${x['title']}</option>
+                            % endif
+                        % endfor
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <th>
+                    <label>Аккаунты/домены/информеры для показа: </label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="radio" id="showOnAllInformers" name="showCoverage"
+                           value="all" ${"checked" if c.showCoverage == 'all' else ""}>
+                    Все, кроме запрещённых
+                    </input>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="radio" id="showOnThematicInformers" name="showCoverage"
+                           value="thematic" ${"checked" if c.showCoverage == 'thematic' else ""} >
+                    Тематические и разрешённые, кроме запрещённых
+                    </input>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="radio" id="showOnAllowedInformers" name="showCoverage"
+                           value="allowed" ${"checked" if c.showCoverage == 'allowed' else ""} >
+                    Только разрешённые
+                    </input>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <hr>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <h2>Настройка аудитории:</h2>
+                </th>
             </tr>
             <tr>
                 <th>
@@ -218,7 +265,7 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <select id="all_device" name="all_device" multiple="true" size='8'>
                         % for x in c.all_device:
                             % if x['name'] in c.device:
@@ -236,7 +283,7 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     ${h.select(name="gender", selected_values=c.gender, options=c.all_gender)}
                 </td>
             </tr>
@@ -246,42 +293,51 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     ${h.select(name="cost", selected_values=c.cost, options=c.all_cost)}
                 </td>
             </tr>
             <tr>
+                <td colspan="2">
+                    <hr>
+                </td>
+            </tr>
+            <tr>
                 <th>
-                    <label>Аккаунты/домены/информеры для показа: </label>
+                    <h2>Настройка параметров показа рекламы:</h2>
                 </th>
             </tr>
             <tr>
-                <td>
-                    <input type="radio" id="showOnAllInformers" name="showCoverage"
-                           value="all" ${"checked" if c.showCoverage == 'all' else ""}>
-                    Все, кроме запрещённых
-                    </input>
+                <th>
+                    <label for="UnicImpressionLot">Уникальность показа: </label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="number" min="1" max="10" name="UnicImpressionLot" id="UnicImpressionLot"
+                           value="${c.UnicImpressionLot}"/>
                 </td>
             </tr>
             <tr>
-                <td>
-                    <input type="radio" id="showOnThematicInformers" name="showCoverage"
-                           value="thematic" ${"checked" if c.showCoverage == 'thematic' else ""} >
-                    Тематические и разрешённые, кроме запрещённых
-                    </input>
+                <th>
+                    <label for="offer_by_campaign_unique">Кол-во РП в рекламном блоке: </label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="number" name="offer_by_campaign_unique" id="offer_by_campaign_unique"
+                           value="${c.offer_by_campaign_unique}"/>
                 </td>
             </tr>
             <tr>
-                <td>
-                    <input type="radio" id="showOnAllowedInformers" name="showCoverage"
-                           value="allowed" ${"checked" if c.showCoverage == 'allowed' else ""} >
-                    Только разрешённые
-                    </input>
-                </td>
+                <th>
+                    <label for="load_count">Кол-во загружаемых РП: </label>
+                </th>
             </tr>
             <tr>
-                <td>
-                    <hr>
+                <td colspan="2">
+                    <input type="number" min="100" max="2000000" name="load_count" id="load_count"
+                           value="${c.load_count}"/>
                 </td>
             </tr>
             <tr>
@@ -290,8 +346,27 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <input type="checkbox" id="brending" name="brending" ${"checked" if c.brending else ""}>Заполнять весь рекламный блок</input>
+                </td>
+            </tr>
+             <tr>
+                <th>
+                    Параметры отображения рекламы
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="checkbox" id="disabledRetargitingStyle"
+                           name="disabledRetargitingStyle" ${"checked" if c.campaign.disabled_retargiting_style else ""}>Отключить
+                    стиль ретаргетинговых товаров</input>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="checkbox" id="disabledRecomendetStyle"
+                           name="disabledRecomendetStyle" ${"checked" if c.campaign.disabled_recomendet_style else ""}>Отключить
+                    стиль рекомендованых товаров</input>
                 </td>
             </tr>
             <tr>
@@ -300,42 +375,47 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     ${h.select("style_type", c.style_type, c.style_types, multiple=false)}
                 </td>
             </tr>
             <tr class="style_data">
-                <td>
+                <td colspan="2">
                     <label for="style_image" style="display: inline-block; width: 120px;">Ссылка на логотип</label>
                     <input type="url" size="60" name="style_image" id="style_image" value="${c.style_data['img']}"></input>
                 </td>
             </tr>
             <tr class="style_data">
-                <td>
+                <td colspan="2">
                     <label for="style_head_title" style="display: inline-block; width: 120px;">текст заголовка</label>
                     <input type="text" size="60" name="style_head_title" id="style_head_title" value="${c.style_data['head_title']}"></input>
                 </td>
             </tr>
             <tr class="style_data">
-                <td>
+                <td colspan="2">
                     <label for="style_button_title" style="display: inline-block; width: 120px;">текст кнопки</label>
                     <input type="text" size="60" name="style_button_title" id="style_button_title" value="${c.style_data['button_title']}"></input>
                 </td>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <hr>
                 </td>
             </tr>
-            <tr>
+             <tr>
                 <th>
-                    Ретаргетинг
+                    <h2>Настройка ремаркетинга:</h2>
                 </th>
             </tr>
             <tr>
-                <td>
+                <th>
+                    <label for="retargeting">Ремаркетинг</label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
                     <input type="checkbox" id="retargeting"
-                           name="retargeting" ${"checked" if c.campaign.retargeting else ""}>Ретаргетинг</input>
+                           name="retargeting" ${"checked" if c.campaign.retargeting else ""}>Ремаркетинговая компания</input>
                 </td>
             </tr>
             <tr>
@@ -344,19 +424,8 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     ${h.select("retargeting_type",c.retargeting_type, c.retargeting_types, multiple=false)}
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="text" name="target" id="target" value="${c.target}">Цель ретаргетинга</input>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="html_notification"
-                           name="html_notification" ${"checked" if c.campaign.html_notification else ""}>Всплывашка</input>
                 </td>
             </tr>
             <tr>
@@ -366,7 +435,7 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     ${h.select("recomendet_type",c.recomendet_type,c.recomendet_types,multiple=false)}
                 </td>
             </tr>
@@ -376,21 +445,14 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <input type="number" min="0" max="10" name="recomendet_count" id="load_count"
                            value="${c.recomendet_count}"/>
                 </td>
             </tr>
-            </tr>
             <tr>
-                <th>
-                    Только контекстная реклама
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="contextOnly"
-                           name="contextOnly" ${"checked" if c.campaign.contextOnly else ""} />
+                <td colspan="2">
+                    <hr>
                 </td>
             </tr>
             <tr>
@@ -399,60 +461,46 @@
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <input type="checkbox" id="socialCampaign"
-                           name="socialCampaign" ${"checked" if c.campaign.social else ""} />
+                           name="socialCampaign" ${"checked" if c.campaign.social else ""} >
+                    Социальная компания</input>
                 </td>
             </tr>
-
+             <tr>
+                <td colspan="2">
+                    <hr>
+                </td>
+            </tr>
             <tr>
                 <th>
-                    Параметры отображения рекламы
+                    <h2>Настройка параметров URL и передачи UTM-меток:</h2>
                 </th>
             </tr>
             <tr>
-                <td>
-                    <input type="checkbox" id="disabledRetargitingStyle"
-                           name="disabledRetargitingStyle" ${"checked" if c.campaign.disabled_retargiting_style else ""}>Отключить
-                    стиль ретаргетинговых товаров</input>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="disabledRecomendetStyle"
-                           name="disabledRecomendetStyle" ${"checked" if c.campaign.disabled_recomendet_style else ""}>Отключить
-                    стиль рекомендованых товаров</input>
-                </td>
-            </tr>
-
-            <tr>
                 <th>
-                    Параметры URL
+                    <label >Параметры URL:</label>
                 </th>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <input type="checkbox" id="yottosPartnerMarker"
-                           name="yottosPartnerMarker" ${"checked" if c.campaign.yottos_partner_marker else ""}>Передавать
-                    в URL маркер yottos_partner</input>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" id="yottosTranslitMarker"
-                           name="yottosTranslitMarker" ${"checked" if c.campaign.yottos_translit_marker else ""}>Передавать
-                    метки транслитом ('рейтинг' = 'rejting')</input>
+                           name="yottosPartnerMarker" ${"checked" if c.campaign.yottos_partner_marker else ""}>Добавлять автоматически UTM-метки</input>
                 </td>
             </tr>
 
             <tr>
-                <td>
+                <td colspan="2">
                     <input type="checkbox" id="yottosHideSiteMarker"
                            name="yottosHideSiteMarker" ${"checked" if c.campaign.yottos_hide_site_marker else ""}>Скрывать
                     сайт партнера</input>
                 </td>
             </tr>
-
+            <tr>
+                <td colspan="2">
+                    <hr>
+                </td>
+            </tr>
         </table>
         <input type="submit" class="styler" value="Сохранить">
     </form>
@@ -490,7 +538,7 @@
         </tr>
     </table>
     </form>
-
+<hr/>
     <div id='all-accounts'>
         <table>
             <tr>
@@ -731,6 +779,7 @@
             </tr>
         </table>
     </div>
+    <hr/>
     <a href="${h.url_for(controller='adload', action='campaign_overview', id=c.campaign.id)}">&larr; к управлению
         кампанией</a>
 
