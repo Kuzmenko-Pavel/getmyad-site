@@ -104,7 +104,7 @@ class AdloadController(BaseController):
         try:
             user = request.params.get('login')
             password = request.params.get('password')
-            if not (user == 'yottos') or not (password == 'futurama1'):
+            if not (user == 'yottos') or not (password == 'Orange2019'):
                 return self.index()
             session['adload_user'] = user
             session.save()
