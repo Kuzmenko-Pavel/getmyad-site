@@ -47,7 +47,7 @@ class Campaign(object):
         #: Уникальность
         self.UnicImpressionLot = 1
         #: Тлько контекст, временное решение
-        self.contextOnly = False
+        self.thematic = False
         self.retargeting = False
         self.brending = False
         self.style_type = 'default'
@@ -86,7 +86,7 @@ class Campaign(object):
             self.offer_by_campaign_unique = c['showConditions'].get('offer_by_campaign_unique', 1)
             self.UnicImpressionLot = c['showConditions'].get('UnicImpressionLot', 1)
             self.load_count = c['showConditions'].get('load_count', 100)
-            self.contextOnly = c['showConditions'].get('contextOnly', False)
+            self.thematic = c['showConditions'].get('thematic', False)
             self.retargeting = c['showConditions'].get('retargeting', False)
             self.html_notification = c['showConditions'].get('html_notification', False)
             self.target = c['showConditions'].get('target', '')
@@ -97,7 +97,7 @@ class Campaign(object):
             self.offer_by_campaign_unique = 1
             self.UnicImpressionLot = 1
             self.load_count = 100
-            self.contextOnly = False
+            self.thematic = False
             self.retargeting = False
             self.html_notification = False
             self.target = ''

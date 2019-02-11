@@ -7,6 +7,11 @@
     <script src="/js/jquery.formstyler.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+    <script src="/lib/jqtree/tree.jquery.js"></script>
+    <script src="/lib/underscore.js"></script>
+    <script src="/lib/backbone.js"></script>
+    <script src="/lib/backbone.marionette.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </%def>
 <style type="text/css">
 
@@ -36,8 +41,251 @@
     .jq-select-multiple ul {
         min-height: 400px;
     }
+
     tr > td > hr {
         margin: 20px 0 5px;
+    }
+</style>
+<style type="text/css">
+    ul.jqtree-tree {
+        list-style: none outside;
+        margin-left: 0;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    ul.jqtree-tree ul.jqtree_common {
+        list-style: none outside;
+        margin-left: 12px;
+        margin-right: 0;
+        margin-bottom: 0;
+        padding: 0;
+        display: block;
+    }
+
+    ul.jqtree-tree li.jqtree-closed > ul.jqtree_common {
+        display: none;
+    }
+
+    ul.jqtree-tree li.jqtree_common {
+        clear: both;
+        list-style-type: none;
+    }
+
+    ul.jqtree-tree .jqtree-toggler {
+        font-size: 25px;
+        padding: 5px;
+        border-bottom: none;
+        color: #333;
+        text-decoration: none;
+        vertical-align: middle;
+    }
+
+    ul.jqtree-tree .jqtree-toggler:hover {
+        color: #000;
+        text-decoration: none;
+    }
+
+    ul.jqtree-tree .jqtree-toggler.jqtree-closed {
+        background-position: 0 0;
+    }
+
+    ## ul.jqtree-tree .jqtree-toggler.jqtree-toggler-left {
+    ##     margin-right: 0.5em;
+    ## }
+    ##
+    ## ul.jqtree-tree .jqtree-toggler.jqtree-toggler-right {
+    ##     margin-left: 0.5em;
+    ## }
+
+    .jqtree-element > span.name{
+        position: relative;
+        margin-right: 5px;
+        top: -7px;
+    }
+
+    ul.jqtree-tree .jqtree-element {
+        cursor: pointer;
+        position: relative;
+    }
+
+    ul.jqtree-tree .jqtree-title {
+        color: #1C4257;
+        vertical-align: middle;
+        margin-left: 1.5em;
+    }
+
+    ul.jqtree-tree .jqtree-title.jqtree-title-folder {
+        margin-left: 0;
+    }
+
+    ul.jqtree-tree li.jqtree-folder {
+        margin-bottom: 4px;
+    }
+
+    ul.jqtree-tree li.jqtree-folder.jqtree-closed {
+        margin-bottom: 1px;
+    }
+
+    ul.jqtree-tree li.jqtree-ghost {
+        position: relative;
+        z-index: 10;
+        margin-right: 10px;
+        /* todo: add classes to span? */
+    }
+
+    ul.jqtree-tree li.jqtree-ghost span {
+        display: block;
+    }
+
+    ul.jqtree-tree li.jqtree-ghost span.jqtree-circle {
+        border: solid 2px #0000ff;
+        -webkit-border-radius: 100px;
+        -moz-border-radius: 100px;
+        border-radius: 100px;
+        height: 8px;
+        width: 8px;
+        position: absolute;
+        top: -4px;
+        left: -6px;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+
+    ul.jqtree-tree li.jqtree-ghost span.jqtree-line {
+        background-color: #0000ff;
+        height: 2px;
+        padding: 0;
+        position: absolute;
+        top: -1px;
+        left: 2px;
+        width: 100%;
+    }
+
+    ul.jqtree-tree li.jqtree-ghost.jqtree-inside {
+        margin-left: 48px;
+    }
+
+    ul.jqtree-tree span.jqtree-border {
+        position: absolute;
+        display: block;
+        left: -2px;
+        top: 0;
+        border: solid 2px #0000ff;
+        border-radius: 6px;
+        margin: 0;
+        box-sizing: content-box;
+    }
+
+    ul.jqtree-tree li.jqtree-selected > .jqtree-element,
+    ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
+        background-color: #97BDD6;
+        background: -webkit-gradient(linear, left top, left bottom, from(#BEE0F5), to(#89AFCA));
+        background: -moz-linear-gradient(top, #BEE0F5, #89AFCA);
+        background: -ms-linear-gradient(top, #BEE0F5, #89AFCA);
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+
+    ul.jqtree-tree .jqtree-moving > .jqtree-element .jqtree-title {
+        outline: dashed 1px #0000ff;
+    }
+
+    ul.jqtree-tree.jqtree-rtl {
+        direction: rtl;
+    }
+
+    ul.jqtree-tree.jqtree-rtl ul.jqtree_common {
+        margin-left: 0;
+        margin-right: 12px;
+    }
+
+    ul.jqtree-tree.jqtree-rtl .jqtree-toggler {
+        margin-left: 0.5em;
+        margin-right: 0;
+    }
+
+    ul.jqtree-tree.jqtree-rtl .jqtree-title {
+        margin-left: 0;
+        margin-right: 1.5em;
+    }
+
+    ul.jqtree-tree.jqtree-rtl .jqtree-title.jqtree-title-folder {
+        margin-right: 0;
+    }
+
+    ul.jqtree-tree.jqtree-rtl li.jqtree-ghost {
+        margin-right: 0;
+        margin-left: 10px;
+    }
+
+    ul.jqtree-tree.jqtree-rtl li.jqtree-ghost span.jqtree-circle {
+        right: -6px;
+    }
+
+    ul.jqtree-tree.jqtree-rtl li.jqtree-ghost span.jqtree-line {
+        right: 2px;
+    }
+
+    ul.jqtree-tree.jqtree-rtl li.jqtree-ghost.jqtree-inside {
+        margin-left: 0;
+        margin-right: 48px;
+    }
+
+    ul.jqtree-tree.jqtree-rtl span.jqtree-border {
+        right: -2px;
+    }
+
+    span.jqtree-dragging {
+        color: #fff;
+        background: #000;
+        opacity: 0.6;
+        cursor: pointer;
+        padding: 2px 8px;
+    }
+
+    .jqtree-tree-block-style {
+        background-color: #fafafa;
+    }
+
+    .jqtree-tree-block-style ul.jqtree-tree {
+        margin-left: 0;
+    }
+
+    .jqtree-tree-block-style ul.jqtree-tree ul.jqtree_common {
+        margin-left: 2em;
+    }
+
+    .jqtree-tree-block-style ul.jqtree-tree .jqtree-element {
+        margin-bottom: 8px;
+        background-color: #ddd;
+        padding: 8px;
+    }
+
+    .jqtree-tree-block-style ul.jqtree-tree .jqtree-element .jqtree-title {
+        margin-left: 0;
+    }
+
+    .jqtree-tree-block-style ul.jqtree-tree li.jqtree-selected > .jqtree-element,
+    .jqtree-tree-block-style ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
+        background: #97BDD6;
+        text-shadow: none;
+    }
+
+
+
+    .jqtree-tree-block-style div.jqtree-element {
+        margin-bottom: 8px;
+        background-color: #ddd;
+        padding: 8px;
+    }
+
+
+
+    .jqtree-tree-scroll-container {
+        max-height: 505px;
+        overflow-y: auto;
+        user-select: none;
     }
 </style>
 
@@ -92,7 +340,7 @@
                             <option> ${x} </option>
                         % endfor
                     </select>
-                    <b>:</>
+                    <b>:</b>
                     <select name="minutes_from" id="minutes_from">
                         % for x in minutes:
                             <option> ${x} </option>
@@ -104,7 +352,7 @@
                             <option> ${x} </option>
                         % endfor
                     </select>
-                    <b>:</>
+                    <b>:</b>
                     <select name="minutes_to" id="minutes_to">
                         % for x in minutes:
                             <option> ${x} </option>
@@ -147,7 +395,7 @@
                     % endfor
                 </td>
             </tr>
-             <tr>
+            <tr>
                 <td colspan="2">
                     <hr>
                 </td>
@@ -163,7 +411,7 @@
                     <label for="geoTargeting">Страна</label>
                 </th>
                 <th>
-                     <label for="regionTargeting">Город</label>
+                    <label for="regionTargeting">Город</label>
                 </th>
             </tr>
             <tr>
@@ -347,10 +595,11 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <input type="checkbox" id="brending" name="brending" ${"checked" if c.brending else ""}>Заполнять весь рекламный блок</input>
+                    <input type="checkbox" id="brending" name="brending" ${"checked" if c.brending else ""}>Заполнять
+                    весь рекламный блок</input>
                 </td>
             </tr>
-             <tr>
+            <tr>
                 <th>
                     Параметры отображения рекламы
                 </th>
@@ -382,19 +631,22 @@
             <tr class="style_data">
                 <td colspan="2">
                     <label for="style_image" style="display: inline-block; width: 120px;">Ссылка на логотип</label>
-                    <input type="url" size="60" name="style_image" id="style_image" value="${c.style_data['img']}"></input>
+                    <input type="url" size="60" name="style_image" id="style_image"
+                           value="${c.style_data['img']}"></input>
                 </td>
             </tr>
             <tr class="style_data">
                 <td colspan="2">
                     <label for="style_head_title" style="display: inline-block; width: 120px;">текст заголовка</label>
-                    <input type="text" size="60" name="style_head_title" id="style_head_title" value="${c.style_data['head_title']}"></input>
+                    <input type="text" size="60" name="style_head_title" id="style_head_title"
+                           value="${c.style_data['head_title']}"></input>
                 </td>
             </tr>
             <tr class="style_data">
                 <td colspan="2">
                     <label for="style_button_title" style="display: inline-block; width: 120px;">текст кнопки</label>
-                    <input type="text" size="60" name="style_button_title" id="style_button_title" value="${c.style_data['button_title']}"></input>
+                    <input type="text" size="60" name="style_button_title" id="style_button_title"
+                           value="${c.style_data['button_title']}"></input>
                 </td>
             </tr>
             <tr>
@@ -402,7 +654,7 @@
                     <hr>
                 </td>
             </tr>
-             <tr>
+            <tr>
                 <th>
                     <h2>Настройка ремаркетинга:</h2>
                 </th>
@@ -415,7 +667,8 @@
             <tr>
                 <td colspan="2">
                     <input type="checkbox" id="retargeting"
-                           name="retargeting" ${"checked" if c.campaign.retargeting else ""}>Ремаркетинговая компания</input>
+                           name="retargeting" ${"checked" if c.campaign.retargeting else ""}>Ремаркетинговая
+                    компания</input>
                 </td>
             </tr>
             <tr>
@@ -457,6 +710,60 @@
             </tr>
             <tr>
                 <th>
+                    <h2>Настройка тематик:</h2>
+                </th>
+            </tr>
+            <tr>
+            <td colspan="2">
+                <input type="checkbox" id="thematic"
+                       name="thematic" ${"checked" if c.campaign.thematic else ""}>Тематическая компания</input>
+            </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="recomendet_count">Кол-во дней набора новой аудитории: </label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="number" min="1" max="100" name="thematic_day_new_auditory"
+                           id="thematic_day_new_auditory"
+                           value="${c.thematic_day_new_auditory}"/>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="recomendet_count">Кол-во дней уменьшения новой аудитории: </label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="number" min="1" max="100" name="thematic_day_off_new_auditory"
+                           id="thematic_day_off_new_auditory"
+                           value="${c.thematic_day_off_new_auditory}"/>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="recomendet_count">Выберите максимум 5 тематик: </label>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <div id="thematic_tree" class="jqtree-tree-block-style jqtree-tree-scroll-container"></div>
+                </td>
+                <td>
+                    <div id="thematic_camp" class="jqtree-tree-block-style jqtree-tree-scroll-container" style="margin: 10px;"></div>
+                    <input id="thematics" type="text" name="thematics" value="${c.thematics}" style="display: none;"></input>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <hr>
+                </td>
+            </tr>
+            <tr>
+                <th>
                     <label for="socialCampaign">Социальная реклама:</label>
                 </th>
             </tr>
@@ -467,7 +774,7 @@
                     Социальная компания</input>
                 </td>
             </tr>
-             <tr>
+            <tr>
                 <td colspan="2">
                     <hr>
                 </td>
@@ -479,13 +786,14 @@
             </tr>
             <tr>
                 <th>
-                    <label >Параметры URL:</label>
+                    <label>Параметры URL:</label>
                 </th>
             </tr>
             <tr>
                 <td colspan="2">
                     <input type="checkbox" id="yottosPartnerMarker"
-                           name="yottosPartnerMarker" ${"checked" if c.campaign.yottos_partner_marker else ""}>Добавлять автоматически UTM-метки</input>
+                           name="yottosPartnerMarker" ${"checked" if c.campaign.yottos_partner_marker else ""}>Добавлять
+                    автоматически UTM-метки</input>
                 </td>
             </tr>
 
@@ -538,7 +846,7 @@
         </tr>
     </table>
     </form>
-<hr/>
+    <hr/>
     <div id='all-accounts'>
         <table>
             <tr>
@@ -787,14 +1095,85 @@
 </div>
 
 <script type="text/javascript">
-    var style_data_hide = function () {
-            var val = $('#style_type').val();
-            if (['Style_1', 'Style_2'].indexOf(val) >= 0) {
-                $('.style_data').show()
+    var Thematics = Backbone.Collection.extend({
+        initialize: function () {
+            this.fetch();
+        },
+        url: '/adload/thematics/${c.campaign.id}',
+        model: Backbone.Model.extend({
+            default: {
+                name: ''
+            }
+        })
+    });
+    var thematics = new Thematics();
+    var set_thematics = function (model, collection, options){
+        var ids = collection.map(function(m){
+            return m.get('path');
+        });
+        $('#thematics').val(ids.join());
+    };
+    thematics.on('add', set_thematics);
+    thematics.on('remove', set_thematics);
+    var MyChildView = Marionette.ItemView.extend({
+        className: 'jqtree-element',
+        template: _.template('<span class="name"><\%= name \%></span>' +
+                        '<i class="material-icons cancel">cancel</i>'),
+        ui: {
+            del: "i.cancel"
+        },
+        triggers: {
+            "click @ui.del": "remove"
+        }
+    });
+    var MyCollectionView = Marionette.CollectionView.extend({
+        collection: thematics,
+        childView: MyChildView,
+        childEvents: {
+            remove: function (view) {
+                this.collection.remove(view.model);
+            }
+        }
+    });
+    var myCollectionView = new MyCollectionView();
+     myCollectionView.render();
+     $('#thematic_camp').append(myCollectionView.el);
+    var $tree = $('#thematic_tree').tree({
+        dataUrl: {url: '/adload/thematic_tree'},
+        useContextMenu: false,
+        saveState: 'tree-${c.campaign.id}'
+    });
+    $tree.on(
+        'tree.click',
+        function (e) {
+            e.preventDefault();
+            var selected_node = e.node;
+            if (selected_node.id === undefined) {
+                console.log('The multiple selection functions require that nodes have an id');
             }
             else{
-                $('.style_data').hide()
+                if (thematics.length < 5){
+                    thematics.add({
+                        id: selected_node.id,
+                        name:  selected_node.name,
+                        path: selected_node.path
+                    });
+                }
             }
+        }
+    );
+
+    var style_data_hide = function () {
+        var val = $('#style_type').val();
+        if ([
+            'Style_1',
+            'Style_2'
+        ].indexOf(val) >= 0) {
+            $('.style_data').show()
+        }
+        else {
+            $('.style_data').hide()
+        }
     };
     var field = $('#common-adv-list').find('option');
     var s = $('#common-adv-list');

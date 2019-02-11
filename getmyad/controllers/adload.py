@@ -202,6 +202,30 @@ class AdloadController(BaseController):
         except:
             return h.JSON({'error': True})
 
+    def thematic_tree(self):
+        id = request.params.get('node', 0)
+        try:
+            id = int(id)
+        except:
+            pass
+        data = [{
+            'id': x.get('id', ''),
+            'name': x.get('name', ''),
+            'path': x.get('path', ''),
+            'load_on_demand': bool(x.get('children_id', []))
+        } for x in app_globals.db_m.thematic.find({'parent_id': id})]
+        return h.JSON(data)
+
+    def thematics(self, id):
+        showCondition = ShowCondition(id)
+        showCondition.load()
+        data = [{
+            'id': x.get('id', ''),
+            'name': x.get('name', ''),
+            'path': x.get('path', '')
+        } for x in app_globals.db_m.thematic.find({'path': {'$in': showCondition.thematics}})]
+        return h.JSON(data)
+
     def campaign_settings(self, id):
         ''' Настройки кампании. ID кампании передаётся в параметре ``id`` '''
         user = request.environ.get('CURRENT_USER')
@@ -250,7 +274,10 @@ class AdloadController(BaseController):
         c.cost = showCondition.cost
         c.all_cost = [[0, u'все'], [1, u'0-2500'], [2, u'2501-4500'], [3, u'4501-9000'], [4, u'9001-14000'],
                       [5, u'14001-16500'], [6, u'16501-19000'], [7, u'19001-25000'], [8, u'25001-∞']]
-        c.contextOnly = showCondition.contextOnly
+        c.thematic = showCondition.thematic
+        c.thematic_day_new_auditory = showCondition.thematic_day_new_auditory
+        c.thematic_day_off_new_auditory = showCondition.thematic_day_off_new_auditory
+        c.thematics = ','.join(showCondition.thematics)
         c.retargeting = showCondition.retargeting
         c.html_notification = showCondition.html_notification
         c.recomendet_types = [['all', u'Всегда'], ['min', u'По убыванию'], ['max', u'По возрастанию']]
@@ -405,7 +432,15 @@ class AdloadController(BaseController):
         showCondition.UnicImpressionLot = UnicImpressionLot
         showCondition.gender = int(request.params.get('gender', 0))
         showCondition.cost = int(request.params.get('cost', 0))
-        showCondition.contextOnly = False
+        showCondition.thematic = True if request.params.get('thematic') else False
+        showCondition.thematics = request.params.get('thematics').split(',')
+        thematic_day_new_auditory = request.params.get('thematic_day_new_auditory', 10)
+        if thematic_day_new_auditory.isdigit():
+            showCondition.thematic_day_new_auditory = int(thematic_day_new_auditory)
+        thematic_day_off_new_auditory = request.params.get('thematic_day_off_new_auditory', 10)
+        if thematic_day_off_new_auditory.isdigit():
+            showCondition.thematic_day_off_new_auditory = int(thematic_day_off_new_auditory)
+
         showCondition.retargeting = True if request.params.get('retargeting') else False
         showCondition.html_notification = False
         showCondition.recomendet_type = request.params.get('recomendet_type', 'all')
@@ -987,7 +1022,10 @@ class ShowCondition:
         self.UnicImpressionLot = 1
         self.offer_by_campaign_unique = 1
         self.load_count = 100
-        self.contextOnly = False
+        self.thematic = False
+        self.thematic_day_new_auditory = 10
+        self.thematic_day_off_new_auditory = 10
+        self.thematics = []
         self.retargeting = False
         self.html_notification = False
         self.recomendet_type = 'all'
@@ -1041,6 +1079,10 @@ class ShowCondition:
         self.offer_by_campaign_unique = cond.get('offer_by_campaign_unique', 1)
         self.load_count = cond.get('load_count', 100)
         self.retargeting = cond.get('retargeting', False)
+        self.thematic = cond.get('thematic', False)
+        self.thematic_day_new_auditory = cond.get('thematic_day_new_auditory', 10)
+        self.thematic_day_off_new_auditory = cond.get('thematic_day_off_new_auditory', 10)
+        self.thematics = cond.get('thematics', [])
         self.html_notification = False
         self.target = ''
         self.recomendet_type = cond.get('recomendet_type', 'all')
@@ -1075,12 +1117,15 @@ class ShowCondition:
                          'offer_by_campaign_unique': self.offer_by_campaign_unique,
                          'load_count': self.load_count,
                          'retargeting': self.retargeting,
+                         'thematic': self.thematic,
+                         'thematic_day_new_auditory': self.thematic_day_new_auditory,
+                         'thematic_day_off_new_auditory': self.thematic_day_off_new_auditory,
+                         'thematics': self.thematics,
                          'html_notification': self.html_notification,
                          'recomendet_type': self.recomendet_type,
                          'retargeting_type': self.retargeting_type,
                          'recomendet_count': self.recomendet_count,
                          'target': self.target,
-                         'contextOnly': self.contextOnly,
                          'brending': self.brending,
                          'style_type': self.style_type,
                          'style_data': self.style_data
