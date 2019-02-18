@@ -52,6 +52,7 @@ class Informer:
         self.blinking = 0
         self.shake = 0
         self.rating_division = 1000
+        self.rating_hard_limit = False
         self.db = app_globals.db
 
     def user_by_login(self, login):
@@ -171,6 +172,7 @@ class Informer:
         update['blinking'] = to_int(self.blinking)
         update['shake'] = to_int(self.shake)
         update['rating_division'] = to_int(self.rating_division, 1000)
+        update['rating_hard_limit'] = self.rating_hard_limit
         update['blinking_reload'] = self.blinking_reload
         update['shake_reload'] = self.shake_reload
         update['shake_mouse'] = self.shake_mouse
@@ -236,6 +238,7 @@ class Informer:
             self.blinking = int(mongo_record.get('blinking', 0))
             self.shake = int(mongo_record.get('shake', 0))
             self.rating_division = int(mongo_record.get('rating_division', 1000))
+            self.rating_hard_limit = bool(mongo_record.get('rating_hard_limit', False))
             self.html_notification = bool(mongo_record.get('html_notification', False))
             self.blinking_reload = bool(mongo_record.get('blinking_reload', False))
             self.shake_reload = bool(mongo_record.get('shake_reload', False))

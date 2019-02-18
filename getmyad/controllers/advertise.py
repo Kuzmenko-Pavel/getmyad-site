@@ -56,6 +56,7 @@ class AdvertiseController(BaseController):
         c.blinking = adv.get('blinking', 0)
         c.shake = adv.get('shake', 0)
         c.rating_division = adv.get('rating_division', 1000)
+        c.rating_hard_limit = str(adv.get('rating_hard_limit', False)).lower()
         c.blinking_reload = str(adv.get('blinking_reload', False)).lower()
         c.shake_reload = str(adv.get('shake_reload', False)).lower()
         c.shake_mouse = str(adv.get('shake_mouse', False)).lower()
@@ -108,11 +109,11 @@ class AdvertiseController(BaseController):
             informer.width = object.get('width')
             informer.height_banner = object.get('height_banner')
             informer.width_banner = object.get('width_banner')
-            if object.get('html_notification'):
+            if 'html_notification' in object:
                 informer.html_notification = object.get('html_notification')
-            if object.get('plase_branch'):
+            if 'plase_branch' in object:
                 informer.plase_branch = object.get('plase_branch')
-            if object.get('retargeting_branch'):
+            if 'retargeting_branch' in object:
                 informer.retargeting_branch = object.get('retargeting_branch')
             informer.auto_reload = object.get('auto_reload', 0)
             if object.get('blinking'):
@@ -121,11 +122,13 @@ class AdvertiseController(BaseController):
                 informer.shake = object.get('shake', 0)
             if object.get('rating_division'):
                 informer.rating_division = object.get('rating_division', 1000)
-            if object.get('blinking_reload'):
+            if 'rating_hard_limit' in object:
+                informer.rating_hard_limit = object.get('rating_hard_limit')
+            if 'blinking_reload' in object:
                 informer.blinking_reload = object.get('blinking_reload')
-            if object.get('shake_reload'):
+            if 'shake_reload' in object:
                 informer.shake_reload = object.get('shake_reload')
-            if object.get('shake_mouse'):
+            if 'shake_mouse' in object:
                 informer.shake_mouse = object.get('shake_mouse')
             informer.save()
             return h.JSON({'error': False, 'id': informer.guid})
@@ -166,6 +169,7 @@ class AdvertiseController(BaseController):
             informer.blinking = 0
             informer.shake = 0
             informer.rating_division = 1000
+            informer.rating_hard_limit = False
             informer.blinking_reload = False
             informer.shake_reload = False
             informer.shake_mouse = False
@@ -409,6 +413,7 @@ class AdvertiseController(BaseController):
                      'blinking': x.get('blinking', 0),
                      'shake': x.get('shake', 0),
                      'rating_division': x.get('rating_division', 1000),
+                     'rating_hard_limit': bool(x.get('rating_hard_limit', False)),
                      'non_relevant': x.get('nonRelevant', {}),
                      'html_notification': bool(x.get('html_notification', False)),
                      'blinking_reload': bool(x.get('blinking_reload', False)),
@@ -440,6 +445,7 @@ class AdvertiseController(BaseController):
                      'blinking': x.get('blinking', 0),
                      'shake': x.get('shake', 0),
                      'rating_division': x.get('rating_division', 1000),
+                     'rating_hard_limit': bool(x.get('rating_hard_limit', False)),
                      'non_relevant': x.get('nonRelevant', {}),
                      'html_notification': bool(x.get('html_notification', False)),
                      'blinking_reload': bool(x.get('blinking_reload', False)),
