@@ -302,6 +302,13 @@ class AdloadController(BaseController):
         style_data['head_title'] = showCondition.style_data.get('head_title', 'Подробнее')
         style_data['button_title'] = showCondition.style_data.get('button_title', 'Подробнее')
         c.style_data = style_data
+        c.campaign_type = showCondition.campaign_type
+        c.campaign_types = [
+            [1, u'Новая аудитория'],
+            [2, u'Ремаркетинг'],
+            [3, u'Тематическая аудитория'],
+            [4, u'Социальная реклама'],
+        ]
         return render("/adload/campaign_settings.mako.html")
 
     def _campaign_settings_redirect(self):
@@ -432,7 +439,6 @@ class AdloadController(BaseController):
         showCondition.UnicImpressionLot = UnicImpressionLot
         showCondition.gender = int(request.params.get('gender', 0))
         showCondition.cost = int(request.params.get('cost', 0))
-        showCondition.thematic = True if request.params.get('thematic') else False
         showCondition.thematics = request.params.get('thematics').split(',')
         thematic_day_new_auditory = request.params.get('thematic_day_new_auditory', 10)
         if thematic_day_new_auditory.isdigit():
@@ -441,7 +447,6 @@ class AdloadController(BaseController):
         if thematic_day_off_new_auditory.isdigit():
             showCondition.thematic_day_off_new_auditory = int(thematic_day_off_new_auditory)
 
-        showCondition.retargeting = True if request.params.get('retargeting') else False
         showCondition.html_notification = False
         showCondition.recomendet_type = request.params.get('recomendet_type', 'all')
         showCondition.retargeting_type = request.params.get('retargeting_type', 'offer')
@@ -466,12 +471,31 @@ class AdloadController(BaseController):
         style_data['head_title'] = request.params.get('style_head_title', 'Подробнее')
         style_data['button_title'] = request.params.get('style_button_title', 'Подробнее')
         showCondition.style_data = style_data
+        showCondition.campaign_type = int(request.params.get('campaign_type', 1))
+        if showCondition.campaign_type == 2:
+            showCondition.thematic = False
+            showCondition.retargeting = True
+            showCondition.social = False
+        elif showCondition.campaign_type == 3:
+            showCondition.thematic = True
+            showCondition.retargeting = False
+            showCondition.social = False
+        elif showCondition.campaign_type == 4:
+            showCondition.thematic = False
+            showCondition.retargeting = False
+            showCondition.social = True
+        else:
+            showCondition.thematic = False
+            showCondition.retargeting = False
+            showCondition.social = False
+
         showCondition.save()
+
         campaign = Campaign(c.campaign_id)
         campaign.load()
         campaign.disabled_retargiting_style = True if request.params.get('disabledRetargitingStyle') else False
         campaign.disabled_recomendet_style = True if request.params.get('disabledRecomendetStyle') else False
-        campaign.social = True if request.params.get('socialCampaign') else False
+        campaign.social = showCondition.social
         campaign.yottos_partner_marker = True if request.params.get('yottosPartnerMarker') else False
         campaign.yottos_translit_marker = True
         campaign.yottos_hide_site_marker = True if request.params.get('yottosHideSiteMarker') else False
@@ -1027,6 +1051,7 @@ class ShowCondition:
         self.thematic_day_off_new_auditory = 10
         self.thematics = []
         self.retargeting = False
+        self.social = False
         self.html_notification = False
         self.recomendet_type = 'all'
         self.retargeting_type = 'offer'
@@ -1035,6 +1060,7 @@ class ShowCondition:
         self.brending = False
         self.style_type = 'default'
         self.style_data = defaultdict(str)
+        self.campaign_type = 1
 
     def load(self):
         ''' Загружает из базы данных настройки кампании.
@@ -1079,6 +1105,7 @@ class ShowCondition:
         self.offer_by_campaign_unique = cond.get('offer_by_campaign_unique', 1)
         self.load_count = cond.get('load_count', 100)
         self.retargeting = cond.get('retargeting', False)
+        self.social = cond.get('social', campaign.get('social', False))
         self.thematic = cond.get('thematic', False)
         self.thematic_day_new_auditory = cond.get('thematic_day_new_auditory', 10)
         self.thematic_day_off_new_auditory = cond.get('thematic_day_off_new_auditory', 10)
@@ -1091,6 +1118,16 @@ class ShowCondition:
         self.brending = cond.get('brending', False)
         self.style_type = cond.get('style_type', 'default')
         self.style_data = cond.get('style_data', {})
+        self.campaign_type = cond.get('campaign_type', 0)
+        if self.campaign_type == 0:
+            if self.retargeting:
+                self.campaign_type = 2
+            elif self.social:
+                self.campaign_type = 4
+            elif self.thematic and (self.retargeting is False or self.social is False):
+                self.campaign_type = 3
+            else:
+                self.campaign_type = 1
 
     def save(self):
         ''' Сохранение настроек кампании'''
@@ -1117,6 +1154,7 @@ class ShowCondition:
                          'offer_by_campaign_unique': self.offer_by_campaign_unique,
                          'load_count': self.load_count,
                          'retargeting': self.retargeting,
+                         'social': self.social,
                          'thematic': self.thematic,
                          'thematic_day_new_auditory': self.thematic_day_new_auditory,
                          'thematic_day_off_new_auditory': self.thematic_day_off_new_auditory,
@@ -1128,7 +1166,8 @@ class ShowCondition:
                          'target': self.target,
                          'brending': self.brending,
                          'style_type': self.style_type,
-                         'style_data': self.style_data
+                         'style_data': self.style_data,
+                         'campaign_type': self.campaign_type
                          }
 
         app_globals.db_m.campaign.update({'guid': self.campaign_id},

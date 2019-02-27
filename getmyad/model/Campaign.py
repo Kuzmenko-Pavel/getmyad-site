@@ -82,7 +82,7 @@ class Campaign(object):
         self.last_update = c.get('lastUpdate', datetime.datetime.now())
         self.day_of_holden = c.get('day_of_holden')
         self.update_status = c.get('update_status', 'complite')
-        if c.has_key('showConditions'):
+        if 'showConditions' in c:
             self.offer_by_campaign_unique = c['showConditions'].get('offer_by_campaign_unique', 1)
             self.UnicImpressionLot = c['showConditions'].get('UnicImpressionLot', 1)
             self.load_count = c['showConditions'].get('load_count', 100)
@@ -123,6 +123,8 @@ class Campaign(object):
             {'$set': {'guid_int': self.id_int,
                       'title': self.title,
                       'social': self.social,
+                      'retargeting': self.retargeting,
+                      'thematic': self.thematic,
                       'project': self.project,
                       'account': self.account,
                       'manager': self.manager,

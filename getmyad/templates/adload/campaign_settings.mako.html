@@ -302,6 +302,26 @@
             </tr>
             <tr>
                 <th>
+                    <h2>Настройка типа рекламной компании:</h2>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <label for="campaign_type">Тип рекламной компании:</label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    ${h.select("campaign_type", c.campaign_type, c.campaign_types, multiple=false)}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <hr>
+                </td>
+            </tr>
+            <tr>
+                <th>
                     <h2>Настройка времени показа рекламы:</h2>
                 </th>
             </tr>
@@ -661,18 +681,6 @@
             </tr>
             <tr>
                 <th>
-                    <label for="retargeting">Ремаркетинг</label>
-                </th>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <input type="checkbox" id="retargeting"
-                           name="retargeting" ${"checked" if c.campaign.retargeting else ""}>Ремаркетинговая
-                    компания</input>
-                </td>
-            </tr>
-            <tr>
-                <th>
                     <label for="retargeting_type">Тип ретаргетинга: </label>
                 </th>
             </tr>
@@ -714,12 +722,6 @@
                 </th>
             </tr>
             <tr>
-            <td colspan="2">
-                <input type="checkbox" id="thematic"
-                       name="thematic" ${"checked" if c.campaign.thematic else ""}>Тематическая компания</input>
-            </td>
-            </tr>
-            <tr>
                 <th>
                     <label for="recomendet_count">Кол-во дней набора новой аудитории: </label>
                 </th>
@@ -755,23 +757,6 @@
                 <td>
                     <div id="thematic_camp" class="jqtree-tree-block-style jqtree-tree-scroll-container" style="margin: 10px;"></div>
                     <input id="thematics" type="text" name="thematics" value="${c.thematics}" style="display: none;"></input>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <hr>
-                </td>
-            </tr>
-            <tr>
-                <th>
-                    <label for="socialCampaign">Социальная реклама:</label>
-                </th>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <input type="checkbox" id="socialCampaign"
-                           name="socialCampaign" ${"checked" if c.campaign.social else ""} >
-                    Социальная компания</input>
                 </td>
             </tr>
             <tr>
