@@ -56,6 +56,7 @@ class Campaign(object):
         self.offer_by_campaign_unique = 1
         self.load_count = 100
         self.status = 'created'
+        self.started_time = None
         self.day_of_holden = None
         self.update_status = 'complite'
         if self.exists():
@@ -79,6 +80,7 @@ class Campaign(object):
         self.yottos_translit_marker = c.get('yottosTranslitMarker', False)
         self.yottos_hide_site_marker = c.get('yottosHideSiteMarker', False)
         self.status = c.get('status', 'working')
+        self.started_time = c.get('started_time')
         self.last_update = c.get('lastUpdate', datetime.datetime.now())
         self.day_of_holden = c.get('day_of_holden')
         self.update_status = c.get('update_status', 'complite')
@@ -138,7 +140,8 @@ class Campaign(object):
                       'lastUpdate': self.last_update,
                       'day_of_holden': self.day_of_holden,
                       'update_status': self.update_status,
-                      'status': self.status}},
+                      'status': self.status,
+                      'started_time': self.started_time}},
             upsert=True)
 
     def exists(self):
@@ -153,6 +156,7 @@ class Campaign(object):
 
     def started(self):
         self.status = 'started'
+        self.started_time = datetime.datetime.now()
         self.save()
 
     def is_configured(self):
@@ -185,6 +189,7 @@ class Campaign(object):
 
     def stop(self):
         self.status = 'stop'
+        self.started_time = None
         self.save()
 
     def delete(self):
