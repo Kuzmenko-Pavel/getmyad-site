@@ -1,0 +1,161 @@
+# -*- coding: utf-8 -*-
+<%inherit file="/main.mako.html" />
+<%def name="head()">
+    <title>Yottos GetMyAd</title>
+    <link rel="stylesheet" href="/css/main.css?v=3" type="text/css" media="screen, projection"/>
+</%def>
+<a href="${h.url_for(controller='adload', action='campaign_overview', id=c.campaignId)}">&larr; к управлению
+    кампанией</a>
+<div style="padding: 5px 10px;">
+    <h2>Рекламные предложения</h2>
+    <p>Для редактирования цены нажмите кнопку "Ред", по окончанию редактирования нажмите кнопку "Сох". При полной
+        остановке
+        рекламной компании
+        установленные цены удаляються из системы GetMyAd.</p>
+    <table id="tablePrice">
+    </table>
+    <div id="pager_tablePrice"></div>
+</div>
+
+
+<script text="text/javascript">
+    var data = ${c.data};
+    var domain = ${h.JSON(c.domain)};
+    var domainStr = ${h.JSON(c.domainStr)};
+    var user = ${h.JSON(c.user)};
+    var userStr = ${h.JSON(c.userStr)};
+    $(document).ready(function () {
+
+
+        // Таблица рейтинга рекламных предложений
+        var grid = $("#tablePrice").jqGrid({
+            datatype: 'local',
+            data: data,
+            colNames: [
+                'Ред/Сох',
+                'ID',
+                'Название',
+                'Сайт',
+                'Аккаунт',
+                'Цена'
+            ],
+            colModel: [
+                {
+                    name: 'act',
+                    index: 'act',
+                    width: 80,
+                    sortable: false,
+                    search: false
+                },
+                {
+                    name: 'id',
+                    index: 'id',
+                    align: 'center',
+                    hidden: true,
+                    search: false
+                },
+                {
+                    name: 'title',
+                    index: 'title',
+                    align: 'center',
+                    editable: false,
+                    sortable: true,
+                    search:true,
+                    stype:'text'
+                },
+                {
+                    name: 'domain',
+                    index: 'domain',
+                    align: 'center',
+                    editable: false,
+                    sortable: true,
+                    stype: 'select',
+                    sorttype: function (cell) {
+                        return domain[cell];
+                    },
+                    searchoptions: {
+                        sopt: ['eq'],
+                        value: domainStr
+                    }
+                },
+                {
+                    name: 'user',
+                    index: 'user',
+                    align: 'center',
+                    editable: false,
+                    stype: 'select',
+                    sorttype: function (cell) {
+                        return user[cell];
+                    },
+                    searchoptions: {
+                        sopt: ['eq'],
+                        value: userStr
+                    }
+                },
+                {
+                    name: 'price',
+                    index: 'price',
+                    width: 125,
+                    align: 'center',
+                    editable: true,
+                    sortable: true,
+                    formatter: 'number',
+                    edittype: "text",
+                    formatoptions: {
+                        thousandsSeparator: '.',
+                        defaultValue: ""
+                    },
+                    editoptions: {
+                        size: 10,
+                        maxlength: 5
+                    },
+                    editrules: {
+                        minValue: 0.0,
+                        maxValue: 100.0,
+                        number: true
+                    },
+                    search: false
+                }
+            ],
+            gridComplete: function () {
+                var ids = jQuery("#tablePrice").jqGrid('getDataIDs');
+                for (var i = 0; i < ids.length; i++) {
+                    var cl = ids[i];
+                    var be = "<input type='button' value='Ред' onclick=\"jQuery('#tablePrice').editRow('" + cl + "');\"  />";
+                    var se = "<input type='button' value='Сох' onclick=\"jQuery('#tablePrice').saveRow('" + cl + "');\"  />";
+                    jQuery("#tablePrice").jqGrid('setRowData', ids[i], {act: be + se});
+                }
+            },
+            caption: "Ключевые слова рекламных предложений",
+            editurl: "/adload/campaign_pricing_save/${c.campaignId}",
+            rowNum: 20,
+            rowList: [
+                10,
+                20,
+                30,
+                40,
+                50
+            ],
+            viewrecords: true,
+            height: 'auto',
+            pager: "#pager_tablePrice"
+        });
+        grid.jqGrid('filterToolbar', {stringResult: true, searchOnEnter: false, ignoreCase: true,
+            defaultSearch : "cn", beforeSearch: function() {
+                var postData = grid.jqGrid('getGridParam','postData');
+                var searchData = jQuery.parseJSON(postData.filters);
+                for (var iRule=0; iRule<searchData.rules.length; iRule++) {
+                    if (searchData.rules[iRule].field === "title") {
+                        var valueToSearch = searchData.rules[iRule].data;
+                        if (valueToSearch.length < 3) {
+                            return true;
+                        }
+
+                    }
+                }
+                return false;
+            }});
+
+
+    });
+</script>

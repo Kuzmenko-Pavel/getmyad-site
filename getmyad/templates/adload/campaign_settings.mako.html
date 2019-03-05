@@ -769,6 +769,17 @@
                     <h2>Настройка параметров URL и передачи UTM-меток:</h2>
                 </th>
             </tr>
+             <tr>
+                <th>
+                    <label>Фильтрация трафика:</label>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="checkbox" id="disable_filter"
+                           name="disable_filter" ${"checked" if c.disable_filter else ""}>Не фильтровать трафик</input>
+                </td>
+            </tr>
             <tr>
                 <th>
                     <label>Параметры URL:</label>

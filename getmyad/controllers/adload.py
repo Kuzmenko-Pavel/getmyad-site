@@ -1,18 +1,19 @@
 # -*- coding: UTF-8 -*-
-import logging
 import datetime
-from uuid import uuid4
+import logging
 from collections import defaultdict
+from uuid import uuid4
 
 from pylons import request, session, tmpl_context as c, app_globals
 from pylons.controllers.util import abort, redirect
-from getmyad.lib.base import BaseController, render
-from getmyad.lib import helpers as h
-from getmyad.lib.adload_data import AdloadData
-from getmyad.model.Campaign import Campaign
-from getmyad import model
 from routes.util import url_for
 from urlfetch import get
+
+from getmyad import model
+from getmyad.lib import helpers as h
+from getmyad.lib.adload_data import AdloadData
+from getmyad.lib.base import BaseController, render
+from getmyad.model.Campaign import Campaign
 
 log = logging.getLogger(__name__)
 
@@ -290,6 +291,7 @@ class AdloadController(BaseController):
         c.load_count = showCondition.load_count
         c.brending = showCondition.brending
         c.style_type = showCondition.style_type
+        c.disable_filter = showCondition.disable_filter
         c.style_types = [
             ['default', u'динамически по умолчанию'], ['Block', u'как обычные предложения'],
             ['RetBlock', u'как ретаргетинговые предложения'],
@@ -313,6 +315,70 @@ class AdloadController(BaseController):
 
     def _campaign_settings_redirect(self):
         return h.redirect(url_for(controller="adload", action="campaign_settings", id=c.campaign_id))
+
+    def campaign_pricing(self, id):
+        user = request.environ.get('CURRENT_USER')
+        if not user: return h.userNotAuthorizedError()
+        if not Campaign(id).exists():
+            return h.JSON(
+                {"error": True, "msg": "Кампания с заданным id не существует"})  # TODO: Ошибку на нормальной странице
+        token = str(uuid4()).upper()
+        session[token] = {'user': session.get('user'), 'campaign_id': id}
+        session.save()
+        c.token = token
+        c.campaignId = id
+        data = []
+        domain = set()
+        user = set()
+        campaign = app_globals.db.campaign.find_one({'guid': id}, {'price': 1})
+        price = campaign.get('price', {})
+        for item in app_globals.db.informer.find({}, {'guid': 1, 'domain': 1, 'user': 1, 'title': 1}):
+            user.add(item.get('user', ''))
+            domain.add(item.get('domain', ''))
+            data.append((
+                item.get('guid', ''),
+                item.get('title', ''),
+                item.get('domain', ''),
+                item.get('user', ''),
+                price.get(item.get('guid', ''), '')
+            ))
+        c.data = h.jqGridLocalData(data, ['id', 'title', 'domain', 'user', 'price'])
+        c.domain = list(domain)
+        c.domain.sort()
+        c.domain.insert(0, 'ALL')
+        c.domainStr = ';'.join(
+            ['%s:%s' % (val, val) if idx > 0 else '%s:%s' % ('', val) for idx, val in enumerate(c.domain)])
+        c.user = list(user)
+        c.user.sort()
+        c.user.insert(0, 'ALL')
+        c.userStr = ';'.join(
+            ['%s:%s' % (val, val) if idx > 0 else '%s:%s' % ('', val) for idx, val in enumerate(c.user)])
+        return render("/adload/campaign_pricing.mako.html")
+
+    @staticmethod
+    def is_number(s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
+    def campaign_pricing_save(self, id):
+        oper = request.params.get('oper', False)
+        guid = request.params.get('id', '')
+        price = request.params.get('price', '')
+        if oper:
+            if self.is_number(price):
+                print(price)
+                app_globals.db_m.campaign.update({'guid': id},
+                                                 {'$set': {
+                                                     'price.' + guid: float(price)
+                                                 }}, False)
+            else:
+                app_globals.db_m.campaign.update({'guid': id},
+                                                 {'$unset': {
+                                                     'price.' + guid: 0
+                                                 }}, False)
 
     def keywords_settings(self, id):
         ''' Настройки кампании. ID кампании передаётся в параметре ``id`` '''
@@ -450,6 +516,7 @@ class AdloadController(BaseController):
         showCondition.html_notification = False
         showCondition.recomendet_type = request.params.get('recomendet_type', 'all')
         showCondition.retargeting_type = request.params.get('retargeting_type', 'offer')
+        showCondition.disable_filter = True if request.params.get('disable_filter') else False
         RecomendetCount = request.params.get('recomendet_count', 10)
         if RecomendetCount.isdigit():
             showCondition.recomendet_count = int(RecomendetCount)
@@ -864,12 +931,14 @@ class AdloadController(BaseController):
                         'getmyad': item.get('getmyad', False),
                         'status': camp.get('status'),
                         'update_status': camp.get('update_status'),
-                        'last_update': camp.get('lastUpdate', datetime.datetime(1900, 1, 1, 0, 0)).strftime("%Y-%m-%d %H:%M:%S"),
+                        'last_update': camp.get('lastUpdate', datetime.datetime(1900, 1, 1, 0, 0)).strftime(
+                            "%Y-%m-%d %H:%M:%S"),
                         'offers_count': int(offers_count),
                         'social': camp.get('social', False),
                         'retargeting': camp.get('showConditions', {}).get('retargeting', False),
                         'UnicImpressionLot': int(camp.get('showConditions', {}).get('UnicImpressionLot', 0)),
-                        'offer_by_campaign_unique': int(camp.get('showConditions', {}).get('offer_by_campaign_unique', 0)),
+                        'offer_by_campaign_unique': int(
+                            camp.get('showConditions', {}).get('offer_by_campaign_unique', 0)),
                         'load_count': int(camp.get('showConditions', {}).get('load_count', 0)),
                     }
                 )
@@ -878,22 +947,25 @@ class AdloadController(BaseController):
                 pass
         manager = list(manager)
         manager.insert(0, 'ALL')
-        managerStr = ';'.join(['%s:%s' % (idx, val) if idx > 0 else '%s:%s' % ('', val) for idx, val in enumerate(manager)])
+        managerStr = ';'.join(
+            ['%s:%s' % (idx, val) if idx > 0 else '%s:%s' % ('', val) for idx, val in enumerate(manager)])
         user_name = list(user_name)
         user_name.insert(0, 'ALL')
-        user_nameStr = ';'.join(['%s:%s' % (idx, val) if idx > 0 else '%s:%s' % ('', val) for idx, val in enumerate(user_name)])
+        user_nameStr = ';'.join(
+            ['%s:%s' % (idx, val) if idx > 0 else '%s:%s' % ('', val) for idx, val in enumerate(user_name)])
         c.manager = manager
         c.managerStr = managerStr
         c.user_name = user_name
         c.user_nameStr = user_nameStr
-        for item in  campaigns:
+        for item in campaigns:
             item['manager'] = manager.index(item['manager'])
             item['user_name'] = user_name.index(item['user_name'])
             c.campaigns.append(item)
         c.get_campaigns = []
         for x in get_campaigns.values():
             item = {
-                'title':  '<a href="%s">%s</a>' % (h.url_for(controller='adload', action='campaign_overview', id=x['guid']), x['title']),
+                'title': '<a href="%s">%s</a>' % (
+                h.url_for(controller='adload', action='campaign_overview', id=x['guid']), x['title']),
                 'manager': x['manager'],
                 'status': x['status'],
                 'update': str(x['lastUpdate'])
@@ -1061,6 +1133,7 @@ class ShowCondition:
         self.style_type = 'default'
         self.style_data = defaultdict(str)
         self.campaign_type = 1
+        self.disable_filter = False
 
     def load(self):
         ''' Загружает из базы данных настройки кампании.
@@ -1119,6 +1192,7 @@ class ShowCondition:
         self.style_type = cond.get('style_type', 'default')
         self.style_data = cond.get('style_data', {})
         self.campaign_type = cond.get('campaign_type', 0)
+        self.disable_filter = cond.get('disable_filter', False)
         if self.campaign_type == 0:
             if self.retargeting:
                 self.campaign_type = 2
@@ -1167,7 +1241,8 @@ class ShowCondition:
                          'brending': self.brending,
                          'style_type': self.style_type,
                          'style_data': self.style_data,
-                         'campaign_type': self.campaign_type
+                         'campaign_type': self.campaign_type,
+                         'disable_filter': self.disable_filter
                          }
 
         app_globals.db_m.campaign.update({'guid': self.campaign_id},

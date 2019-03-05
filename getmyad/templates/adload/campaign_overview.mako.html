@@ -99,6 +99,10 @@
           <button type="submit">Настройки</button>
     </form>
     </br>
+    <form action="${h.url_for(controller='adload', action='campaign_pricing', id=c.getmyad_details.id)}">
+          <button type="submit">Настройки индивидуальной цены для сайта</button>
+    </form>
+    </br>
     </p>
     <p>
     </br>
@@ -147,9 +151,10 @@
           <button type="submit">Настройки</button>
     </form>
     </br>
-    <!--form action="${h.url_for(controller='adload', action='keywords_settings', id=c.getmyad_details.id)}">
-          <button type="submit">Настроики ключевых слов</button>
-    </form-->
+    <form action="${h.url_for(controller='adload', action='campaign_pricing', id=c.getmyad_details.id)}">
+          <button type="submit">Настройки индивидуальной цены для сайта</button>
+    </form>
+    </br>
     </p>
     % if not c.getmyad_details.is_update():
     <p>
@@ -195,6 +200,10 @@
     </br>
     <form action="${h.url_for(controller='adload', action='campaign_settings', id=c.getmyad_details.id)}">
           <button type="submit">Настройки</button>
+    </form>
+    </br>
+    <form action="${h.url_for(controller='adload', action='campaign_pricing', id=c.getmyad_details.id)}">
+          <button type="submit">Настройки индивидуальной цены для сайта</button>
     </form>
     </br>
     </p>

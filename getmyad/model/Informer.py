@@ -53,6 +53,7 @@ class Informer:
         self.shake = 0
         self.rating_division = 1000
         self.rating_hard_limit = False
+        self.disable_filter = False
         self.db = app_globals.db
 
     def user_by_login(self, login):
@@ -179,6 +180,7 @@ class Informer:
         update['html_notification'] = self.html_notification
         update['plase_branch'] = self.plase_branch
         update['retargeting_branch'] = self.retargeting_branch
+        update['disable_filter'] = self.disable_filter
 
         if self.cost:
             update['cost'] = self.cost
@@ -245,6 +247,7 @@ class Informer:
             self.shake_mouse = bool(mongo_record.get('shake_mouse', False))
             self.plase_branch = bool(mongo_record.get('plase_branch', True))
             self.retargeting_branch = bool(mongo_record.get('retargeting_branch', True))
+            self.disable_filter = bool(mongo_record.get('disable_filter', False))
             if 'nonRelevant' in mongo_record:
                 self.non_relevant = {}
                 self.non_relevant['action'] = \
