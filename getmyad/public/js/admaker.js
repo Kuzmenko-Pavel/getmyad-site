@@ -533,6 +533,8 @@ function AdMaker()
 						'<br style="clear: both" />' +
                         '<span>Включить ветку ретаргетинга <input type="checkbox" id="retargeting_branch"/></span>'+
 						'<br style="clear: both" />' +
+			            '<span>Не фильтровать трафик <input type="checkbox" id="disable_filter"/></span>'+
+						'<br style="clear: both" />' +
                         '<span>Порог рейтинга <input type="text" id="rating_division" size="6" /></span>'+
 						'<br style="clear: both" />' +
 						'<span>Жесткое ограничение рейтинга <input type="checkbox" id="rating_hard_limit"/></span>'+
@@ -560,6 +562,7 @@ function AdMaker()
         $("#shake_mouse").attr('checked', shake_mouse);
         $("#plase_branch").attr('checked', plase_branch);
         $("#retargeting_branch").attr('checked', retargeting_branch);
+        $("#disable_filter").attr('checked', disable_filter);
         $("#action option[value=" + non_relevant['action'] + "]").attr('selected', 'true');
 		createColorPicker("#backgroundColorNav");
 		createColorPicker("#colorNav");		
@@ -609,6 +612,7 @@ function AdMaker()
                 rating_division: seting['rating_division'],
 				rating_hard_limit: seting['rating_hard_limit'],
                 retargeting_branch: seting['retargeting_branch'],
+				disable_filter: seting['disable_filter'],
 				css: TrimPath.processDOMTemplate("styleTemplate", data)
 			}),
 			dataType: 'json',
@@ -659,6 +663,7 @@ function AdMaker()
         data.rating_hard_limit = $('#rating_hard_limit').is(":checked");
         data.plase_branch = $('#plase_branch').is(":checked");
         data.retargeting_branch = $('#retargeting_branch').is(":checked");
+        data.disable_filter = $('#disable_filter').is(":checked");
         return data;
     }
 	

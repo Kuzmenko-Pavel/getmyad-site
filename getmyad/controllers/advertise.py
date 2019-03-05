@@ -60,6 +60,7 @@ class AdvertiseController(BaseController):
         c.blinking_reload = str(adv.get('blinking_reload', False)).lower()
         c.shake_reload = str(adv.get('shake_reload', False)).lower()
         c.shake_mouse = str(adv.get('shake_mouse', False)).lower()
+        c.disable_filter = str(adv.get('disable_filter', False)).lower()
         c.retargeting_branch = str(adv.get('retargeting_branch', True)).lower()
         c.non_relevant = adv.get('nonRelevant', {})
         c.non_relevant['userCode'] = escape(adv.get('nonRelevant', {}).get('userCode', ''))
@@ -130,6 +131,8 @@ class AdvertiseController(BaseController):
                 informer.shake_reload = object.get('shake_reload')
             if 'shake_mouse' in object:
                 informer.shake_mouse = object.get('shake_mouse')
+            if 'disable_filter' in object:
+                informer.disable_filter = object.get('disable_filter')
             informer.save()
             return h.JSON({'error': False, 'id': informer.guid})
         except Exception as ex:
