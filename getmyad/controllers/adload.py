@@ -297,7 +297,8 @@ class AdloadController(BaseController):
             ['RetBlock', u'как ретаргетинговые предложения'],
             ['RecBlock', u'как рекомендованные предложения'],
             ['Style_1', u'Стиль с логотипом DOM RIA'],
-            ['Style_2', u'Стиль с логотипом AUTO RIA']
+            ['Style_2', u'Стиль с логотипом AUTO RIA'],
+            ['Style_3', u'Стиль с логотипом ЗУБЫ']
         ]
         style_data = defaultdict(str)
         style_data['img'] = showCondition.style_data.get('img', 'https://cdn.yottos.com/logos/anonymous.gif')
