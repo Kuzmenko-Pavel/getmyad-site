@@ -14,6 +14,7 @@ import pymongo
 from pymongo import WriteConcern
 from pymongo.errors import BulkWriteError
 import erequests as requests
+import urllib3
 from PIL import Image
 from amqplib import client_0_8 as amqp
 from celery.task import task
@@ -24,6 +25,7 @@ from getmyad.tasks.offer import Offer
 
 reload(sys)  # Reload does the trick!
 sys.setdefaultencoding('UTF8')
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
 MONGO_HOST = 'srv-5.yottos.com:27018,srv-5.yottos.com:27020,srv-5.yottos.com:27019'
@@ -180,17 +182,21 @@ def resizer(url, trum_height, trum_width, logo):
     headers = {
         'User-agent': 'Mozilla/5.0'
     }
-    r = requests.get(url.strip(), headers=headers)
+    r = requests.get(url.strip(), headers=headers, verify=False)
     if r.status_code != requests.codes.ok:
         raise Exception('URLError = %s %s' % (r.status_code, url.strip()))
     i = Image.open(BytesIO(r.content)).convert('RGBA')
     width, height = i.size
     if logo and logo != '':
-        r = requests.get(logo.strip(), headers=headers)
-        if r.status_code != requests.codes.ok:
-            raise Exception('URLError = %s %s' % (r.status_code, logo.strip()))
-        l = Image.open(BytesIO(r.content)).convert('RGBA')
-        l.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
+        try:
+            r = requests.get(logo.strip(), headers=headers, verify=False)
+            if r.status_code != requests.codes.ok:
+                raise Exception('URLError = %s %s' % (r.status_code, logo.strip()))
+            l = Image.open(BytesIO(r.content)).convert('RGBA')
+            l.thumbnail((trum_height, trum_width), Image.ANTIALIAS)
+        except Exception as e:
+            print(e)
+            l = None
 
     first_box = (None, None, None, None)
     second_box = (None, None, None, None)
