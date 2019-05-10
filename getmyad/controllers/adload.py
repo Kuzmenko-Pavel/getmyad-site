@@ -118,9 +118,9 @@ class AdloadController(BaseController):
         <body>
             <a href="/adload/adload_campaign_list">Список всех рекламных кампаний</a> |
             <a href="/adload/categories_settings">Управление тематическими категориями</a> |
-<!--        <a href="/adload/campaign_update_all">Обновить все кампании</a> | -->
-<!--        <a href="/adload/campaign_update_all_p">Обновить все кампании</a> | -->
-<!--        <a href="/adload/campaign_update_all_r">Обновить все кампании</a> | -->
+            <a href="/adload/campaign_update_all" style="display:none">Обновить все кампании</a>
+            <a href="/adload/campaign_update_all_p" style="display:none">Обновить все кампании</a>
+            <a href="/adload/campaign_update_all_r" style="display:none">Обновить все кампании</a>
             <a href="/manager/checkInformers?adsbyyottos_test=true&adsbyyottos_country=UA" target="_blank">Проверка работы информеров</a> |
 <!--        <a href="/adload/currency_cost" target="_blank">Курс доллара</a> | -->
             <a href="/adload/offer_rating" target="_blank">Рейтинг Рекламных Предложений</a> |
@@ -1072,45 +1072,43 @@ class AdloadController(BaseController):
     def campaign_update_all_p(self):
         '''Обновление всех запущенных в GetMyAd кампаний'''
         try:
-            campaigns = app_globals.getmyad_rpc.campaign_list()
+            campaigns = app_globals.getmyad_rpc.campaign_list_p()
         except:
             return "Ошибка получения списка кампаний GetMyAd"
 
         result = ''
         for campaign in campaigns:
-            if not campaign.get('retargeting', True):
-                try:
-                    id = campaign['id']
-                    title = campaign.get('title', '')
-                    msg = app_globals.getmyad_rpc.campaign.update(id)
-                    log.info("Updating campaign %s %s: %s" % (id, title, msg))
-                except Exception, ex:
-                    msg = repr(ex)
-                    title = ''
-                    id = ''
-                result += '<p>Campaign %s %s: %s</p>' % (id, title, msg)
+            try:
+                id = campaign['id']
+                title = campaign.get('title', '')
+                msg = app_globals.getmyad_rpc.campaign.update(id)
+                log.info("Updating campaign %s %s: %s" % (id, title, msg))
+            except Exception, ex:
+                msg = repr(ex)
+                title = ''
+                id = ''
+            result += '<p>Campaign %s %s: %s</p>' % (id, title, msg)
         return result
 
     def campaign_update_all_r(self):
         '''Обновление всех запущенных в GetMyAd кампаний'''
         try:
-            campaigns = app_globals.getmyad_rpc.campaign_list()
+            campaigns = app_globals.getmyad_rpc.campaign_list_r()
         except:
             return "Ошибка получения списка кампаний GetMyAd"
 
         result = ''
         for campaign in campaigns:
-            if campaign.get('retargeting', False):
-                try:
-                    id = campaign['id']
-                    title = campaign.get('title', '')
-                    msg = app_globals.getmyad_rpc.campaign.update(id)
-                    log.info("Updating campaign %s %s: %s" % (id, title, msg))
-                except Exception, ex:
-                    msg = repr(ex)
-                    title = ''
-                    id = ''
-                result += '<p>Campaign %s %s: %s</p>' % (id, title, msg)
+            try:
+                id = campaign['id']
+                title = campaign.get('title', '')
+                msg = app_globals.getmyad_rpc.campaign.update(id)
+                log.info("Updating campaign %s %s: %s" % (id, title, msg))
+            except Exception, ex:
+                msg = repr(ex)
+                title = ''
+                id = ''
+            result += '<p>Campaign %s %s: %s</p>' % (id, title, msg)
         return result
 
     def campaign_overview(self, id):

@@ -146,6 +146,28 @@ class RpcController(XMLRPCController):
             result.append(campaign)
         return result
 
+    def campaign_list_p(self):
+        ''' Возвращает список всех запущенных в GetMyAd кампаний.
+        '''  # TODO: Дописать документацию
+
+        result = []
+        for x in app_globals.db_m.campaign.find({"project": "adload", 'retargeting': False}):
+            campaign = {'id': x.get('guid'),
+                        'title': x.get('title')}
+            result.append(campaign)
+        return result
+
+    def campaign_list_r(self):
+        ''' Возвращает список всех запущенных в GetMyAd кампаний.
+        '''  # TODO: Дописать документацию
+
+        result = []
+        for x in app_globals.db_m.campaign.find({"project": "adload", 'retargeting': True}):
+            campaign = {'id': x.get('guid'),
+                        'title': x.get('title')}
+            result.append(campaign)
+        return result
+
     campaign_list.signature = [['array']]
 
     def campaign_details(self, campaign_id):
