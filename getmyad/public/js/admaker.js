@@ -540,13 +540,18 @@ function AdMaker()
 						'<span>Жесткое ограничение рейтинга <input type="checkbox" id="rating_hard_limit"/></span>'+
 						'<br style="clear: both" />' +
 						'<span class="optionsGroup">При отсутствии релевантной рекламы:</span>' +
-						'<select  id="action" name="action"> ' +
+						'<select  id="action" name="action" style="display: none;"> ' +
 						'<option value="social">отображать социальную рекламу</option>' + 
 						'<option value="usercode">выводить пользовательский код</option>' + 
-						'</select>' + 
+						'</select>' +
+						'<select  id="action-2" name="action-2"> ' +
+						'<option value="social">отображать социальную рекламу</option>' +
+						'<option value="usercode">выводить пользовательский код</option>' +
+						'</select>' +
 						'<br style="clear: both" />' +
 						'<span class="optionsGroup">Пользовательский код:</span>' +
-					    '<textarea id="user-code" style="width: 100%; height:100px;"></textarea>'
+					    '<textarea id="user-code" style="display: none; width: 100%; height:100px;"></textarea>' +
+						'<textarea id="user-code-2" style="width: 100%; height:100px;"></textarea>'
 						);
         var d = document.createElement("div");
         d.innerHTML = non_relevant["userCode"];
