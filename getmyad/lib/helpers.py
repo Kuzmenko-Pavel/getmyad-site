@@ -6,6 +6,7 @@ available to Controllers. This module is available to templates as 'h'.
 """
 # Import helpers as desired, or define your own, ie:
 #from webhelpers.html.tags import checkbox, password
+import binascii
 
 from routes import url_for
 from webhelpers.html.tags import *
@@ -207,6 +208,26 @@ def uuid_to_long(uuid):
     except Exception as e:
         print(e)
         return long(uuid4().int >> 64 & ((1 << 64) / 2) - 2)
+
+
+def uuid_to_crc32(uuid):
+    try:
+        return binascii.crc32(str(uuid).encode('utf-8')) % (1<<32)
+    except Exception as e:
+        print(e)
+        return binascii.crc32(str(uuid4())) % (1 << 32)
+
+
+def uuid_to_crc32_8(uuid):
+    try:
+        return binascii.crc32(str(uuid).encode('utf-8')) % (1<<8)
+    except Exception as e:
+        print(e)
+        return binascii.crc32(str(uuid4())) % (1 << 8)
+
+
+def uuid_to_crc32_path(uuid):
+    return '.'.join(map(str, map(uuid_to_crc32_8, [x for x in str(uuid).split('-')])))
 
 
 def to_int(value, default=0):

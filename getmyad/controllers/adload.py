@@ -195,8 +195,12 @@ class AdloadController(BaseController):
             if not guid:
                 guid = str(uuid4()).upper()
             guid_int = h.uuid_to_long(guid)
+            id = h.uuid_to_crc32(guid)
+            path = h.uuid_to_crc32_path(guid)
             app_globals.db_m.advertise.category.update({'guid': guid},
                                                        {'$set': {
+                                                           'id': id,
+                                                           'path': path,
                                                            'guid_int': guid_int,
                                                            'clickCost': clickCost,
                                                            'title': title
