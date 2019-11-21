@@ -28,7 +28,7 @@ sys.setdefaultencoding('UTF8')
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 GETMYAD_XMLRPC_HOST = 'https://getmyad.yottos.com/rpc'
-MONGO_HOST = 'srv-5.yottos.com:27018,srv-5.yottos.com:27020,srv-5.yottos.com:27019'
+MONGO_HOST = 'srv-3.yottos.com:27017'
 MONGO_DATABASE = 'getmyad_db'
 
 image_trumb_height_width = (210, 210)
